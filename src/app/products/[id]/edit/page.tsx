@@ -1,0 +1,69 @@
+"use client";
+
+import React, { useEffect, useState, use } from "react";
+import { useRouter } from "next/navigation";
+import { ArrowLeft, Loader2 } from "lucide-react";
+import { ProductForm } from "@/components/ProductForm";
+
+export default function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
+    const router = useRouter();
+    const { id } = use(params);
+    const [product, setProduct] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchProduct = async () => {
+            try {
+                const res = await fetch("/api/products");
+                const products = await res.json();
+                const found = products.find((p: any) => p.id === parseInt(id));
+                setProduct(found);
+            } catch (error) {
+                console.error("Error fetching product:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchProduct();
+    }, [id]);
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-[#FDFBF7] flex items-center justify-center">
+                <Loader2 className="animate-spin text-orange-600" size={48} />
+            </div>
+        );
+    }
+
+    if (!product) {
+        return (
+            <div className="min-h-screen bg-[#FDFBF7] text-stone-900 flex flex-col items-center justify-center gap-4">
+                <h1 className="text-2xl font-bold">Producto no encontrado</h1>
+                <button onClick={() => router.push("/dashboard")} className="text-orange-600 hover:underline">
+                    Volver al Dashboard
+                </button>
+            </div>
+        );
+    }
+
+    return (
+        <div className="min-h-screen bg-[#FDFBF7] text-stone-900 p-4 md:p-8">
+            <div className="max-w-3xl mx-auto space-y-8">
+                <header className="flex items-center gap-4">
+                    <button
+                        onClick={() => router.back()}
+                        className="p-2 hover:bg-white rounded-xl text-stone-400 hover:text-orange-600 transition-colors border border-orange-200 shadow-sm"
+                    >
+                        <ArrowLeft size={20} />
+                    </button>
+                    <div>
+                        <h1 className="text-2xl font-bold text-stone-900">Editar Producto</h1>
+                        <p className="text-stone-500 text-sm font-medium">Modifica los detalles de {product.nombre}</p>
+                    </div>
+                </header>
+
+                <ProductForm initialData={product} isEdit={true} />
+            </div>
+        </div>
+    );
+}

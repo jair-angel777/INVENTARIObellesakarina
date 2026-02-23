@@ -1,0 +1,33 @@
+{
+  "name": "inventario",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.4.1",
+    "clsx": "latest",
+    "lucide-react": "latest",
+    "next": "latest",
+    "prisma": "^6.4.1",
+    "react": "latest",
+    "react-dom": "latest",
+    "tailwind-merge": "latest"
+  },
+  "devDependencies": {
+    "@prisma/config": "latest",
+    "@tailwindcss/postcss": "^4.2.0",
+    "@types/node": "latest",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "autoprefixer": "latest",
+    "postcss": "latest",
+    "tailwindcss": "latest",
+    "ts-node": "latest",
+    "typescript": "latest"
+  }
+}
