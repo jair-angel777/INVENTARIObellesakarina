@@ -14,10 +14,10 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
     useEffect(() => {
         const fetchProduct = async () => {
             try {
-                const res = await fetch("/api/products");
-                const products = await res.json();
-                const found = products.find((p: any) => p.id === parseInt(id));
-                setProduct(found);
+                const res = await fetch(`/api/products/${id}`);
+                if (!res.ok) throw new Error("Product not found");
+                const data = await res.json();
+                setProduct(data);
             } catch (error) {
                 console.error("Error fetching product:", error);
             } finally {
