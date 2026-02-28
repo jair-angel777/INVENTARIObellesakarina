@@ -3,20 +3,20 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "mongodb"
   url      = env("DATABASE_URL")
 }
 
 model productos {
-  id                  Int       @id @default(autoincrement())
-  nombre              String    @db.VarChar(255)
-  categoria           String?   @db.VarChar(100)
-  precio              Decimal   @db.Decimal(10, 2)
-  costo               Decimal?  @db.Decimal(10, 2)
+  id                  String    @id @default(auto()) @map("_id") @db.ObjectId
+  nombre              String
+  categoria           String?
+  precio              Float
+  costo               Float?
   stock               Int       @default(0)
   stock_minimo        Int?      @default(5)
-  sku                 String?   @unique(map: "sku") @db.VarChar(50)
-  imagen              String?   @db.VarChar(255)
-  fecha_creacion      DateTime? @default(now()) @db.Timestamp(0)
-  fecha_actualizacion DateTime? @default(now()) @db.Timestamp(0)
+  sku                 String?   @unique(map: "sku")
+  imagen              String?
+  fecha_creacion      DateTime? @default(now())
+  fecha_actualizacion DateTime? @default(now())
 }

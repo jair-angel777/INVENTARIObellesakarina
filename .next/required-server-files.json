@@ -100,7 +100,7 @@
         "transform": "lodash/{{member}}"
       }
     },
-    "outputFileTracingRoot": "C:\\Users\\Usuario\\Documents\\TRABAJOS\\INVENTARIO",
+    "outputFileTracingRoot": "C:\\Users\\Usuario\\Documents\\TRABAJOS\\INVENTARIObellesakarina",
     "cacheComponents": false,
     "cacheLife": {
       "default": {
@@ -294,11 +294,11 @@
     "bundlePagesRouterDependencies": false,
     "configFileName": "next.config.js",
     "turbopack": {
-      "root": "C:\\Users\\Usuario\\Documents\\TRABAJOS\\INVENTARIO"
+      "root": "C:\\Users\\Usuario\\Documents\\TRABAJOS\\INVENTARIObellesakarina"
     },
     "distDirRoot": ".next"
   },
-  "appDir": "C:\\Users\\Usuario\\Documents\\TRABAJOS\\INVENTARIO",
+  "appDir": "C:\\Users\\Usuario\\Documents\\TRABAJOS\\INVENTARIObellesakarina",
   "relativeAppDir": "",
   "files": [
     ".next\\routes-manifest.json",

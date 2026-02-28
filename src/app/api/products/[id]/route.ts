@@ -10,7 +10,7 @@ export async function GET(
     try {
         const { id } = await params;
         const product = await prisma.productos.findUnique({
-            where: { id: parseInt(id) }
+            where: { id: id }
         })
 
         if (!product) {
@@ -32,7 +32,7 @@ export async function PATCH(
         const { id } = await params;
         const body = await request.json()
         const product = await prisma.productos.update({
-            where: { id: parseInt(id) },
+            where: { id: id },
             data: {
                 nombre: body.nombre,
                 categoria: body.categoria,
@@ -59,7 +59,7 @@ export async function DELETE(
     try {
         const { id } = await params;
         await prisma.productos.delete({
-            where: { id: parseInt(id) }
+            where: { id: id }
         })
         return NextResponse.json({ message: 'Producto eliminado correctamente' })
     } catch (error) {
