@@ -35,17 +35,6 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
         );
     }
 
-    if (!product) {
-        return (
-            <div className="min-h-screen bg-[#FDFBF7] text-stone-900 flex flex-col items-center justify-center gap-4">
-                <h1 className="text-2xl font-bold">Producto no encontrado</h1>
-                <button onClick={() => router.push("/dashboard")} className="text-orange-600 hover:underline">
-                    Volver al Dashboard
-                </button>
-            </div>
-        );
-    }
-
     return (
         <div className="min-h-screen bg-[#FDFBF7] text-stone-900 p-4 md:p-8">
             <div className="max-w-3xl mx-auto space-y-8">
@@ -58,11 +47,22 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                     </button>
                     <div>
                         <h1 className="text-2xl font-bold text-stone-900">Editar Producto</h1>
-                        <p className="text-stone-500 text-sm font-medium">Modifica los detalles de {product.nombre}</p>
+                        <p className="text-stone-500 text-sm font-medium">
+                            {product ? `Modifica los detalles de ${product.nombre}` : "Buscando detalles..."}
+                        </p>
                     </div>
                 </header>
 
-                <ProductForm initialData={product} isEdit={true} />
+                {!product ? (
+                    <div className="flex flex-col items-center justify-center gap-4 py-20">
+                        <h2 className="text-xl font-bold text-stone-500">Producto no encontrado</h2>
+                        <button onClick={() => router.push("/dashboard")} className="text-orange-600 hover:underline">
+                            Volver al Dashboard
+                        </button>
+                    </div>
+                ) : (
+                    <ProductForm initialData={product} isEdit={true} />
+                )}
             </div>
         </div>
     );

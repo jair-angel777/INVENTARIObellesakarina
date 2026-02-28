@@ -45,10 +45,10 @@ export function ProductForm({ initialData, isEdit = false }: ProductFormProps) {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     ...formData,
-                    precio: Number(formData.precio),
-                    costo: formData.costo ? Number(formData.costo) : null,
-                    stock: Number(formData.stock),
-                    stock_minimo: Number(formData.stock_minimo),
+                    precio: parseFloat(formData.precio),
+                    costo: formData.costo ? parseFloat(formData.costo) : null,
+                    stock: parseInt(formData.stock, 10),
+                    stock_minimo: parseInt(formData.stock_minimo, 10),
                 }),
             });
 
