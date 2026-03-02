@@ -21,7 +21,7 @@ model Productos {
   sku            String?  @unique
   imagen         String?
   fecha_creacion DateTime @default(now())
-  ultima_actualizacion DateTime @updatedAt
+  ultima_actualizacion DateTime? @updatedAt
 
   @@map("productos")
 }
