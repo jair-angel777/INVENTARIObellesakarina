@@ -3,8 +3,10 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Lock, User, Eye, EyeOff, LogIn } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 
 export default function LoginPage() {
+    const { login: setAuth } = useAuth();
     const router = useRouter();
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -15,30 +17,39 @@ export default function LoginPage() {
         password: ""
     });
 
-    // Credenciales ficticias del Gerente General
-    const CREDENCIALES_GERENTE = {
-        usuario: "gerente",
-        password: "123"
-    };
+    const rawUrl = process.env.NEXT_PUBLIC_API_URL || 'https://backen-inventario.vercel.app';
+    const API_URL = rawUrl.endsWith('/api') ? rawUrl : `${rawUrl.replace(/\/$/, '')}/api`;
 
-    const handleLogin = (e: React.FormEvent) => {
+    const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
         setError("");
 
-        // Simulamos un retraso de red para que se vea profesional
-        setTimeout(() => {
-            if (
-                formData.usuario === CREDENCIALES_GERENTE.usuario &&
-                formData.password === CREDENCIALES_GERENTE.password
-            ) {
-                // Éxito: Redirigimos al Dashboard (NUEVA RUTA)
+        try {
+            const res = await fetch(`${API_URL}/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    username: formData.usuario,
+                    password: formData.password
+                })
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                // Éxito: Guardar sesión y redirigir
+                setAuth(data.rol);
                 router.push("/dashboard");
             } else {
-                setError("Usuario o contraseña incorrectos");
+                setError(data.error || "Error al iniciar sesión");
                 setLoading(false);
             }
-        }, 1000);
+        } catch (err) {
+            console.error(err);
+            setError("Falla de conexión con el servidor");
+            setLoading(false);
+        }
     };
 
     return (
