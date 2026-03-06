@@ -44,7 +44,7 @@ export default function SelectionPanel() {
             title: "Proveedores",
             description: "Gestión de contactos comerciales",
             icon: <Truck size={32} />,
-            href: "#",
+            href: "/dashboard/suppliers",
             color: "bg-blue-600",
             hoverColor: "hover:bg-blue-700",
             lightColor: "bg-blue-50",
@@ -55,12 +55,12 @@ export default function SelectionPanel() {
             title: "Movimientos",
             description: "Historial de entradas y salidas",
             icon: <ArrowLeftRight size={32} />,
-            href: "#",
+            href: "/dashboard/suppliers/orders",
             color: "bg-red-500",
             hoverColor: "hover:bg-red-600",
             lightColor: "bg-red-100",
             textColor: "text-red-700",
-            label: "ETC"
+            label: "PEDIDOS"
         },
         {
             title: "Empleados",
