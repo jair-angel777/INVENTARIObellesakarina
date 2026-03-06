@@ -10,7 +10,9 @@ import {
     BarChart3,
     Settings,
     LayoutDashboard,
-    LogOut
+    LogOut,
+    Users,
+    Truck
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -39,15 +41,15 @@ export default function SelectionPanel() {
             label: "ETC"
         },
         {
-            title: "Categorías",
-            description: "Organización de catálogo",
-            icon: <Layers size={32} />,
+            title: "Proveedores",
+            description: "Gestión de contactos comerciales",
+            icon: <Truck size={32} />,
             href: "#",
-            color: "bg-amber-400",
-            hoverColor: "hover:bg-amber-500",
-            lightColor: "bg-amber-100",
-            textColor: "text-amber-700",
-            label: "ETC"
+            color: "bg-blue-600",
+            hoverColor: "hover:bg-blue-700",
+            lightColor: "bg-blue-50",
+            textColor: "text-blue-700",
+            label: "NUEVO"
         },
         {
             title: "Movimientos",
@@ -59,6 +61,17 @@ export default function SelectionPanel() {
             lightColor: "bg-red-100",
             textColor: "text-red-700",
             label: "ETC"
+        },
+        {
+            title: "Empleados",
+            description: "Control de personal y accesos",
+            icon: <Users size={32} />,
+            href: "#",
+            color: "bg-indigo-600",
+            hoverColor: "hover:bg-indigo-700",
+            lightColor: "bg-indigo-50",
+            textColor: "text-indigo-700",
+            label: "NUEVO"
         },
         {
             title: "Reportes",
@@ -82,12 +95,23 @@ export default function SelectionPanel() {
             lightColor: "bg-[#F3EAD8]",
             textColor: "text-stone-700",
             label: "ETC"
+        },
+        {
+            title: "Categorías",
+            description: "Organización de catálogo",
+            icon: <Layers size={32} />,
+            href: "#",
+            color: "bg-emerald-600",
+            hoverColor: "hover:bg-emerald-700",
+            lightColor: "bg-emerald-50",
+            textColor: "text-emerald-700",
+            label: "MOVIDO"
         }
     ];
 
     return (
         <div className="min-h-screen bg-[#FDFBF7] p-4 md:p-8 selection:bg-orange-500/30">
-            <div className="max-w-6xl mx-auto space-y-12">
+            <div className="max-w-7xl mx-auto space-y-12">
                 {/* Header */}
                 <header className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
@@ -115,61 +139,53 @@ export default function SelectionPanel() {
                 </header>
 
                 {/* Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     {menuItems.map((item, index) => (
                         <Link
                             key={index}
                             href={item.href}
                             className={cn(
-                                "group relative overflow-hidden rounded-[2.5rem] border border-stone-200 bg-white p-8 transition-all hover:-translate-y-2 hover:shadow-2xl hover:shadow-orange-900/5",
-                                item.href === "#" ? "cursor-not-allowed opacity-80" : "active:scale-95"
+                                "group relative overflow-hidden rounded-[2rem] border border-stone-200 bg-white p-6 transition-all hover:-translate-y-2 hover:shadow-2xl hover:shadow-orange-900/5 h-full flex flex-col",
+                                item.href === "#" ? "cursor-not-allowed opacity-90" : "active:scale-95"
                             )}
                         >
-                            {/* Background Pattern Hint */}
                             <div className={cn(
                                 "absolute -right-8 -top-8 w-32 h-32 rounded-full blur-3xl opacity-0 group-hover:opacity-20 transition-opacity",
                                 item.color
                             )} />
 
                             <div className="relative z-10 flex flex-col h-full">
-                                <div className="flex justify-between items-start mb-6">
+                                <div className="flex justify-between items-start mb-4">
                                     <div className={cn(
-                                        "w-16 h-16 rounded-3xl flex items-center justify-center transition-all duration-500 group-hover:scale-110 group-hover:rotate-6 shadow-sm",
+                                        "w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-500 group-hover:scale-110 group-hover:rotate-6 shadow-sm",
                                         item.dark ? "bg-rose-900 text-white" : `${item.lightColor} ${item.textColor}`
                                     )}>
                                         {item.icon}
                                     </div>
                                     <span className={cn(
-                                        "px-4 py-1.5 rounded-full text-[10px] font-black tracking-[0.2em] transition-all",
+                                        "px-3 py-1 rounded-full text-[9px] font-black tracking-[0.15em] transition-all",
                                         item.dark
                                             ? "bg-rose-100 text-rose-900"
-                                            : `${item.color} text-white shadow-lg shadow-black/5`
+                                            : `${item.color} text-white shadow-md shadow-black/5`
                                     )}>
                                         {item.label}
                                     </span>
                                 </div>
 
                                 <div className="mt-auto">
-                                    <h3 className="text-2xl font-bold text-stone-900 mb-2 group-hover:text-orange-600 transition-colors">
+                                    <h3 className="text-xl font-bold text-stone-900 mb-1 group-hover:text-orange-600 transition-colors">
                                         {item.title}
                                     </h3>
-                                    <p className="text-stone-500 text-sm font-medium leading-relaxed">
+                                    <p className="text-stone-500 text-xs font-medium leading-relaxed">
                                         {item.description}
                                     </p>
                                 </div>
 
-                                {/* Arrow Indication */}
-                                <div className="mt-8 flex items-center gap-2 text-stone-300 group-hover:text-orange-500 group-hover:translate-x-2 transition-all">
-                                    <div className="h-px w-12 bg-current" />
-                                    <span className="text-xs font-bold uppercase tracking-widest">Abrir</span>
+                                <div className="mt-6 flex items-center gap-2 text-stone-300 group-hover:text-orange-500 group-hover:translate-x-2 transition-all">
+                                    <div className="h-px w-8 bg-current" />
+                                    <span className="text-[10px] font-bold uppercase tracking-widest">Abrir</span>
                                 </div>
                             </div>
-
-                            {/* Decorative Corner Element */}
-                            <div className={cn(
-                                "absolute bottom-0 right-0 w-24 h-24 translate-x-12 translate-y-12 rounded-full opacity-5 transition-transform duration-700 group-hover:scale-150 group-hover:-translate-x-0 group-hover:-translate-y-0",
-                                item.color
-                            )} />
                         </Link>
                     ))}
                 </div>
@@ -183,15 +199,6 @@ export default function SelectionPanel() {
                     </div>
                 </footer>
             </div>
-
-            {/* Global Aesthetics */}
-            <style jsx global>{`
-                @keyframes float {
-                    0% { transform: translateY(0px); }
-                    50% { transform: translateY(-10px); }
-                    100% { transform: translateY(0px); }
-                }
-            `}</style>
         </div>
     );
 }
