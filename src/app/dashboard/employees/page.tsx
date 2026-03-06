@@ -65,7 +65,9 @@ export default function EmployeesPage() {
     const [empForm, setEmpForm] = useState({ nombre: '', dni: '', cargo: '', telefono: '', email: '' });
     const [userForm, setUserForm] = useState({ username: '', password: '', rol: 'EMPLEADO', empleado_id: '' });
 
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://backen-inventario.vercel.app';
+    // Normalización de la URL de API para evitar duplicados como /api/api/
+    const rawUrl = process.env.NEXT_PUBLIC_API_URL || 'https://backen-inventario.vercel.app';
+    const API_URL = rawUrl.endsWith('/api') ? rawUrl : `${rawUrl.replace(/\/$/, '')}/api`;
 
     useEffect(() => {
         fetchData();
@@ -74,7 +76,7 @@ export default function EmployeesPage() {
     const fetchData = async () => {
         setLoading(true);
         try {
-            const endpoint = activeTab === 'employees' ? '/api/employees' : '/api/users';
+            const endpoint = activeTab === 'employees' ? '/employees' : '/users';
             const res = await fetch(`${API_URL}${endpoint}`);
             const data = await res.json();
             if (activeTab === 'employees') setEmployees(Array.isArray(data) ? data : []);
@@ -91,7 +93,7 @@ export default function EmployeesPage() {
         setSaving(true);
         setAlert(null);
         try {
-            const res = await fetch(`${API_URL}/api/employees`, {
+            const res = await fetch(`${API_URL}/employees`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(empForm)
@@ -132,7 +134,7 @@ export default function EmployeesPage() {
         };
 
         try {
-            const res = await fetch(`${API_URL}/api/users`, {
+            const res = await fetch(`${API_URL}/users`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
