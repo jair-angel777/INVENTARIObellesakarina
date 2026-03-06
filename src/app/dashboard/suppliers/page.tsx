@@ -29,21 +29,65 @@ export default function SuppliersPage() {
     const [suppliers, setSuppliers] = useState<Supplier[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
+    const [showModal, setShowModal] = useState(false);
+    const [saving, setSaving] = useState(false);
+    const [alert, setAlert] = useState<{ type: 'success' | 'error', message: string } | null>(null);
+    const [form, setForm] = useState({
+        nombre: "",
+        email: "",
+        telefono: "",
+        direccion: "",
+        categoria: ""
+    });
+
+    // Normalización de la URL de API v3.6
+    const rawUrl = process.env.NEXT_PUBLIC_API_URL || 'https://backen-inventario.vercel.app';
+    const API_URL = rawUrl.endsWith('/api') ? rawUrl : `${rawUrl.replace(/\/$/, '')}/api`;
 
     useEffect(() => {
         fetchSuppliers();
     }, []);
 
     const fetchSuppliers = async () => {
+        setLoading(true);
         try {
-            const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
-            const res = await fetch(`${apiUrl}/suppliers`);
+            const res = await fetch(`${API_URL}/suppliers`);
             const data = await res.json();
             setSuppliers(Array.isArray(data) ? data : []);
         } catch (error) {
-            console.error("Error:", error);
+            console.error("Error fetching suppliers:", error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleCreateSupplier = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setSaving(true);
+        setAlert(null);
+        try {
+            const res = await fetch(`${API_URL}/suppliers`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(form)
+            });
+
+            if (res.ok) {
+                setAlert({ type: 'success', message: '¡Proveedor registrado con éxito!' });
+                setForm({ nombre: "", email: "", telefono: "", direccion: "", categoria: "" });
+                setTimeout(() => {
+                    setShowModal(false);
+                    setAlert(null);
+                }, 1500);
+                fetchSuppliers();
+            } else {
+                const data = await res.json();
+                setAlert({ type: 'error', message: data.error || 'Error al guardar' });
+            }
+        } catch (error) {
+            setAlert({ type: 'error', message: 'Falla de conexión' });
+        } finally {
+            setSaving(false);
         }
     };
 
@@ -159,7 +203,10 @@ export default function SuppliersPage() {
                         ))}
 
                         {/* Card para añadir nuevo */}
-                        <button className="border-2 border-dashed border-stone-200 rounded-[3rem] p-8 flex flex-col items-center justify-center text-stone-300 hover:border-blue-400 hover:text-blue-500 transition-all hover:bg-blue-50/30 group min-h-[300px]">
+                        <button
+                            onClick={() => setShowModal(true)}
+                            className="border-2 border-dashed border-stone-200 rounded-[3rem] p-8 flex flex-col items-center justify-center text-stone-300 hover:border-blue-400 hover:text-blue-500 transition-all hover:bg-blue-50/30 group min-h-[300px]"
+                        >
                             <div className="w-16 h-16 rounded-full border-2 border-current flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                                 <Plus size={32} />
                             </div>
@@ -168,6 +215,97 @@ export default function SuppliersPage() {
                     </div>
                 )}
             </div>
+
+            {/* Modal de Creación */}
+            {showModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+                    <div className="bg-white w-full max-w-lg rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 border border-stone-100">
+                        <div className="bg-blue-600 p-8 text-white relative">
+                            <button
+                                onClick={() => setShowModal(false)}
+                                className="absolute top-6 right-6 hover:rotate-90 transition-transform"
+                            >
+                                <Plus className="rotate-45" size={24} />
+                            </button>
+                            <h2 className="text-3xl font-black italic uppercase tracking-tighter">Registrar Proveedor</h2>
+                            <p className="text-blue-100 text-[10px] font-bold uppercase tracking-widest mt-1">Nuevo Contacto Comercial</p>
+                        </div>
+
+                        <form onSubmit={handleCreateSupplier} className="p-8 space-y-5">
+                            {alert && (
+                                <div className={`p-4 rounded-2xl text-xs font-black uppercase tracking-widest flex items-center gap-3 animate-bounce ${alert.type === 'success' ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>
+                                    <div className={`w-2 h-2 rounded-full ${alert.type === 'success' ? 'bg-green-500' : 'bg-red-500'}`} />
+                                    {alert.message}
+                                </div>
+                            )}
+
+                            <div className="space-y-4">
+                                <div className="grid grid-cols-1 gap-4">
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-black text-stone-400 uppercase tracking-widest ml-1">Nombre Comercial</label>
+                                        <input
+                                            required
+                                            className="w-full bg-stone-50 border border-stone-100 rounded-xl py-3 px-4 focus:outline-none focus:border-blue-500 transition-colors font-bold text-sm"
+                                            placeholder="Ej: Inversiones Karinas S.A.C"
+                                            value={form.nombre}
+                                            onChange={(e) => setForm({ ...form, nombre: e.target.value })}
+                                        />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] font-black text-stone-400 uppercase tracking-widest ml-1">Categoría</label>
+                                            <input
+                                                className="w-full bg-stone-50 border border-stone-100 rounded-xl py-3 px-4 focus:outline-none focus:border-blue-500 transition-colors font-bold text-sm text-blue-600"
+                                                placeholder="Ej: Calzado"
+                                                value={form.categoria}
+                                                onChange={(e) => setForm({ ...form, categoria: e.target.value })}
+                                            />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] font-black text-stone-400 uppercase tracking-widest ml-1">Teléfono</label>
+                                            <input
+                                                className="w-full bg-stone-50 border border-stone-100 rounded-xl py-3 px-4 focus:outline-none focus:border-blue-500 transition-colors font-bold text-sm"
+                                                placeholder="987 654 321"
+                                                value={form.telefono}
+                                                onChange={(e) => setForm({ ...form, telefono: e.target.value })}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-black text-stone-400 uppercase tracking-widest ml-1">Correo Electrónico</label>
+                                        <input
+                                            type="email"
+                                            className="w-full bg-stone-50 border border-stone-100 rounded-xl py-3 px-4 focus:outline-none focus:border-blue-500 transition-colors font-bold text-sm"
+                                            placeholder="contacto@proveedor.com"
+                                            value={form.email}
+                                            onChange={(e) => setForm({ ...form, email: e.target.value })}
+                                        />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-black text-stone-400 uppercase tracking-widest ml-1">Dirección Física</label>
+                                        <input
+                                            className="w-full bg-stone-50 border border-stone-100 rounded-xl py-3 px-4 focus:outline-none focus:border-blue-500 transition-colors font-bold text-sm"
+                                            placeholder="Av. Principal 123, Lima"
+                                            value={form.direccion}
+                                            onChange={(e) => setForm({ ...form, direccion: e.target.value })}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button
+                                disabled={saving}
+                                type="submit"
+                                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-2xl font-black uppercase italic tracking-tighter transition-all hover:scale-[1.02] active:scale-95 shadow-xl shadow-blue-500/20 disabled:opacity-50 mt-4 h-14 flex items-center justify-center"
+                            >
+                                {saving ? (
+                                    <div className="w-6 h-6 border-4 border-white/30 border-t-white rounded-full animate-spin" />
+                                ) : "Guardar Proveedor"}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
