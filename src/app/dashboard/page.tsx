@@ -66,7 +66,7 @@ export default function SelectionPanel() {
             title: "Empleados",
             description: "Control de personal y accesos",
             icon: <Users size={32} />,
-            href: "#",
+            href: "/dashboard/employees",
             color: "bg-indigo-600",
             hoverColor: "hover:bg-indigo-700",
             lightColor: "bg-indigo-50",
