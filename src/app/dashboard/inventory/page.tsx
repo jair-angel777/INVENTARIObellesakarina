@@ -12,7 +12,8 @@ import {
     Edit,
     MoreVertical,
     ChevronRight,
-    Filter
+    Filter,
+    ArrowLeft
 } from "lucide-react";
 import { formatCurrency, cn } from "@/lib/utils";
 
@@ -78,6 +79,13 @@ export default function InventoryDashboard() {
             <div className="max-w-7xl mx-auto space-y-8">
                 <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
+                        <Link
+                            href="/dashboard"
+                            className="inline-flex items-center gap-2 text-orange-600 hover:text-orange-700 text-sm font-bold mb-3 px-3 py-1.5 bg-orange-50 hover:bg-orange-100 rounded-lg transition-all group"
+                        >
+                            <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
+                            Regresar al Panel
+                        </Link>
                         <h1 className="text-3xl font-bold bg-gradient-to-r from-orange-600 to-orange-400 bg-clip-text text-transparent">
                             BellesasKarina
                         </h1>
