@@ -58,6 +58,9 @@ export default function EmployeesPage() {
     const [showUserModal, setShowUserModal] = useState(false);
     const [saving, setSaving] = useState(false);
 
+    // Notifications state
+    const [alert, setAlert] = useState<{ type: 'success' | 'error', message: string } | null>(null);
+
     // Form states
     const [empForm, setEmpForm] = useState({ nombre: '', dni: '', cargo: '', telefono: '', email: '' });
     const [userForm, setUserForm] = useState({ username: '', password: '', rol: 'EMPLEADO', empleado_id: '' });
@@ -86,19 +89,27 @@ export default function EmployeesPage() {
     const handleCreateEmployee = async (e: React.FormEvent) => {
         e.preventDefault();
         setSaving(true);
+        setAlert(null);
         try {
             const res = await fetch(`${API_URL}/api/employees`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(empForm)
             });
+
+            const data = await res.json();
+
             if (res.ok) {
-                setShowEmpModal(false);
+                setAlert({ type: 'success', message: '¡Empleado registrado con éxito!' });
                 setEmpForm({ nombre: '', dni: '', cargo: '', telefono: '', email: '' });
+                setTimeout(() => setShowEmpModal(false), 1500);
                 fetchData();
+            } else {
+                setAlert({ type: 'error', message: data.error || 'Error al guardar empleado' });
             }
         } catch (error) {
             console.error('Error:', error);
+            setAlert({ type: 'error', message: 'Error de conexión con el servidor' });
         } finally {
             setSaving(false);
         }
@@ -107,19 +118,27 @@ export default function EmployeesPage() {
     const handleCreateUser = async (e: React.FormEvent) => {
         e.preventDefault();
         setSaving(true);
+        setAlert(null);
         try {
             const res = await fetch(`${API_URL}/api/users`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(userForm)
             });
+
+            const data = await res.json();
+
             if (res.ok) {
-                setShowUserModal(false);
+                setAlert({ type: 'success', message: '¡Acceso habilitado correctamente!' });
                 setUserForm({ username: '', password: '', rol: 'EMPLEADO', empleado_id: '' });
+                setTimeout(() => setShowUserModal(false), 1500);
                 fetchData();
+            } else {
+                setAlert({ type: 'error', message: data.error || 'Error al crear usuario' });
             }
         } catch (error) {
             console.error('Error:', error);
+            setAlert({ type: 'error', message: 'Error de conexión con el servidor' });
         } finally {
             setSaving(false);
         }
@@ -401,6 +420,12 @@ export default function EmployeesPage() {
                             </button>
                         </div>
                         <form onSubmit={handleCreateEmployee} className="p-10 space-y-6">
+                            {alert && (
+                                <div className={`p-4 rounded-2xl flex items-center gap-4 animate-in fade-in zoom-in-95 duration-200 ${alert.type === 'success' ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}`}>
+                                    {alert.type === 'success' ? <CheckCircle2 size={20} /> : <XCircle size={20} />}
+                                    <span className="text-xs font-black uppercase tracking-widest">{alert.message}</span>
+                                </div>
+                            )}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-black uppercase tracking-widest text-stone-400 pl-4">Nombre Completo</label>
@@ -445,6 +470,12 @@ export default function EmployeesPage() {
                             </button>
                         </div>
                         <form onSubmit={handleCreateUser} className="p-10 space-y-6">
+                            {alert && (
+                                <div className={`p-4 rounded-2xl flex items-center gap-4 animate-in fade-in zoom-in-95 duration-200 ${alert.type === 'success' ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}`}>
+                                    {alert.type === 'success' ? <CheckCircle2 size={20} /> : <XCircle size={20} />}
+                                    <span className="text-xs font-black uppercase tracking-widest">{alert.message}</span>
+                                </div>
+                            )}
                             <div className="space-y-2">
                                 <label className="text-[10px] font-black uppercase tracking-widest text-stone-400 pl-4">Nombre de Usuario</label>
                                 <div className="relative">
