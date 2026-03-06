@@ -55,6 +55,26 @@ export default function OrdersHistoryPage() {
         }
     };
 
+    const handleUpdateStatus = async (orderId: string, newStatus: string) => {
+        try {
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
+            const res = await fetch(`${apiUrl}/orders/${orderId}/status`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ estado: newStatus })
+            });
+
+            if (res.ok) {
+                // Actualizar lista local
+                setOrders(orders.map(o => o.id === orderId ? { ...o, estado: newStatus } : o));
+            } else {
+                alert("Error al actualizar el estado");
+            }
+        } catch (error) {
+            console.error("Error updating status:", error);
+        }
+    };
+
     return (
         <div className="min-h-screen bg-[#FDFBF7] p-4 md:p-8">
             <div className="max-w-7xl mx-auto space-y-10">
@@ -181,13 +201,24 @@ export default function OrdersHistoryPage() {
                                                         : 'bg-orange-50 text-orange-600'
                                                     }`}>
                                                     <div className={`w-1 h-1 rounded-full ${order.estado === 'COMPLETADO' ? 'bg-emerald-500' : 'bg-orange-500'}`} />
-                                                    {order.estado}
+                                                    {order.estado === 'COMPLETADO' ? 'RECIBIDO' : 'PENDIENTE'}
                                                 </span>
                                             </td>
                                             <td className="px-8 py-6 text-right">
-                                                <button className="bg-stone-100 hover:bg-stone-900 hover:text-white p-3 rounded-xl transition-all group-hover:scale-105 active:scale-95">
-                                                    <ArrowUpRight size={18} />
-                                                </button>
+                                                <div className="flex items-center justify-end gap-2">
+                                                    {order.estado === 'PENDIENTE' && (
+                                                        <button
+                                                            onClick={() => handleUpdateStatus(order.id, 'COMPLETADO')}
+                                                            className="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all hover:scale-105 active:scale-95 flex items-center gap-2 shadow-lg shadow-emerald-500/20"
+                                                        >
+                                                            <CheckCircle2 size={12} />
+                                                            Recibido
+                                                        </button>
+                                                    )}
+                                                    <button className="bg-stone-100 hover:bg-stone-900 hover:text-white p-3 rounded-xl transition-all group-hover:scale-105 active:scale-95">
+                                                        <ArrowUpRight size={18} />
+                                                    </button>
+                                                </div>
                                             </td>
                                         </tr>
                                     ))
