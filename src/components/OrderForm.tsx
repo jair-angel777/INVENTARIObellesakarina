@@ -158,7 +158,7 @@ export function OrderForm() {
             }
         } catch (error) {
             console.error("Error saving order:", error);
-            alert("Error de conexi\u00f3n");
+            alert("Error de conexión");
         } finally {
             setSaving(false);
         }
@@ -170,7 +170,7 @@ export function OrderForm() {
         <div className="max-w-5xl mx-auto space-y-6">
             {/* FORCE UPDATE BANNER v2.0 */}
             <div className="bg-blue-600 text-white p-3 rounded-2xl text-center font-black text-[10px] uppercase tracking-[0.4em] shadow-lg shadow-blue-500/10">
-                Sistema Profesional v2.0 / Localizaci\u00f3n IGV Per\u00fa Activa
+                Sistema Profesional v2.0 / Localización IGV Perú Activa
             </div>
 
             {/* Indicador de Pasos */}
@@ -186,335 +186,334 @@ export function OrderForm() {
                         {num < 3 && <div className={`hidden md:block absolute left-14 top-6 h-0.5 w-40 -z-10 rounded-full transition-colors duration-500 ${step > num ? 'bg-blue-600' : 'bg-stone-100'}`} />}
                     </div>
                 ))}
-            </div >
+            </div>
 
-            < div className="transition-all duration-500 transform" >
-                {step === 1 \u0026\u0026(
-                \u003cdiv className = "bg-white p-8 md:p-12 rounded-[3.5rem] border border-blue-100 shadow-xl space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 backdrop-blur-sm bg-white/80"\u003e
-                \u003cSectionHeader icon = { \u003cUsers size={24} /\u003e } title = "Selecci\u00f3n de Proveedor" subtitle = "Define a qui\u00e9n se le realiza la solicitud" /\u003e"
+            <div className="transition-all duration-500 transform">
+                {step === 1 && (
+                    <div className="bg-white p-8 md:p-12 rounded-[3.5rem] border border-blue-100 shadow-xl space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 backdrop-blur-sm bg-white/80">
+                        <SectionHeader icon={<Users size={24} />} title="Selección de Proveedor" subtitle="Define a quién se le realiza la solicitud" />
 
-                \u003cdiv className = "grid grid-cols-1 md:grid-cols-2 gap-8"\u003e
-                \u003cdiv className = "space-y-3"\u003e
-                \u003clabel className = "text-xs font-black text-stone-400 uppercase tracking-widest ml-1"\u003eElegir Proveedor\u003c / label\u003e
-                \u003cdiv className = "relative"\u003e
-                \u003cselect
-                className = "w-full bg-stone-50 border border-stone-200 rounded-[2rem] py-4 px-6 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 text-stone-800 font-bold appearance-none cursor-pointer transition-all"
-                value = {selectedSupplierId}
-                onChange = {(e) => { setSelectedSupplierId(e.target.value); setOrderItems([]); }}
-                \u003e
-                \u003coption value = ""\u003e-- Buscar Proveedor--\u003c / option\u003e
-                {suppliers.map(s =\u003e \u003coption key = {s.id} value = {s.id}\u003e{s.nombre}\u003c / option\u003e) }
-                \u003c / select\u003e
-                \u003cChevronDown className = "absolute right-6 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" size = {24} /\u003e
-                \u003c / div\u003e
-                \u003c / div\u003e
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div className="space-y-3">
+                                <label className="text-xs font-black text-stone-400 uppercase tracking-widest ml-1">Elegir Proveedor</label>
+                                <div className="relative">
+                                    <select
+                                        className="w-full bg-stone-50 border border-stone-200 rounded-[2rem] py-4 px-6 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 text-stone-800 font-bold appearance-none cursor-pointer transition-all"
+                                        value={selectedSupplierId}
+                                        onChange={(e) => { setSelectedSupplierId(e.target.value); setOrderItems([]); }}
+                                    >
+                                        <option value="">-- Buscar Proveedor --</option>
+                                        {suppliers.map(s => <option key={s.id} value={s.id}>{s.nombre}</option>)}
+                                    </select>
+                                    <ChevronDown className="absolute right-6 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" size={24} />
+                                </div>
+                            </div>
 
-                \u003cdiv className = "space-y-3"\u003e
-                \u003clabel className = "text-xs font-black text-stone-400 uppercase tracking-widest ml-1"\u003eImpuesto a las Ventas(IGV %) \u003c / label\u003e
-                \u003cdiv className = "relative group"\u003e
-                \u003cinput
-                type = "number"
-                className = "w-full bg-stone-50 border border-stone-200 rounded-[2rem] py-4 px-6 text-stone-800 font-bold focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all"
-                value = {igvPercent}
-                onChange = {(e) => setIgvPercent(parseFloat(e.target.value) || 0)}
-                /\u003e
-                \u003cspan className = "absolute right-6 top-1/2 -translate-y-1/2 font-black text-blue-600"\u003e %\u003c / span\u003e
-                \u003c / div\u003e
-                \u003c / div\u003e
-                \u003c / div\u003e
+                            <div className="space-y-3">
+                                <label className="text-xs font-black text-stone-400 uppercase tracking-widest ml-1">Impuesto a las Ventas (IGV %)</label>
+                                <div className="relative group">
+                                    <input
+                                        type="number"
+                                        className="w-full bg-stone-50 border border-stone-200 rounded-[2rem] py-4 px-6 text-stone-800 font-bold focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all"
+                                        value={igvPercent}
+                                        onChange={(e) => setIgvPercent(parseFloat(e.target.value) || 0)}
+                                    />
+                                    <span className="absolute right-6 top-1/2 -translate-y-1/2 font-black text-blue-600">%</span>
+                                </div>
+                            </div>
+                        </div>
 
-                {
-                    selectedSupplierId \u0026\u0026(
-                \u003cdiv className = "flex justify-end pt-4"\u003e
-                \u003cbutton
-                onClick = {() =\u003e setStep(2)}
-                className = "flex items-center gap-3 bg-stone-900 hover:bg-black text-white px-10 py-5 rounded-[2rem] font-black uppercase italic tracking-tighter transition-all hover:scale-105 active:scale-95 shadow-xl shadow-stone-900/10 group"
-                \u003e
-                Abrir Cat\u00e1logo
-                \u003cChevronRight size = {24} className = "group-hover:translate-x-1 transition-transform" /\u003e
-                \u003c / button\u003e
-                \u003c / div\u003e
+                        {selectedSupplierId && (
+                            <div className="flex justify-end pt-4">
+                                <button
+                                    onClick={() => setStep(2)}
+                                    className="flex items-center gap-3 bg-stone-900 hover:bg-black text-white px-10 py-5 rounded-[2rem] font-black uppercase italic tracking-tighter transition-all hover:scale-105 active:scale-95 shadow-xl shadow-stone-900/10 group"
+                                >
+                                    Abrir Catálogo
+                                    <ChevronRight size={24} className="group-hover:translate-x-1 transition-transform" />
+                                </button>
+                            </div>
                         )}
-                \u003c / div\u003e
+                    </div>
                 )}
 
-                {
-                    step === 2 \u0026\u0026(
-                \u003cdiv className = "grid grid-cols-1 lg:grid-cols-10 gap-8 animate-in slide-in-from-right-4 duration-500"\u003e
-                {/* Selector de Items */}
-                \u003cdiv className = "lg:col-span-4 bg-white p-6 rounded-[3rem] border border-stone-100 shadow-sm flex flex-col h-[650px]"\u003e
-                \u003cSectionHeader icon = { \u003cShoppingBag size={20} /\u003e } title = "Cat\u00e1logo" subtitle = "Vincular productos" /\u003e
+                {step === 2 && (
+                    <div className="grid grid-cols-1 lg:grid-cols-10 gap-8 animate-in slide-in-from-right-4 duration-500">
+                        {/* Selector de Items */}
+                        <div className="lg:col-span-4 bg-white p-6 rounded-[3rem] border border-stone-100 shadow-sm flex flex-col h-[650px]">
+                            <SectionHeader icon={<ShoppingBag size={20} />} title="Catálogo" subtitle="Vincular productos" />
 
-                \u003cdiv className = "relative my-4"\u003e
-                \u003cSearch className = "absolute left-4 top-1/2 -translate-y-1/2 text-stone-400" size = {18} /\u003e
-                \u003cinput
-                type = "text"
-                placeholder = "Buscar producto por nombre..."
-                className = "w-full bg-stone-100/50 border-none rounded-2xl py-3 pl-12 pr-4 text-sm font-bold focus:ring-2 focus:ring-blue-500/20"
-                value = {searchTerm}
-                onChange = {(e) =\u003e setSearchTerm(e.target.value)}
-                /\u003e
-                \u003c / div\u003e
+                            <div className="relative my-4">
+                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400" size={18} />
+                                <input
+                                    type="text"
+                                    placeholder="Buscar producto por nombre..."
+                                    className="w-full bg-stone-100/50 border-none rounded-2xl py-3 pl-12 pr-4 text-sm font-bold focus:ring-2 focus:ring-blue-500/20"
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                />
+                            </div>
 
-                \u003cdiv className = "flex-1 overflow-y-auto pr-2 space-y-3 scrollbar-hide"\u003e
-                {
-                    availableProducts.length === 0 ? (
-                \u003cdiv className = "flex flex-col items-center justify-center p-12 text-center opacity-40 grayscale space-y-2 border-2 border-dashed border-stone-200 rounded-[2.5rem]"\u003e
-                \u003cPackage size = {40} /\u003e
-                \u003cp className = "text-[10px] font-black uppercase"\u003eNo hay productos disponibles\u003c / p\u003e
-                \u003c / div\u003e
-                ) : (
-                availableProducts.map(product =\u003e(
-                \u003cdiv key = {product.id} className = "group bg-stone-50 hover:bg-white hover:shadow-lg hover:shadow-blue-500/5 p-4 rounded-3xl border border-stone-100 transition-all flex items-center justify-between"\u003e
-                \u003cdiv\u003e
-                \u003ch4 className = "font-black text-stone-900 text-sm uppercase tracking-tight"\u003e{product.nombre}\u003c / h4\u003e
-                \u003cp className = "text-[10px] font-bold text-stone-400"\u003eCosto: ${product.costo || product.precio}\u003c / p\u003e
-                \u003c / div\u003e
-                \u003cbutton
-                onClick = {() =\u003e addItem(product.id)}
-                className = "bg-white border border-stone-200 p-2 rounded-2xl text-stone-400 hover:text-blue-600 hover:border-blue-500 transition-all shadow-sm"
-                \u003e
-                \u003cPlus size = {20} /\u003e
-                \u003c / button\u003e
-                \u003c / div\u003e
-                ))
+                            <div className="flex-1 overflow-y-auto pr-2 space-y-3 scrollbar-hide">
+                                {availableProducts.length === 0 ? (
+                                    <div className="flex flex-col items-center justify-center p-12 text-center opacity-40 grayscale space-y-2 border-2 border-dashed border-stone-200 rounded-[2.5rem]">
+                                        <Package size={40} />
+                                        <p className="text-[10px] font-black uppercase">No hay productos disponibles</p>
+                                    </div>
+                                ) : (
+                                    availableProducts.map(product => (
+                                        <div key={product.id} className="group bg-stone-50 hover:bg-white hover:shadow-lg hover:shadow-blue-500/5 p-4 rounded-3xl border border-stone-100 transition-all flex items-center justify-between">
+                                            <div>
+                                                <h4 className="font-black text-stone-900 text-sm uppercase tracking-tight">{product.nombre}</h4>
+                                                <p className="text-[10px] font-bold text-stone-400">Costo: ${product.costo || product.precio}</p>
+                                            </div>
+                                            <button
+                                                onClick={() => addItem(product.id)}
+                                                className="bg-white border border-stone-200 p-2 rounded-2xl text-stone-400 hover:text-blue-600 hover:border-blue-500 transition-all shadow-sm"
+                                            >
+                                                <Plus size={20} />
+                                            </button>
+                                        </div>
+                                    ))
                                 )}
-                \u003c / div\u003e
-                \u003c / div\u003e
+                            </div>
+                        </div>
 
-                {/* Listado de Pedido */}
-                \u003cdiv className = "lg:col-span-6 bg-white p-8 md:p-10 rounded-[3.5rem] border border-stone-100 shadow-xl flex flex-col h-[650px] relative"\u003e
-                \u003cSectionHeader icon = { \u003cFileText size={20} /\u003e } title = "Lista de Pedido" subtitle = {`${orderItems.length} items seleccionados`} /\u003e
+                        {/* Listado de Pedido */}
+                        <div className="lg:col-span-6 bg-white p-8 md:p-10 rounded-[3.5rem] border border-stone-100 shadow-xl flex flex-col h-[650px] relative">
+                            <SectionHeader icon={<FileText size={20} />} title="Lista de Pedido" subtitle={`${orderItems.length} items seleccionados`} />
 
-                \u003cdiv className = "flex-1 overflow-y-auto my-6 space-y-4 pr-2"\u003e
-                {
-                    orderItems.length === 0 ? (
-                \u003cdiv className = "flex flex-col items-center justify-center h-full text-stone-300 space-y-4 opacity-50"\u003e
-                \u003cShoppingBag size = {64} /\u003e
-                \u003cp className = "font-black uppercase text-[10px] tracking-[0.2em]"\u003eEl pedido est\u00e1 vac\u00edo\u003c / p\u003e
-                \u003c / div\u003e
-                ) : (
-                \u003ctable className = "w-full text-left"\u003e
-                \u003cthead\u003e
-                \u003ctr className = "text-[10px] font-black text-stone-400 uppercase tracking-widest border-b border-stone-100"\u003e
-                \u003cth className = "pb-4"\u003eProducto\u003c / th\u003e
-                \u003cth className = "pb-4 text-center"\u003eCant.\u003c / th\u003e
-                \u003cth className = "pb-4 text-right"\u003eSubtotal\u003c / th\u003e
-                \u003cth className = "pb-4 text-right"\u003e\u003c / th\u003e
-                \u003c / tr\u003e
-                \u003c / thead\u003e
-                \u003ctbody className = "divide-y divide-stone-50"\u003e
-                {
-                    orderItems.map(item =\u003e(
-                \u003cOrderRow key = {item.productId} item = {item} onUpdate = {(qty) =\u003e updateQty(item.productId, qty)} onRemove = {() =\u003e removeItem(item.productId)
-} /\u003e
+                            <div className="flex-1 overflow-y-auto my-6 space-y-4 pr-2">
+                                {orderItems.length === 0 ? (
+                                    <div className="flex flex-col items-center justify-center h-full text-stone-300 space-y-4 opacity-50">
+                                        <ShoppingBag size={64} />
+                                        <p className="font-black uppercase text-[10px] tracking-[0.2em]">El pedido está vacío</p>
+                                    </div>
+                                ) : (
+                                    <table className="w-full text-left">
+                                        <thead>
+                                            <tr className="text-[10px] font-black text-stone-400 uppercase tracking-widest border-b border-stone-100">
+                                                <th className="pb-4">Producto</th>
+                                                <th className="pb-4 text-center">Cant.</th>
+                                                <th className="pb-4 text-right">Subtotal</th>
+                                                <th className="pb-4 text-right"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-stone-50">
+                                            {orderItems.map(item => (
+                                                <OrderRow
+                                                    key={item.productId}
+                                                    item={item}
+                                                    onUpdate={(qty) => updateQty(item.productId, qty)}
+                                                    onRemove={() => removeItem(item.productId)}
+                                                />
                                             ))}
-                \u003c / tbody\u003e
-                \u003c / table\u003e
+                                        </tbody>
+                                    </table>
                                 )}
-                \u003c / div\u003e
+                            </div>
 
-                \u003cdiv className = "pt-6 border-t border-stone-100 flex flex-col md:flex-row justify-between items-center gap-6"\u003e
-                \u003cdiv\u003e
-                \u003cp className = "text-[10px] font-black text-stone-400 uppercase tracking-widest mb-1"\u003eTotal Estimado\u003c / p\u003e
-                \u003cp className = "text-4xl font-black text-stone-900 italic tracking-tighter shadow-blue-500/10"\u003e
-                ${total.toFixed(2)}
-                \u003c / p\u003e
-                \u003c / div\u003e
+                            <div className="pt-6 border-t border-stone-100 flex flex-col md:flex-row justify-between items-center gap-6">
+                                <div>
+                                    <p className="text-[10px] font-black text-stone-400 uppercase tracking-widest mb-1">Total Estimado</p>
+                                    <p className="text-4xl font-black text-stone-900 italic tracking-tighter shadow-blue-500/10">
+                                        ${total.toFixed(2)}
+                                    </p>
+                                </div>
 
-                \u003cdiv className = "flex gap-4"\u003e
-                \u003cbutton
-                onClick = {() =\u003e setStep(1)}
-                className = "bg-stone-100 hover:bg-stone-200 text-stone-600 p-5 rounded-2xl flex items-center justify-center transition-all group"
-                \u003e
-                \u003cChevronLeft size = {24} className = "group-hover:-translate-x-1 transition-transform" /\u003e
-                \u003c / button\u003e
-                \u003cbutton
-                disabled = {orderItems.length === 0}
-                onClick = {() =\u003e setStep(3)}
-                className = "bg-blue-600 hover:bg-blue-700 disabled:opacity-30 disabled:grayscale text-white px-10 py-5 rounded-[2rem] font-black uppercase italic tracking-tighter transition-all hover:scale-105 active:scale-95 shadow-xl shadow-blue-500/20"
-                \u003e
-                Revisar Boleta IGV
-                \u003c / button\u003e
-                \u003c / div\u003e
-                \u003c / div\u003e
-                \u003c / div\u003e
-                \u003c / div\u003e
+                                <div className="flex gap-4">
+                                    <button
+                                        onClick={() => setStep(1)}
+                                        className="bg-stone-100 hover:bg-stone-200 text-stone-600 p-5 rounded-2xl flex items-center justify-center transition-all group"
+                                    >
+                                        <ChevronLeft size={24} className="group-hover:-translate-x-1 transition-transform" />
+                                    </button>
+                                    <button
+                                        disabled={orderItems.length === 0}
+                                        onClick={() => setStep(3)}
+                                        className="bg-blue-600 hover:bg-blue-700 disabled:opacity-30 disabled:grayscale text-white px-10 py-5 rounded-[2rem] font-black uppercase italic tracking-tighter transition-all hover:scale-105 active:scale-95 shadow-xl shadow-blue-500/20"
+                                    >
+                                        Revisar Boleta IGV
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 )}
 
-                {
-                    step === 3 \u0026\u0026(
-                \u003cdiv className = "grid grid-cols-1 lg:grid-cols-12 gap-8 animate-in slide-in-from-right-4 duration-500"\u003e
-                {/* Area de Observaciones */}
-                \u003cdiv className = "lg:col-span-4 bg-white p-8 rounded-[3.5rem] border border-blue-50 shadow-sm space-y-6"\u003e
-                \u003cSectionHeader icon = { \u003cInfo size={20} /\u003e } title = "Observaciones" subtitle = "A\u00f1ade notas extras" /\u003e
-                \u003ctextarea
-                className = "w-full bg-stone-50 border border-stone-100 rounded-3xl p-6 text-sm font-bold focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 min-h-[300px] transition-all resize-none"
-                placeholder = "Escribe aqu\u00ed detalles como: 'Prioridad alta', 'Faltan productos por confirmar', 'Entregar por la tarde'..."
-                value = {notes}
-                onChange = {(e) =\u003e setNotes(e.target.value)}
-                /\u003e
-                \u003cdiv className = "bg-blue-50 p-4 rounded-2xl flex gap-3 text-blue-600 border border-blue-100"\u003e
-                \u003cCheckCircle2 size = {24} className = "mt-1" /\u003e
-                \u003cp className = "text-[10px] font-bold uppercase leading-relaxed"\u003eEstas notas aparecer\u00e1n en tu historial de pedidos para mayor control operativo.\u003c / p\u003e
-                \u003c / div\u003e
-                \u003c / div\u003e
+                {step === 3 && (
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 animate-in slide-in-from-right-4 duration-500">
+                        {/* Area de Observaciones */}
+                        <div className="lg:col-span-4 bg-white p-8 rounded-[3.5rem] border border-blue-50 shadow-sm space-y-6">
+                            <SectionHeader icon={<Info size={20} />} title="Observaciones" subtitle="Añade notas extras" />
+                            <textarea
+                                className="w-full bg-stone-50 border border-stone-100 rounded-3xl p-6 text-sm font-bold focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 min-h-[300px] transition-all resize-none"
+                                placeholder="Escribe aquí detalles como: 'Prioridad alta', 'Faltan productos por confirmar', 'Entregar por la tarde'..."
+                                value={notes}
+                                onChange={(e) => setNotes(e.target.value)}
+                            />
+                            <div className="bg-blue-50 p-4 rounded-2xl flex gap-3 text-blue-600 border border-blue-100">
+                                <CheckCircle2 size={24} className="mt-1" />
+                                <p className="text-[10px] font-bold uppercase leading-relaxed">Estas notas aparecerán en tu historial de pedidos para mayor control operativo.</p>
+                            </div>
+                        </div>
 
-                {/* Pre-Visualizaci\u00f3n de Boleta IGV */}
-                \u003cdiv className = "lg:col-span-8 space-y-8 flex flex-col"\u003e
-                \u003cdiv className = "bg-white rounded-[4rem] border border-stone-100 shadow-2xl p-12 relative overflow-hidden flex-1"\u003e
-                {/* Diseño Visual de Boleta */}
-                \u003cdiv className = "absolute top-0 right-0 w-48 h-48 bg-blue-600/5 rounded-full -translate-y-1/2 translate-x-1/2" /\u003e
+                        {/* Pre-Visualización de Boleta IGV */}
+                        <div className="lg:col-span-8 space-y-8 flex flex-col">
+                            <div className="bg-white rounded-[4rem] border border-stone-100 shadow-2xl p-12 relative overflow-hidden flex-1">
+                                {/* Diseño Visual de Boleta */}
+                                <div className="absolute top-0 right-0 w-48 h-48 bg-blue-600/5 rounded-full -translate-y-1/2 translate-x-1/2" />
 
-                \u003cdiv className = "flex justify-between items-start mb-12"\u003e
-                \u003cdiv className = "space-y-1"\u003e
-                \u003ch3 className = "text-2xl font-black text-stone-900 italic uppercase tracking-tighter"\u003eBellesasKarina\u003c / h3\u003e
-                \u003cp className = "text-[10px] font-black text-stone-400 uppercase tracking-[0.2em]"\u003eBoleta de Venta / IGV Aplicado\u003c / p\u003e
-                \u003c / div\u003e
-                \u003cdiv className = "text-right"\u003e
-                \u003cp className = "text-[10px] font-black text-blue-600 uppercase tracking-widest mb-1"\u003eID Borrador\u003c / p\u003e
-                \u003cp className = "text-xs font-black text-stone-900"\u003e#ORD - {Math.floor(Math.random() * 10000)}\u003c / p\u003e
-                \u003c / div\u003e
-                \u003c / div\u003e
+                                <div className="flex justify-between items-start mb-12">
+                                    <div className="space-y-1">
+                                        <h3 className="text-2xl font-black text-stone-900 italic uppercase tracking-tighter">BellesasKarina</h3>
+                                        <p className="text-[10px] font-black text-stone-400 uppercase tracking-[0.2em]">Boleta de Venta / IGV Aplicado</p>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-1">ID Borrador</p>
+                                        <p className="text-xs font-black text-stone-900">#ORD-{Math.floor(Math.random() * 10000)}</p>
+                                    </div>
+                                </div>
 
-                \u003cdiv className = "grid grid-cols-2 gap-8 mb-12 pb-8 border-b border-stone-100"\u003e
-                \u003cdiv\u003e
-                \u003cp className = "text-[10px] font-black text-stone-400 uppercase tracking-widest mb-2"\u003eProveedor Destino\u003c / p\u003e
-                \u003cp className = "text-xl font-black text-stone-900 uppercase italic"\u003e{selectedSupplier?.nombre} \u003c / p\u003e
-                \u003cp className = "text-xs font-bold text-stone-400 mt-1"\u003e{selectedSupplier?.email || "Sin email registrado"} \u003c / p\u003e
-                \u003c / div\u003e
-                \u003cdiv className = "text-right"\u003e
-                \u003cp className = "text-[10px] font-black text-stone-400 uppercase tracking-widest mb-2"\u003eFecha Solicitud\u003c / p\u003e
-                \u003cp className = "text-xl font-black text-stone-900 italic"\u003e{new Date().toLocaleDateString()} \u003c / p\u003e
-                \u003c / div\u003e
-                \u003c / div\u003e
+                                <div className="grid grid-cols-2 gap-8 mb-12 pb-8 border-b border-stone-100">
+                                    <div>
+                                        <p className="text-[10px] font-black text-stone-400 uppercase tracking-widest mb-2">Proveedor Destino</p>
+                                        <p className="text-xl font-black text-stone-900 uppercase italic">{selectedSupplier?.nombre}</p>
+                                        <p className="text-xs font-bold text-stone-400 mt-1">{selectedSupplier?.email || "Sin email registrado"}</p>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-[10px] font-black text-stone-400 uppercase tracking-widest mb-2">Fecha Solicitud</p>
+                                        <p className="text-xl font-black text-stone-900 italic">{new Date().toLocaleDateString()}</p>
+                                    </div>
+                                </div>
 
-                \u003cdiv className = "space-y-4 mb-12"\u003e
-                {
-                    orderItems.map(item =\u003e(
-                \u003cdiv key = {item.productId} className = "flex justify-between items-center text-xs"\u003e
-                \u003cdiv className = "flex gap-4 items-center"\u003e
-                \u003cspan className = "w-8 h-8 rounded-lg bg-stone-50 flex items-center justify-center font-black text-blue-600"\u003e{item.cantidad}\u003c / span\u003e
-                \u003cspan className = "font-black text-stone-800 uppercase"\u003e{item.nombre}\u003c / span\u003e
-                \u003c / div\u003e
-                \u003cspan className = "font-black text-stone-900 tracking-tight"\u003e${(item.cantidad * item.costo).toFixed(2)} \u003c / span\u003e
-                \u003c / div\u003e
+                                <div className="space-y-4 mb-12">
+                                    {orderItems.map(item => (
+                                        <div key={item.productId} className="flex justify-between items-center text-xs">
+                                            <div className="flex gap-4 items-center">
+                                                <span className="w-8 h-8 rounded-lg bg-stone-50 flex items-center justify-center font-black text-blue-600">{item.cantidad}</span>
+                                                <span className="font-black text-stone-800 uppercase">{item.nombre}</span>
+                                            </div>
+                                            <span className="font-black text-stone-900 tracking-tight">${(item.cantidad * item.costo).toFixed(2)}</span>
+                                        </div>
                                     ))}
-                \u003c / div\u003e
+                                </div>
 
-                \u003cdiv className = "bg-stone-50 p-8 rounded-[2.5rem] space-y-3"\u003e
-                \u003cdiv className = "flex justify-between text-stone-400 font-bold text-xs uppercase tracking-widest"\u003e
-                \u003cspan\u003eSubtotal Neto\u003c / span\u003e
-                \u003cspan\u003e${subtotal.toFixed(2)} \u003c / span\u003e
-                \u003c / div\u003e
-                \u003cdiv className = "flex justify-between text-blue-600/70 font-bold text-xs uppercase italic tracking-widest"\u003e
-                \u003cspan\u003eImpuestos(IGV {igvPercent} %) \u003c / span\u003e
-                \u003cspan\u003e${igvValue.toFixed(2)} \u003c / span\u003e
-                \u003c / div\u003e
-                \u003cdiv className = "flex justify-between items-center pt-4"\u003e
-                \u003cspan className = "text-stone-900 font-black uppercase text-sm tracking-widest"\u003eTotal a Pagar\u003c / span\u003e
-                \u003cspan className = "text-3xl font-black text-stone-900 tracking-tighter italic"\u003e${total.toFixed(2)} \u003c / span\u003e
-                \u003c / div\u003e
-                \u003c / div\u003e
-                \u003c / div\u003e
+                                <div className="bg-stone-50 p-8 rounded-[2.5rem] space-y-3">
+                                    <div className="flex justify-between text-stone-400 font-bold text-xs uppercase tracking-widest">
+                                        <span>Subtotal Neto</span>
+                                        <span>${subtotal.toFixed(2)}</span>
+                                    </div>
+                                    <div className="flex justify-between text-blue-600/70 font-bold text-xs uppercase italic tracking-widest">
+                                        <span>Impuestos (IGV {igvPercent}%)</span>
+                                        <span>${igvValue.toFixed(2)}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center pt-4">
+                                        <span className="text-stone-900 font-black uppercase text-sm tracking-widest">Total a Pagar</span>
+                                        <span className="text-3xl font-black text-stone-900 tracking-tighter italic">${total.toFixed(2)}</span>
+                                    </div>
+                                </div>
+                            </div>
 
-                \u003cdiv className = "flex justify-between gap-6"\u003e
-                \u003cbutton
-                onClick = {() =\u003e setStep(2)}
-                className = "bg-white border border-stone-200 hover:border-stone-400 text-stone-600 px-10 py-5 rounded-[2rem] font-black uppercase italic tracking-tighter transition-all"
-                \u003e
-                Volver al Carrito
-                \u003c / button\u003e
-                \u003cbutton
-                disabled = {saving}
-                onClick = {handleGenerateOrder}
-                className = "flex-1 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white px-10 py-5 rounded-[2rem] font-black uppercase italic tracking-tighter transition-all hover:scale-[1.02] active:scale-[0.98] shadow-2xl shadow-green-600/20 flex items-center justify-center gap-3"
-                \u003e
-                {saving ? "Registrando..." : "Confirmar y Registrar Boleta"}
-                {!saving \u0026\u0026 \u003cCheckCircle2 size = {24} /\u003e }
-                \u003c / button\u003e
-                \u003c / div\u003e
-                \u003c / div\u003e
-                \u003c / div\u003e
+                            <div className="flex justify-between gap-6">
+                                <button
+                                    onClick={() => setStep(2)}
+                                    className="bg-white border border-stone-200 hover:border-stone-400 text-stone-600 px-10 py-5 rounded-[2rem] font-black uppercase italic tracking-tighter transition-all"
+                                >
+                                    Volver al Carrito
+                                </button>
+                                <button
+                                    disabled={saving}
+                                    onClick={handleGenerateOrder}
+                                    className="flex-1 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white px-10 py-5 rounded-[2rem] font-black uppercase italic tracking-tighter transition-all hover:scale-[1.02] active:scale-[0.98] shadow-2xl shadow-green-600/20 flex items-center justify-center gap-3"
+                                >
+                                    {saving ? "Registrando..." : "Confirmar y Registrar Boleta"}
+                                    {!saving && <CheckCircle2 size={24} />}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 )}
-            </div >
+            </div>
 
-            {showSuccess \u0026\u0026 \u003cSuccessOverlay /\u003e}
-        </div >
+            {showSuccess && <SuccessOverlay />}
+        </div>
     );
 }
 
 // COMPONENTES AUXILIARES INTERNOS
 function SectionHeader({ icon, title, subtitle }: { icon: React.ReactNode, title: string, subtitle: string }) {
     return (
-    \u003cdiv className = "flex gap-4 items-center mb-2"\u003e
-    \u003cdiv className = "w-10 h-10 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center flex-shrink-0"\u003e
-    { icon }
-    \u003c / div\u003e
-    \u003cdiv\u003e
-    \u003ch2 className = "text-xl font-black text-stone-900 italic uppercase tracking-tighter leading-none"\u003e{ title } \u003c / h2\u003e
-    \u003cp className = "text-[10px] font-black text-stone-400 uppercase tracking-widest mt-1"\u003e{ subtitle } \u003c / p\u003e
-    \u003c / div\u003e
-    \u003c / div\u003e
+        <div className="flex gap-4 items-center mb-2">
+            <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center flex-shrink-0">
+                {icon}
+            </div>
+            <div>
+                <h2 className="text-xl font-black text-stone-900 italic uppercase tracking-tighter leading-none">{title}</h2>
+                <p className="text-[10px] font-black text-stone-400 uppercase tracking-widest mt-1">{subtitle}</p>
+            </div>
+        </div>
     );
 }
 
-function OrderRow({ item, onUpdate, onRemove }: { item: OrderItem, onUpdate: (qty: number) =\u003e void, onRemove: () =\u003e void }) {
+function OrderRow({ item, onUpdate, onRemove }: { item: OrderItem, onUpdate: (qty: number) => void, onRemove: () => void }) {
     return (
-    \u003ctr className = "group hover:bg-stone-50/50 transition-colors"\u003e
-    \u003ctd className = "py-4"\u003e
-    \u003cdiv className = "flex flex-col"\u003e
-    \u003cspan className = "font-black text-stone-800 text-xs uppercase tracking-tight"\u003e{ item.nombre } \u003c / span\u003e
-    \u003cspan className = "text-[10px] text-stone-400 font-bold"\u003eCosto Unit: ${ item.costo.toFixed(2) } \u003c / span\u003e
-    \u003c / div\u003e
-    \u003c / td\u003e
-    \u003ctd className = "py-4 text-center"\u003e
-    \u003cdiv className = "inline-flex items-center bg-stone-50 rounded-xl p-1 border border-stone-100"\u003e
-    \u003cinput
-    type = "number"
-    className = "w-10 bg-transparent text-center text-xs font-black text-stone-800 focus:outline-none"
-    value = { item.cantidad }
-    onChange = {(e) =\u003e onUpdate(parseInt(e.target.value) || 1)
-}
-                    /\u003e
-\u003c / div\u003e
-\u003c / td\u003e
-\u003ctd className = "py-4 text-right"\u003e
-\u003cspan className = "font-black text-stone-900 text-xs"\u003e${ (item.cantidad * item.costo).toFixed(2) } \u003c / span\u003e
-\u003c / td\u003e
-\u003ctd className = "py-4 text-right"\u003e
-\u003cbutton onClick = { onRemove } className = "opacity-0 group-hover:opacity-100 text-stone-300 hover:text-red-500 transition-all p-2"\u003e
-\u003cTrash2 size = { 16} /\u003e
-\u003c / button\u003e
-\u003c / td\u003e
-\u003c / tr\u003e
+        <tr className="group hover:bg-stone-50/50 transition-colors">
+            <td className="py-4">
+                <div className="flex flex-col">
+                    <span className="font-black text-stone-800 text-xs uppercase tracking-tight">{item.nombre}</span>
+                    <span className="text-[10px] text-stone-400 font-bold">Costo Unit: ${item.costo.toFixed(2)}</span>
+                </div>
+            </td>
+            <td className="py-4 text-center">
+                <div className="inline-flex items-center bg-stone-50 rounded-xl p-1 border border-stone-100">
+                    <input
+                        type="number"
+                        className="w-10 bg-transparent text-center text-xs font-black text-stone-800 focus:outline-none"
+                        value={item.cantidad}
+                        onChange={(e) => onUpdate(parseInt(e.target.value) || 1)}
+                    />
+                </div>
+            </td>
+            <td className="py-4 text-right">
+                <span className="font-black text-stone-900 text-xs">${(item.cantidad * item.costo).toFixed(2)}</span>
+            </td>
+            <td className="py-4 text-right">
+                <button
+                    onClick={onRemove}
+                    className="opacity-0 group-hover:opacity-100 text-stone-300 hover:text-red-500 transition-all p-2"
+                >
+                    <Trash2 size={16} />
+                </button>
+            </td>
+        </tr>
     );
 }
 
 function LoadingSpinner() {
     return (
-    \u003cdiv className = "flex flex-col items-center justify-center p-32 space-y-4"\u003e
-    \u003cdiv className = "h-16 w-16 border-4 border-blue-50 border-t-blue-600 rounded-full animate-spin shadow-inner" /\u003e
-    \u003cp className = "text-xs font-black text-stone-400 uppercase tracking-widest animate-pulse"\u003eCargando Sistema de Boletas...\u003c / p\u003e
-    \u003c / div\u003e
+        <div className="flex flex-col items-center justify-center p-32 space-y-4">
+            <div className="h-16 w-16 border-4 border-blue-50 border-t-blue-600 rounded-full animate-spin shadow-inner" />
+            <p className="text-xs font-black text-stone-400 uppercase tracking-widest animate-pulse">Cargando Sistema de Boletas...</p>
+        </div>
     );
 }
 
 function SuccessOverlay() {
     return (
-    \u003cdiv className = "fixed inset-0 bg-stone-950/40 backdrop-blur-md z-[100] flex items-center justify-center p-6 transition-all duration-700"\u003e
-    \u003cdiv className = "bg-white p-12 rounded-[4rem] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] text-center space-y-8 animate-in zoom-in-90 scale-100"\u003e
-    \u003cdiv className = "w-24 h-24 bg-green-500 rounded-[2.5rem] flex items-center justify-center text-white mx-auto shadow-2xl shadow-green-500/20"\u003e
-    \u003cCheckCircle2 size = { 56} /\u003e
-    \u003c / div\u003e
-    \u003cdiv className = "space-y-4 px-4"\u003e
-    \u003ch2 className = "text-4xl font-black text-stone-900 uppercase italic tracking-tighter"\u003e\u00a1Boleta Registrada!\u003c / h2\u003e
-    \u003cp className = "text-stone-400 font-bold uppercase text-xs tracking-widest"\u003eEl inventario se actualizar\u00e1 al recibir el pedido\u003c / p\u003e
-    \u003c / div\u003e
-    \u003cdiv className = "pt-4 animate-bounce"\u003e
-    \u003cInfo size = { 24} className = "mx-auto text-blue-500" /\u003e
-    \u003c / div\u003e
-    \u003c / div\u003e
-    \u003c / div\u003e
+        <div className="fixed inset-0 bg-stone-950/40 backdrop-blur-md z-[100] flex items-center justify-center p-6 transition-all duration-700">
+            <div className="bg-white p-12 rounded-[4rem] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] text-center space-y-8 animate-in zoom-in-90 scale-100">
+                <div className="w-24 h-24 bg-green-500 rounded-[2.5rem] flex items-center justify-center text-white mx-auto shadow-2xl shadow-green-500/20">
+                    <CheckCircle2 size={56} />
+                </div>
+                <div className="space-y-4 px-4">
+                    <h2 className="text-4xl font-black text-stone-900 uppercase italic tracking-tighter">¡Boleta Registrada!</h2>
+                    <p className="text-stone-400 font-bold uppercase text-xs tracking-widest">El inventario se actualizará al recibir el pedido</p>
+                </div>
+                <div className="pt-4 animate-bounce">
+                    <Info size={24} className="mx-auto text-blue-500" />
+                </div>
+            </div>
+        </div>
     );
 }
