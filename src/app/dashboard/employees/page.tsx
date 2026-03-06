@@ -97,19 +97,24 @@ export default function EmployeesPage() {
                 body: JSON.stringify(empForm)
             });
 
-            const data = await res.json();
-
-            if (res.ok) {
-                setAlert({ type: 'success', message: '¡Empleado registrado con éxito!' });
-                setEmpForm({ nombre: '', dni: '', cargo: '', telefono: '', email: '' });
-                setTimeout(() => setShowEmpModal(false), 1500);
-                fetchData();
+            const contentType = res.headers.get("content-type");
+            if (contentType && contentType.indexOf("application/json") !== -1) {
+                const data = await res.json();
+                if (res.ok) {
+                    setAlert({ type: 'success', message: '¡Empleado registrado con éxito!' });
+                    setEmpForm({ nombre: '', dni: '', cargo: '', telefono: '', email: '' });
+                    setTimeout(() => setShowEmpModal(false), 1500);
+                    fetchData();
+                } else {
+                    setAlert({ type: 'error', message: data.error || 'Error al guardar empleado' });
+                }
             } else {
-                setAlert({ type: 'error', message: data.error || 'Error al guardar empleado' });
+                const text = await res.text();
+                setAlert({ type: 'error', message: `Error (${res.status}): ${text.substring(0, 30)}...` });
             }
         } catch (error) {
             console.error('Error:', error);
-            setAlert({ type: 'error', message: 'Error de conexión con el servidor' });
+            setAlert({ type: 'error', message: 'Falla de red o CORS' });
         } finally {
             setSaving(false);
         }
@@ -119,26 +124,38 @@ export default function EmployeesPage() {
         e.preventDefault();
         setSaving(true);
         setAlert(null);
+
+        // Fix: Prisma crash when sending empty id
+        const payload = {
+            ...userForm,
+            empleado_id: userForm.empleado_id === "" ? null : userForm.empleado_id
+        };
+
         try {
             const res = await fetch(`${API_URL}/api/users`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(userForm)
+                body: JSON.stringify(payload)
             });
 
-            const data = await res.json();
-
-            if (res.ok) {
-                setAlert({ type: 'success', message: '¡Acceso habilitado correctamente!' });
-                setUserForm({ username: '', password: '', rol: 'EMPLEADO', empleado_id: '' });
-                setTimeout(() => setShowUserModal(false), 1500);
-                fetchData();
+            const contentType = res.headers.get("content-type");
+            if (contentType && contentType.indexOf("application/json") !== -1) {
+                const data = await res.json();
+                if (res.ok) {
+                    setAlert({ type: 'success', message: '¡Acceso habilitado correctamente!' });
+                    setUserForm({ username: '', password: '', rol: 'EMPLEADO', empleado_id: '' });
+                    setTimeout(() => setShowUserModal(false), 1500);
+                    fetchData();
+                } else {
+                    setAlert({ type: 'error', message: data.error || 'Error al crear usuario' });
+                }
             } else {
-                setAlert({ type: 'error', message: data.error || 'Error al crear usuario' });
+                const text = await res.text();
+                setAlert({ type: 'error', message: `Error (${res.status}): ${text.substring(0, 30)}...` });
             }
         } catch (error) {
             console.error('Error:', error);
-            setAlert({ type: 'error', message: 'Error de conexión con el servidor' });
+            setAlert({ type: 'error', message: 'Falla de red o CORS' });
         } finally {
             setSaving(false);
         }
