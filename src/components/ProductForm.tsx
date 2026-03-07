@@ -10,7 +10,8 @@ import {
     DollarSign,
     Layout,
     Hash,
-    Image as ImageIcon
+    Image as ImageIcon,
+    Truck
 } from "lucide-react";
 
 interface ProductFormProps {
@@ -29,8 +30,27 @@ export function ProductForm({ initialData, isEdit = false }: ProductFormProps) {
         stock: initialData?.stock?.toString() || "0",
         stock_minimo: initialData?.stock_minimo?.toString() || "5",
         sku: initialData?.sku || "",
-        imagen: initialData?.imagen || ""
+        imagen: initialData?.imagen || "",
+        proveedor_id: initialData?.proveedor_id || ""
     });
+
+    const [proveedores, setProveedores] = useState<any[]>([]);
+
+    React.useEffect(() => {
+        const fetchProveedores = async () => {
+            try {
+                const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
+                const res = await fetch(`${apiUrl}/suppliers`);
+                if (res.ok) {
+                    const data = await res.json();
+                    setProveedores(data);
+                }
+            } catch (error) {
+                console.error("Error fetching suppliers:", error);
+            }
+        };
+        fetchProveedores();
+    }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -50,6 +70,7 @@ export function ProductForm({ initialData, isEdit = false }: ProductFormProps) {
                     costo: formData.costo ? parseFloat(formData.costo) : null,
                     stock: parseInt(formData.stock, 10),
                     stock_minimo: parseInt(formData.stock_minimo, 10),
+                    proveedor_id: formData.proveedor_id || null,
                 }),
             });
 
@@ -102,6 +123,26 @@ export function ProductForm({ initialData, isEdit = false }: ProductFormProps) {
                                     value={formData.categoria}
                                     onChange={e => setFormData({ ...formData, categoria: e.target.value })}
                                 />
+                            </div>
+                        </div>
+                        <div className="space-y-2 md:col-span-2">
+                            <label className="text-sm font-bold text-stone-600 ml-1">Proveedor (Opcional)</label>
+                            <div className="relative flex items-center">
+                                <Truck className="absolute left-3 text-stone-400" size={18} />
+                                <select
+                                    className="w-full bg-stone-50 border border-stone-200 rounded-xl py-2.5 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500/30 transition-all text-stone-800 appearance-none"
+                                    value={formData.proveedor_id}
+                                    onChange={e => setFormData({ ...formData, proveedor_id: e.target.value })}
+                                >
+                                    <option value="">Sin proveedor asignado</option>
+                                    {proveedores.map(prov => (
+                                        <option key={prov.id} value={prov.id}>{prov.nombre}</option>
+                                    ))}
+                                </select>
+                                {/* Custom arrow for select */}
+                                <div className="absolute right-4 pointer-events-none text-stone-400">
+                                    <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" fillRule="evenodd"></path></svg>
+                                </div>
                             </div>
                         </div>
                     </div>
