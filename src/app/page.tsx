@@ -51,7 +51,7 @@ export default function LandingPage() {
 
             {/* Desktop Navigation */}
             <nav className="hidden lg:flex justify-center space-x-10 lg:w-2/4">
-              <Link href="#catalogo" className="text-xs font-bold tracking-widest text-stone-900 hover:text-rose-600 transition-colors uppercase relative group py-2">
+              <Link href="/catalogo" className="text-xs font-bold tracking-widest text-stone-900 hover:text-rose-600 transition-colors uppercase relative group py-2">
                 Catálogo
                 <span className="absolute bottom-0 left-0 w-full h-0.5 bg-rose-600 scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></span>
               </Link>
@@ -127,7 +127,7 @@ export default function LandingPage() {
               {/* Botones Puente (Catálogo e Inventario) */}
               <div className="flex flex-col sm:flex-row items-center gap-4 pt-4">
                 <Link 
-                  href="#catalogo" 
+                  href="/catalogo" 
                   className="w-full sm:w-auto px-10 py-4 bg-white text-stone-900 text-sm font-black uppercase tracking-widest hover:bg-rose-50 transition-all hover:-translate-y-1 shadow-2xl flex items-center justify-center gap-3 rounded-full"
                 >
                   <ShoppingBag size={18} />
@@ -289,7 +289,7 @@ export default function LandingPage() {
             <div>
                <h4 className="font-bold uppercase text-xs tracking-[0.2em] mb-6 text-stone-200">Tienda</h4>
                <ul className="space-y-4 text-sm text-stone-400">
-                 <li><Link href="#" className="hover:text-rose-400 transition-colors">Catálogo de Productos</Link></li>
+                 <li><Link href="/catalogo" className="hover:text-rose-400 transition-colors">Catálogo de Productos</Link></li>
                  <li><Link href="#" className="hover:text-rose-400 transition-colors">Novedades</Link></li>
                  <li><Link href="#" className="hover:text-rose-400 transition-colors">Ofertas Especiales</Link></li>
                  <li><Link href="#" className="hover:text-rose-400 transition-colors">Marcas Disponibles</Link></li>
