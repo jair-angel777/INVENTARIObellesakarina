@@ -99,69 +99,70 @@ export default function LandingPage() {
       </header>
 
       <main className="flex flex-col">
-        {/* HERO SECTION - El "Puente" */}
-        <section className="relative w-full min-h-[85vh] flex items-center justify-center overflow-hidden bg-stone-900">
-          {/* Fondo animado abstracto (Sustituto Premium de la Imagen) */}
-          <div className="absolute inset-0 z-0">
-            <div className="absolute inset-0 bg-gradient-to-br from-stone-900 via-stone-800 to-rose-950 opacity-80" />
-            {/* Círculos decorativos con blur para dar efecto glassmorphism */}
-            <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-rose-500/20 rounded-full blur-[120px] mix-blend-screen animate-pulse" style={{ animationDuration: '8s' }} />
-            <div className="absolute bottom-1/4 right-1/4 w-[600px] h-[600px] bg-amber-500/10 rounded-full blur-[150px] mix-blend-screen animate-pulse" style={{ animationDuration: '12s', animationDelay: '2s' }} />
-          </div>
-
-          <div className="relative z-10 max-w-7xl mx-auto px-4 w-full flex flex-col md:flex-row items-center justify-between gap-12">
+        {/* HERO SECTION - El "Puente" (Basado en la referencia) */}
+        <section className="relative w-full min-h-[85vh] flex items-center justify-center overflow-hidden bg-gradient-to-br from-[#1A1212] via-[#2D1616] to-[#4A1520]">
+          
+          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full flex flex-col lg:flex-row items-center justify-between gap-12 py-12">
             
-            <div className="flex-1 text-center md:text-left space-y-8 animate-in slide-in-from-bottom duration-1000 fill-mode-both">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white text-xs font-bold uppercase tracking-widest">
-                <Star size={14} className="text-amber-400" />
-                Belleza Auténtica, Marcas Globales
+            {/* Lado Izquierdo - Texto (Alineado a la izquierda según la imagen) */}
+            <div className="flex-1 text-center lg:text-left space-y-8 lg:pr-8">
+              
+              {/* Etiqueta superior */}
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/20 text-white/80 text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] mb-4">
+                <Star size={12} className="text-amber-200" />
+                Belleza Auténtica. Marcas Globales
               </div>
-              <h2 className="text-5xl md:text-7xl lg:text-8xl font-serif font-medium text-white tracking-tighter leading-[1.1]">
+              
+              {/* Título Principal (Serif, blanco y cursiva rosa/oro) */}
+              <h2 className="text-6xl sm:text-7xl lg:text-8xl xl:text-9xl font-serif text-white tracking-tighter leading-[0.9] font-medium">
                 Realza tu <br />
-                <span className="italic text-rose-400">esencia.</span>
+                <span className="italic text-rose-400 font-normal">esencia.</span>
               </h2>
-              <p className="text-base md:text-xl text-stone-300 font-light max-w-xl mx-auto md:mx-0 leading-relaxed">
+              
+              {/* Subtítulo */}
+              <p className="text-sm sm:text-base text-stone-300 font-light max-w-xl mx-auto lg:mx-0 leading-relaxed mt-6">
                 El destino definitivo para descubrir lo mejor en cosmética multimarca. Calidad garantizada en cada producto que eliges.
               </p>
               
-              {/* Botones Puente (Catálogo e Inventario) */}
-              <div className="flex flex-col sm:flex-row items-center gap-4 pt-4">
+              {/* Botones */}
+              <div className="flex flex-col sm:flex-row items-center lg:justify-start justify-center gap-4 pt-4">
                 <Link 
                   href="/catalogo" 
-                  className="w-full sm:w-auto px-10 py-4 bg-white text-stone-900 text-sm font-black uppercase tracking-widest hover:bg-rose-50 transition-all hover:-translate-y-1 shadow-2xl flex items-center justify-center gap-3 rounded-full"
+                  className="w-full sm:w-auto px-8 py-4 bg-white text-stone-900 text-[10px] sm:text-xs font-black uppercase tracking-[0.15em] hover:bg-stone-100 transition-all rounded-full flex items-center justify-center gap-2"
                 >
-                  <ShoppingBag size={18} />
+                  <span className="text-lg leading-none">☺</span>
                   Ir al Catálogo
                 </Link>
                 <Link 
                   href="/login" 
-                  className="w-full sm:w-auto px-10 py-4 bg-transparent text-white border-2 border-white/30 text-sm font-black uppercase tracking-widest hover:bg-white/10 transition-all hover:-translate-y-1 rounded-full flex items-center justify-center gap-3 backdrop-blur-sm"
+                  className="w-full sm:w-auto px-8 py-4 bg-transparent text-white border border-white/30 text-[10px] sm:text-xs font-black uppercase tracking-[0.15em] hover:bg-white/10 transition-all rounded-full flex items-center justify-center gap-2"
                 >
-                  <ShieldCheck size={18} />
+                  <ShieldCheck size={16} />
                   Sistema de Inventario
                 </Link>
               </div>
             </div>
 
-            {/* Espacio para Imagen Dinámica o Composición */}
-            <div className="flex-1 hidden md:flex justify-center relative animate-in slide-in-from-right duration-1000 delay-300 fill-mode-both">
-               <div className="w-[80%] aspect-[3/4] bg-stone-800 rounded-t-[100px] rounded-b-[200px] border border-white/10 shadow-2xl overflow-hidden relative group">
-                  {/* Placeholder elegante */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10" />
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-white/30 font-bold uppercase tracking-widest text-xs border border-white/20 px-6 py-2 rounded-full backdrop-blur-md">
-                      [ Fotografía Editorial Propia ]
-                    </span>
-                  </div>
-                  {/* Etiqueta Flotante */}
-                  <div className="absolute bottom-12 left-0 right-0 z-20 flex justify-center">
-                    <div className="bg-white/10 backdrop-blur-xl border border-white/20 p-4 rounded-3xl flex items-center gap-4 group-hover:-translate-y-2 transition-transform duration-500">
-                      <div className="w-12 h-12 bg-rose-500 rounded-2xl flex items-center justify-center shadow-lg shadow-rose-500/30">
-                        <Zap className="text-white" size={24} />
+            {/* Lado Derecho - Composición de Imágenes (El marco de media luna) */}
+            <div className="flex-1 w-full flex justify-center lg:justify-end relative mt-12 lg:mt-0">
+               {/* Contenedor con borde curvo (Arch) similar a la referencia */}
+               <div className="w-full max-w-[500px] aspect-[4/3] sm:aspect-square lg:aspect-[4/5] bg-[#3B2828] rounded-[2rem] sm:rounded-tl-[150px] sm:rounded-bl-[150px] sm:rounded-tr-[40px] sm:rounded-br-[40px] overflow-hidden relative shadow-2xl shadow-black/50 border-4 border-[#4A1520]">
+                  
+                  {/* Imagen de fondo / Placeholder principal (Modelo o Productos) */}
+                  <div className="absolute inset-0 bg-gradient-to-tr from-stone-900 to-transparent z-10 opacity-60" />
+                  
+                  {/* Para la demostración, usamos un gradiente rico en lugar de la imagen que no se pudo descargar */}
+                  <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1596462502278-27bfdc403348?q=80&w=1000&auto=format&fit=crop')] bg-cover bg-center" />
+
+                  {/* Etiqueta Flotante sobre la imagen (como en la referencia) */}
+                  <div className="absolute bottom-6 sm:bottom-10 left-1/2 -translate-x-1/2 sm:left-auto sm:translate-x-0 sm:right-10 z-20 w-[90%] sm:w-auto">
+                    <div className="bg-[#1A1212]/90 backdrop-blur-md border border-white/10 p-3 sm:p-4 rounded-2xl flex items-center gap-3 sm:gap-4 shadow-xl">
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 bg-rose-500 rounded-xl flex items-center justify-center shadow-inner">
+                        <Zap className="text-white" size={20} />
                       </div>
                       <div>
-                        <p className="text-white text-xs font-bold uppercase tracking-widest">Nuevos Ingresos</p>
-                        <p className="text-stone-300 text-xs">Descubre la colección 2026</p>
+                        <p className="text-white text-[10px] sm:text-xs font-bold uppercase tracking-widest">Nuevos Ingresos</p>
+                        <p className="text-stone-400 text-[9px] sm:text-[10px]">Revisa la colección 2026</p>
                       </div>
                     </div>
                   </div>
