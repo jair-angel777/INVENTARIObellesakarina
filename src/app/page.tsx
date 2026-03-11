@@ -211,14 +211,10 @@ export default function LandingPage() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Categ 1 */}
-            <div className="group cursor-pointer rounded-[2rem] overflow-hidden bg-stone-100 aspect-[4/5] relative transition-transform hover:-translate-y-2 duration-500">
-               <div className="absolute inset-0 flex items-center justify-center p-6 text-center z-10">
-                 <span className="text-stone-400 font-medium tracking-widest uppercase text-[10px] border border-stone-300 px-4 py-2 rounded-full bg-white/50 backdrop-blur-sm">
-                    [ Imagen: Skin Care ]
-                 </span>
-               </div>
+            <div className="group cursor-pointer rounded-[2rem] overflow-hidden bg-stone-100 aspect-[4/5] relative transition-transform hover:-translate-y-2 duration-500 bg-[url('/cuidado.jpg.png')] bg-cover bg-center">
+               
                <div className="absolute inset-0 bg-gradient-to-t from-stone-900/80 via-transparent to-transparent z-20" />
                <div className="absolute bottom-0 left-0 w-full p-8 z-30">
                   <h4 className="text-2xl font-serif font-medium text-white mb-2">Cuidado de la Piel</h4>
@@ -228,31 +224,23 @@ export default function LandingPage() {
             </div>
 
             {/* Categ 2 */}
-            <div className="group cursor-pointer rounded-[2rem] overflow-hidden bg-stone-200 aspect-[4/5] relative transition-transform hover:-translate-y-2 duration-500">
-               <div className="absolute inset-0 flex items-center justify-center p-6 text-center z-10">
-                 <span className="text-stone-400 font-medium tracking-widest uppercase text-[10px] border border-stone-300 px-4 py-2 rounded-full bg-white/50 backdrop-blur-sm">
-                    [ Imagen: Maquillaje ]
-                 </span>
-               </div>
+            <div className="group cursor-pointer rounded-[2rem] overflow-hidden bg-stone-200 aspect-[4/5] relative transition-transform hover:-translate-y-2 duration-500 bg-[url('/sueros.jpg.png')] bg-cover bg-center">
+               
                <div className="absolute inset-0 bg-gradient-to-t from-stone-900/80 via-transparent to-transparent z-20" />
                <div className="absolute bottom-0 left-0 w-full p-8 z-30">
-                  <h4 className="text-2xl font-serif font-medium text-white mb-2">Maquillaje</h4>
-                  <p className="text-sm text-stone-300 mb-4 opacity-0 transform translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">Bases, labiales y todo para resaltar tu belleza.</p>
+                  <h4 className="text-2xl font-serif font-medium text-white mb-2">Sueros y Tratamientos</h4>
+                  <p className="text-sm text-stone-300 mb-4 opacity-0 transform translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">Potencia tu belleza con fórmulas avanzadas.</p>
                   <span className="text-xs font-bold uppercase tracking-widest text-white flex items-center gap-2">Explorar <ArrowRight size={14}/></span>
                </div>
             </div>
 
             {/* Categ 3 */}
-            <div className="group cursor-pointer rounded-[2rem] overflow-hidden bg-stone-100 aspect-[4/5] relative transition-transform hover:-translate-y-2 duration-500">
-               <div className="absolute inset-0 flex items-center justify-center p-6 text-center z-10">
-                 <span className="text-stone-400 font-medium tracking-widest uppercase text-[10px] border border-stone-300 px-4 py-2 rounded-full bg-white/50 backdrop-blur-sm">
-                    [ Imagen: Cabello ]
-                 </span>
-               </div>
+            <div className="group cursor-pointer rounded-[2rem] overflow-hidden bg-stone-100 aspect-[4/5] relative transition-transform hover:-translate-y-2 duration-500 bg-[url('/maquilllaje.jpg.png')] bg-cover bg-center">
+               
                <div className="absolute inset-0 bg-gradient-to-t from-stone-900/80 via-transparent to-transparent z-20" />
                <div className="absolute bottom-0 left-0 w-full p-8 z-30">
-                  <h4 className="text-2xl font-serif font-medium text-white mb-2">Cuidado Capilar</h4>
-                  <p className="text-sm text-stone-300 mb-4 opacity-0 transform translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">Tratamientos, shampoos y estilización.</p>
+                  <h4 className="text-2xl font-serif font-medium text-white mb-2">Maquillaje</h4>
+                  <p className="text-sm text-stone-300 mb-4 opacity-0 transform translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">Bases, labiales y todo para resaltar tu estilo.</p>
                   <span className="text-xs font-bold uppercase tracking-widest text-white flex items-center gap-2">Explorar <ArrowRight size={14}/></span>
                </div>
             </div>
