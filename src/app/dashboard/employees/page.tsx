@@ -20,7 +20,9 @@ import {
     Plus,
     X,
     Fingerprint,
-    Lock
+    Lock,
+    Pencil,
+    Trash2
 } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth, Guard } from '@/context/AuthContext';
@@ -58,12 +60,16 @@ export default function EmployeesPage() {
     const [showUserModal, setShowUserModal] = useState(false);
     const [saving, setSaving] = useState(false);
 
-    // Notifications state
-    const [alert, setAlert] = useState<{ type: 'success' | 'error', message: string } | null>(null);
+    // Notifications state (renamed to avoid shadowing window.alert)
+    const [notification, setNotification] = useState<{ type: 'success' | 'error', message: string } | null>(null);
 
     // Form states
     const [empForm, setEmpForm] = useState({ nombre: '', dni: '', cargo: '', telefono: '', email: '' });
     const [userForm, setUserForm] = useState({ username: '', password: '', rol: 'EMPLEADO', empleado_id: '' });
+
+    // Editing states
+    const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
+    const [editingUser, setEditingUser] = useState<User | null>(null);
 
     // Normalización de la URL de API para evitar duplicados como /api/api/
     const rawUrl = process.env.NEXT_PUBLIC_API_URL || 'https://backen-inventario.vercel.app';
@@ -91,10 +97,10 @@ export default function EmployeesPage() {
     const handleCreateEmployee = async (e: React.FormEvent) => {
         e.preventDefault();
         setSaving(true);
-        setAlert(null);
+        setNotification(null);
         try {
-            const res = await fetch(`${API_URL}/employees`, {
-                method: 'POST',
+            const res = await fetch(`${API_URL}/employees${editingEmployee ? `/${editingEmployee.id}` : ''}`, {
+                method: editingEmployee ? 'PATCH' : 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(empForm)
             });
@@ -103,20 +109,21 @@ export default function EmployeesPage() {
             if (contentType && contentType.indexOf("application/json") !== -1) {
                 const data = await res.json();
                 if (res.ok) {
-                    setAlert({ type: 'success', message: '¡Empleado registrado con éxito!' });
+                    setNotification({ type: 'success', message: editingEmployee ? '¡Empleado actualizado!' : '¡Empleado registrado con éxito!' });
                     setEmpForm({ nombre: '', dni: '', cargo: '', telefono: '', email: '' });
+                    setEditingEmployee(null);
                     setTimeout(() => setShowEmpModal(false), 1500);
                     fetchData();
                 } else {
-                    setAlert({ type: 'error', message: data.error || 'Error al guardar empleado' });
+                    setNotification({ type: 'error', message: data.error || 'Error al guardar empleado' });
                 }
             } else {
                 const text = await res.text();
-                setAlert({ type: 'error', message: `Error (${res.status}): ${text.substring(0, 30)}...` });
+                setNotification({ type: 'error', message: `Error (${res.status}): ${text.substring(0, 30)}...` });
             }
         } catch (error) {
             console.error('Error:', error);
-            setAlert({ type: 'error', message: 'Falla de red o CORS' });
+            setNotification({ type: 'error', message: 'Falla de red o CORS' });
         } finally {
             setSaving(false);
         }
@@ -125,7 +132,7 @@ export default function EmployeesPage() {
     const handleCreateUser = async (e: React.FormEvent) => {
         e.preventDefault();
         setSaving(true);
-        setAlert(null);
+        setNotification(null);
 
         // Fix: Prisma crash when sending empty id
         const payload = {
@@ -134,8 +141,8 @@ export default function EmployeesPage() {
         };
 
         try {
-            const res = await fetch(`${API_URL}/users`, {
-                method: 'POST',
+            const res = await fetch(`${API_URL}/users${editingUser ? `/${editingUser.id}` : ''}`, {
+                method: editingUser ? 'PATCH' : 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
@@ -144,23 +151,69 @@ export default function EmployeesPage() {
             if (contentType && contentType.indexOf("application/json") !== -1) {
                 const data = await res.json();
                 if (res.ok) {
-                    setAlert({ type: 'success', message: '¡Acceso habilitado correctamente!' });
+                    setNotification({ type: 'success', message: editingUser ? '¡Acceso actualizado!' : '¡Acceso habilitado correctamente!' });
                     setUserForm({ username: '', password: '', rol: 'EMPLEADO', empleado_id: '' });
+                    setEditingUser(null);
                     setTimeout(() => setShowUserModal(false), 1500);
                     fetchData();
                 } else {
-                    setAlert({ type: 'error', message: data.error || 'Error al crear usuario' });
+                    setNotification({ type: 'error', message: data.error || 'Error al crear usuario' });
                 }
             } else {
                 const text = await res.text();
-                setAlert({ type: 'error', message: `Error (${res.status}): ${text.substring(0, 30)}...` });
+                setNotification({ type: 'error', message: `Error (${res.status}): ${text.substring(0, 30)}...` });
             }
         } catch (error) {
             console.error('Error:', error);
-            setAlert({ type: 'error', message: 'Falla de red o CORS' });
+            setNotification({ type: 'error', message: 'Falla de red o CORS' });
         } finally {
             setSaving(false);
         }
+    };
+
+    const handleDeleteEmployee = async (id: string) => {
+        if (!window.confirm('¿Estás seguro de eliminar este empleado?')) return;
+        try {
+            const res = await fetch(`${API_URL}/employees/${id}`, { method: 'DELETE' });
+            if (res.ok) fetchData();
+            else window.alert('Error al eliminar');
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const handleDeleteUser = async (id: string) => {
+        if (!window.confirm('¿Estás seguro de eliminar este usuario?')) return;
+        try {
+            const res = await fetch(`${API_URL}/users/${id}`, { method: 'DELETE' });
+            if (res.ok) fetchData();
+            else window.alert('Error al eliminar');
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const openEditEmployee = (emp: Employee) => {
+        setEditingEmployee(emp);
+        setEmpForm({
+            nombre: emp.nombre,
+            dni: emp.dni,
+            cargo: emp.cargo || '',
+            telefono: emp.telefono || '',
+            email: emp.email || ''
+        });
+        setShowEmpModal(true);
+    };
+
+    const openEditUser = (user: User) => {
+        setEditingUser(user);
+        setUserForm({
+            username: user.username,
+            password: '', 
+            rol: user.rol,
+            empleado_id: user.empleado_id || ''
+        });
+        setShowUserModal(true);
     };
 
     return (
@@ -244,7 +297,13 @@ export default function EmployeesPage() {
                         <div className="flex items-center gap-4 w-full md:w-auto">
                             <Guard roles={['GERENTE']}>
                                 <button
-                                    onClick={() => activeTab === 'employees' ? setShowEmpModal(true) : setShowUserModal(true)}
+                                    onClick={() => {
+                                        setEditingEmployee(null);
+                                        setEditingUser(null);
+                                        setEmpForm({ nombre: '', dni: '', cargo: '', telefono: '', email: '' });
+                                        setUserForm({ username: '', password: '', rol: 'EMPLEADO', empleado_id: '' });
+                                        activeTab === 'employees' ? setShowEmpModal(true) : setShowUserModal(true);
+                                    }}
                                     className="flex-1 md:flex-none flex items-center justify-center gap-3 bg-red-600 hover:bg-stone-900 text-white px-8 py-5 rounded-[2rem] text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-red-600/20 active:scale-95"
                                 >
                                     {activeTab === 'employees' ? <UserPlus size={16} /> : <Key size={16} />}
@@ -331,10 +390,23 @@ export default function EmployeesPage() {
                                                         {emp.estado}
                                                     </span>
                                                 </td>
-                                                <td className="px-12 py-8 text-right">
-                                                    <button className="bg-stone-100 hover:bg-stone-900 hover:text-white p-4 rounded-2xl transition-all scale-95 hover:scale-100 active:scale-95 shadow-sm">
-                                                        <MoreHorizontal size={20} />
-                                                    </button>
+                                                <td className="px-12 py-8 text-right text-stone-400">
+                                                    <Guard roles={['GERENTE']}>
+                                                        <div className="flex justify-end gap-2">
+                                                            <button 
+                                                                onClick={() => openEditEmployee(emp)}
+                                                                className="bg-stone-100 hover:bg-stone-900 hover:text-white p-3 rounded-xl transition-all scale-95 hover:scale-100 active:scale-95 shadow-sm"
+                                                            >
+                                                                <Pencil size={16} />
+                                                            </button>
+                                                            <button 
+                                                                onClick={() => handleDeleteEmployee(emp.id)}
+                                                                className="bg-stone-100 hover:bg-red-600 hover:text-white p-3 rounded-xl transition-all scale-95 hover:scale-100 active:scale-95 shadow-sm"
+                                                            >
+                                                                <Trash2 size={16} />
+                                                            </button>
+                                                        </div>
+                                                    </Guard>
                                                 </td>
                                             </tr>
                                         ))
@@ -379,9 +451,22 @@ export default function EmployeesPage() {
                                                     {user.ultimo_acceso ? new Date(user.ultimo_acceso).toLocaleString() : 'Nunca'}
                                                 </td>
                                                 <td className="px-12 py-8 text-right text-stone-400">
-                                                    <button className="bg-stone-100 hover:bg-red-600 hover:text-white p-4 rounded-2xl transition-all scale-95 hover:scale-100 active:scale-95 shadow-sm">
-                                                        <MoreHorizontal size={20} />
-                                                    </button>
+                                                    <Guard roles={['GERENTE']}>
+                                                        <div className="flex justify-end gap-2 text-stone-400">
+                                                            <button 
+                                                                onClick={() => openEditUser(user)}
+                                                                className="bg-stone-100 hover:bg-stone-900 hover:text-white p-3 rounded-xl transition-all scale-95 hover:scale-100 active:scale-95 shadow-sm"
+                                                            >
+                                                                <Pencil size={16} />
+                                                            </button>
+                                                            <button 
+                                                                onClick={() => handleDeleteUser(user.id)}
+                                                                className="bg-stone-100 hover:bg-red-600 hover:text-white p-3 rounded-xl transition-all scale-95 hover:scale-100 active:scale-95 shadow-sm"
+                                                            >
+                                                                <Trash2 size={16} />
+                                                            </button>
+                                                        </div>
+                                                    </Guard>
                                                 </td>
                                             </tr>
                                         ))
@@ -430,19 +515,19 @@ export default function EmployeesPage() {
             {/* MODAL EMPLEADO */}
             {showEmpModal && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-stone-900/40 backdrop-blur-sm" onClick={() => setShowEmpModal(false)} />
+                    <div className="absolute inset-0 bg-stone-900/40 backdrop-blur-sm" onClick={() => { setShowEmpModal(false); setEditingEmployee(null); setEmpForm({ nombre: '', dni: '', cargo: '', telefono: '', email: '' }); }} />
                     <div className="bg-white w-full max-w-xl rounded-[3rem] shadow-2xl relative z-10 overflow-hidden animate-in zoom-in-95 duration-200">
                         <div className="p-10 border-b border-stone-50 flex justify-between items-center">
-                            <h2 className="text-3xl font-black uppercase italic tracking-tighter">Nuevo <span className="text-red-600">Empleado</span></h2>
-                            <button onClick={() => setShowEmpModal(false)} className="p-3 hover:bg-stone-100 rounded-full transition-colors">
+                            <h2 className="text-3xl font-black uppercase italic tracking-tighter">{editingEmployee ? 'Editar' : 'Nuevo'} <span className="text-red-600">Empleado</span></h2>
+                            <button onClick={() => { setShowEmpModal(false); setEditingEmployee(null); setEmpForm({ nombre: '', dni: '', cargo: '', telefono: '', email: '' }); }} className="p-3 hover:bg-stone-100 rounded-full transition-colors">
                                 <X size={24} className="text-stone-400" />
                             </button>
                         </div>
                         <form onSubmit={handleCreateEmployee} className="p-10 space-y-6">
-                            {alert && (
-                                <div className={`p-4 rounded-2xl flex items-center gap-4 animate-in fade-in zoom-in-95 duration-200 ${alert.type === 'success' ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}`}>
-                                    {alert.type === 'success' ? <CheckCircle2 size={20} /> : <XCircle size={20} />}
-                                    <span className="text-xs font-black uppercase tracking-widest">{alert.message}</span>
+                            {notification && (
+                                <div className={`p-4 rounded-2xl flex items-center gap-4 animate-in fade-in zoom-in-95 duration-200 ${notification.type === 'success' ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}`}>
+                                    {notification.type === 'success' ? <CheckCircle2 size={20} /> : <XCircle size={20} />}
+                                    <span className="text-xs font-black uppercase tracking-widest">{notification.message}</span>
                                 </div>
                             )}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -470,7 +555,7 @@ export default function EmployeesPage() {
                                 </div>
                             </div>
                             <button disabled={saving} type="submit" className="w-full bg-stone-900 text-white py-6 rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-stone-800 transition-all flex items-center justify-center gap-3">
-                                {saving ? 'Sincronizando...' : 'Guardar en Planilla'}
+                                {saving ? 'Sincronizando...' : (editingEmployee ? 'Actualizar Datos' : 'Guardar en Planilla')}
                             </button>
                         </form>
                     </div>
@@ -480,19 +565,19 @@ export default function EmployeesPage() {
             {/* MODAL USUARIO */}
             {showUserModal && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-stone-900/40 backdrop-blur-sm" onClick={() => setShowUserModal(false)} />
+                    <div className="absolute inset-0 bg-stone-900/40 backdrop-blur-sm" onClick={() => { setShowUserModal(false); setEditingUser(null); setUserForm({ username: '', password: '', rol: 'EMPLEADO', empleado_id: '' }); }} />
                     <div className="bg-white w-full max-w-xl rounded-[3rem] shadow-2xl relative z-10 overflow-hidden animate-in zoom-in-95 duration-200">
                         <div className="p-10 border-b border-stone-50 flex justify-between items-center">
-                            <h2 className="text-3xl font-black uppercase italic tracking-tighter">Crear <span className="text-indigo-600">Acceso Digital</span></h2>
-                            <button onClick={() => setShowUserModal(false)} className="p-3 hover:bg-stone-100 rounded-full transition-colors">
+                            <h2 className="text-3xl font-black uppercase italic tracking-tighter">{editingUser ? 'Editar' : 'Crear'} <span className="text-indigo-600">Acceso Digital</span></h2>
+                            <button onClick={() => { setShowUserModal(false); setEditingUser(null); setUserForm({ username: '', password: '', rol: 'EMPLEADO', empleado_id: '' }); }} className="p-3 hover:bg-stone-100 rounded-full transition-colors">
                                 <X size={24} className="text-stone-400" />
                             </button>
                         </div>
                         <form onSubmit={handleCreateUser} className="p-10 space-y-6">
-                            {alert && (
-                                <div className={`p-4 rounded-2xl flex items-center gap-4 animate-in fade-in zoom-in-95 duration-200 ${alert.type === 'success' ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}`}>
-                                    {alert.type === 'success' ? <CheckCircle2 size={20} /> : <XCircle size={20} />}
-                                    <span className="text-xs font-black uppercase tracking-widest">{alert.message}</span>
+                            {notification && (
+                                <div className={`p-4 rounded-2xl flex items-center gap-4 animate-in fade-in zoom-in-95 duration-200 ${notification.type === 'success' ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}`}>
+                                    {notification.type === 'success' ? <CheckCircle2 size={20} /> : <XCircle size={20} />}
+                                    <span className="text-xs font-black uppercase tracking-widest">{notification.message}</span>
                                 </div>
                             )}
                             <div className="space-y-2">
@@ -506,7 +591,7 @@ export default function EmployeesPage() {
                                 <label className="text-[10px] font-black uppercase tracking-widest text-stone-400 pl-4">Contraseña</label>
                                 <div className="relative">
                                     <Fingerprint className="absolute left-6 top-1/2 -translate-y-1/2 text-stone-300" size={18} />
-                                    <input required type="password" title="Contraseña" className="w-full bg-stone-50 pl-16 pr-6 py-4 rounded-2xl text-sm font-bold border-2 border-transparent focus:border-indigo-500/20 outline-none transition-all" value={userForm.password} onChange={e => setUserForm({ ...userForm, password: e.target.value })} placeholder="••••••••" />
+                                    <input required={!editingUser} type="password" title="Contraseña" className="w-full bg-stone-50 pl-16 pr-6 py-4 rounded-2xl text-sm font-bold border-2 border-transparent focus:border-indigo-500/20 outline-none transition-all" value={userForm.password} onChange={e => setUserForm({ ...userForm, password: e.target.value })} placeholder="••••••••" />
                                 </div>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -525,8 +610,8 @@ export default function EmployeesPage() {
                                     </select>
                                 </div>
                             </div>
-                            <button disabled={saving} type="submit" className="w-full bg-indigo-600 text-white py-6 rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-stone-900 transition-all flex items-center justify-center gap-3">
-                                {saving ? 'Creando Acceso...' : 'Habilitar Cuenta'}
+                             <button disabled={saving} type="submit" className="w-full bg-indigo-600 text-white py-6 rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-stone-900 transition-all flex items-center justify-center gap-3">
+                                {saving ? 'Sincronizando...' : (editingUser ? 'Actualizar Acceso' : 'Habilitar Cuenta')}
                             </button>
                         </form>
                     </div>
