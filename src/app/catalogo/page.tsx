@@ -14,13 +14,23 @@ interface Product {
   sku: string;
 }
 
+interface CartItem extends Product {
+  quantity: number;
+}
+
 export default function CatalogoPage() {
-  const [products, setProducts] = useState<Product[]>([]);
+   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Todas");
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  
+  // Cart state
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const [checkoutStatus, setCheckoutStatus] = useState<{type: 'success'|'error', msg: string} | null>(null);
 
   // Normalización de la URL de API v3.6
   const rawUrl = process.env.NEXT_PUBLIC_API_URL || 'https://backen-inventario.vercel.app';
@@ -34,11 +44,25 @@ export default function CatalogoPage() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  useEffect(() => {
+   useEffect(() => {
     fetchProducts();
+    // Load cart from localStorage
+    const savedCart = localStorage.getItem('bellesas_cart');
+    if (savedCart) {
+      try {
+        setCart(JSON.parse(savedCart));
+      } catch (e) {
+        console.error("Error parsing cart", e);
+      }
+    }
   }, []);
 
-  const fetchProducts = async () => {
+  useEffect(() => {
+    // Save cart to localStorage
+    localStorage.setItem('bellesas_cart', JSON.stringify(cart));
+  }, [cart]);
+
+   const fetchProducts = async () => {
     setLoading(true);
     try {
       const res = await fetch(`${API_URL}/products`);
@@ -50,6 +74,75 @@ export default function CatalogoPage() {
       console.error("Error fetching products:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const addToCart = (product: Product) => {
+    if (product.stock <= 0) return;
+    setCart(prev => {
+      const existing = prev.find(item => item.id === product.id);
+      if (existing) {
+        return prev.map(item => item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item);
+      }
+      return [...prev, { ...product, quantity: 1 }];
+    });
+    setIsCartOpen(true);
+  };
+
+  const removeFromCart = (id: string) => {
+    setCart(prev => prev.filter(item => item.id !== id));
+  };
+
+  const updateQuantity = (id: string, delta: number) => {
+    setCart(prev => prev.map(item => {
+      if (item.id === id) {
+        const newQty = Math.max(1, item.quantity + delta);
+        return { ...item, quantity: newQty };
+      }
+      return item;
+    }));
+  };
+
+  const cartTotal = cart.reduce((acc, item) => acc + (item.precio * item.quantity), 0);
+
+  const handleCheckout = async () => {
+    if (cart.length === 0) return;
+    setIsCheckingOut(true);
+    setCheckoutStatus(null);
+    try {
+      const res = await fetch(`${API_URL}/sales`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          cliente_nombre: 'Cliente Web',
+          total: cartTotal,
+          metodo_pago: 'EFECTIVO', // Default for now
+          detalles: cart.map(item => ({
+            producto_id: item.id,
+            nombre_producto: item.nombre,
+            cantidad: item.quantity,
+            precio_unitario: item.precio,
+            subtotal: item.precio * item.quantity
+          }))
+        })
+      });
+
+      if (res.ok) {
+        setCheckoutStatus({ type: 'success', msg: '¡Compra realizada con éxito!' });
+        setCart([]);
+        setTimeout(() => {
+          setIsCartOpen(false);
+          setCheckoutStatus(null);
+        }, 3000);
+      } else {
+        const data = await res.json();
+        setCheckoutStatus({ type: 'error', msg: data.error || 'Error al procesar la compra' });
+      }
+    } catch (error) {
+      console.error(error);
+      setCheckoutStatus({ type: 'error', msg: 'Error de conexión' });
+    } finally {
+      setIsCheckingOut(false);
     }
   };
 
@@ -107,11 +200,16 @@ export default function CatalogoPage() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" size={16} />
             </div>
             
-            <button className="relative p-2 text-stone-900 hover:text-rose-600 transition-colors">
+             <button 
+              onClick={() => setIsCartOpen(true)}
+              className="relative p-2 text-stone-900 hover:text-rose-600 transition-colors"
+            >
               <ShoppingBag size={22} strokeWidth={1.5} />
-              <span className="absolute 0 right-0 bg-rose-600 text-white text-[9px] font-black h-4 w-4 rounded-full flex items-center justify-center">
-                0
-              </span>
+              {cart.length > 0 && (
+                <span className="absolute top-0 right-0 bg-rose-600 text-white text-[9px] font-black h-4 w-4 rounded-full flex items-center justify-center animate-in zoom-in-50 duration-300">
+                  {cart.reduce((acc, item) => acc + item.quantity, 0)}
+                </span>
+              )}
             </button>
           </div>
         </div>
@@ -212,8 +310,12 @@ export default function CatalogoPage() {
 
                       {/* Hover Overlay */}
                       <div className="absolute inset-x-0 bottom-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-                        <button className="w-full bg-stone-900/90 backdrop-blur-md text-white py-3 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-rose-600 transition-colors shadow-lg">
-                          Agregar al Bolso
+                         <button 
+                          onClick={() => addToCart(product)}
+                          disabled={product.stock <= 0}
+                          className="w-full bg-stone-900/90 backdrop-blur-md text-white py-3 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-rose-600 transition-colors shadow-lg disabled:opacity-50 disabled:bg-stone-400"
+                        >
+                          {product.stock <= 0 ? 'Agotado' : 'Agregar al Bolso'}
                         </button>
                       </div>
                       
@@ -286,6 +388,98 @@ export default function CatalogoPage() {
           </div>
         </div>
       </footer>
+      {/* BAG DRAWER */}
+      {isCartOpen && (
+        <div className="fixed inset-0 z-[100] flex justify-end">
+          <div className="absolute inset-0 bg-stone-900/40 backdrop-blur-sm" onClick={() => setIsCartOpen(false)} />
+          <div className="bg-white w-full max-w-md h-full relative z-10 shadow-2xl flex flex-col animate-in slide-in-from-right duration-300">
+            <div className="p-8 border-b border-stone-100 flex justify-between items-center bg-stone-50/50">
+              <div className="flex items-center gap-3">
+                <ShoppingBag size={20} className="text-rose-600" />
+                <h2 className="text-xl font-serif font-bold uppercase tracking-tight">Tu Bolso</h2>
+              </div>
+              <button onClick={() => setIsCartOpen(false)} className="p-2 hover:bg-white rounded-full transition-colors shadow-sm">
+                <X size={20} className="text-stone-400" />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-6 space-y-6">
+              {cart.length === 0 ? (
+                <div className="h-full flex flex-col items-center justify-center text-center space-y-4 opacity-40 grayscale">
+                  <ShoppingBag size={64} strokeWidth={1} />
+                  <p className="text-xs font-black uppercase tracking-[0.2em]">Tu bolso está vacío</p>
+                  <button onClick={() => setIsCartOpen(false)} className="px-6 py-3 bg-stone-900 text-white text-[10px] font-bold uppercase tracking-widest rounded-xl hover:bg-rose-600 transition-colors">
+                    Explorar Productos
+                  </button>
+                </div>
+              ) : (
+                cart.map(item => (
+                  <div key={item.id} className="flex gap-4 group">
+                    <div className="w-20 h-24 bg-stone-50 rounded-xl overflow-hidden flex-shrink-0 border border-stone-100">
+                      {item.imagen ? (
+                        <img src={item.imagen} alt={item.nombre} className="w-full h-full object-cover mix-blend-multiply" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-[8px] text-stone-300 font-bold uppercase text-center p-2">Sin imagen</div>
+                      )}
+                    </div>
+                    <div className="flex-1 flex flex-col pt-1">
+                      <div className="flex justify-between items-start mb-1">
+                        <h3 className="text-xs font-bold text-stone-900 leading-tight uppercase line-clamp-2">{item.nombre}</h3>
+                        <button onClick={() => removeFromCart(item.id)} className="text-stone-300 hover:text-red-500 transition-colors">
+                          <X size={14} />
+                        </button>
+                      </div>
+                      <span className="text-[10px] text-stone-400 uppercase tracking-wider mb-2">{item.categoria || 'Beauté'}</span>
+                      <div className="flex justify-between items-center mt-auto pb-1">
+                        <div className="flex items-center gap-3 bg-stone-50 px-3 py-1 rounded-lg border border-stone-100">
+                          <button onClick={() => updateQuantity(item.id, -1)} className="text-stone-400 hover:text-rose-600">-</button>
+                          <span className="text-xs font-bold w-4 text-center">{item.quantity}</span>
+                          <button onClick={() => updateQuantity(item.id, 1)} className="text-stone-400 hover:text-rose-600">+</button>
+                        </div>
+                        <span className="text-sm font-medium text-stone-900">S/ {(item.precio * item.quantity).toFixed(2)}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {cart.length > 0 && (
+              <div className="p-8 border-t border-stone-100 bg-stone-50/50 space-y-6">
+                {checkoutStatus && (
+                  <div className={`p-4 rounded-xl text-[10px] font-bold uppercase tracking-widest flex items-center gap-3 animate-in fade-in zoom-in-95 ${checkoutStatus.type === 'success' ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}`}>
+                    {checkoutStatus.type === 'success' ? <Check size={16} /> : <X size={16} />}
+                    {checkoutStatus.msg}
+                  </div>
+                )}
+                <div className="space-y-2">
+                  <div className="flex justify-between text-xs text-stone-500 uppercase tracking-widest font-bold">
+                    <span>Subtotal</span>
+                    <span>S/ {cartTotal.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm text-stone-900 font-black uppercase tracking-tighter italic">
+                    <span>Total Estimado</span>
+                    <span className="text-lg">S/ {cartTotal.toFixed(2)}</span>
+                  </div>
+                </div>
+                <button 
+                  disabled={isCheckingOut || checkoutStatus?.type === 'success'}
+                  onClick={handleCheckout}
+                  className="w-full bg-rose-600 text-white py-5 rounded-[1.5rem] text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-rose-600/20 hover:bg-stone-900 transition-all flex items-center justify-center gap-3 active:scale-95 disabled:opacity-50"
+                >
+                  {isCheckingOut ? (
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  ) : <Check size={16} />}
+                  {isCheckingOut ? 'Procesando...' : 'Finalizar Compra'}
+                </button>
+                <p className="text-[8px] text-stone-400 text-center uppercase tracking-widest font-bold">
+                  * Pago contra entrega disponible en Lima Metropolitana
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
