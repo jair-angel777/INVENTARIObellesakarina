@@ -16,6 +16,7 @@ import {
     ArrowLeft
 } from "lucide-react";
 import { formatCurrency, cn } from "@/lib/utils";
+import { fetchWithAuth } from "@/lib/api";
 
 export default function InventoryDashboard() {
     const [products, setProducts] = useState<any[]>([]);
@@ -29,8 +30,8 @@ export default function InventoryDashboard() {
     const handleDelete = async (id: string) => {
         if (!confirm("ESTAS SEGURO?")) return;
         try {
-            const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
-            const res = await fetch(`${apiUrl}/products/${id}`, {
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://backen-inventario.vercel.app/api";
+            const res = await fetchWithAuth(`${apiUrl}/products/${id}`, {
                 method: "DELETE",
             });
             if (res.ok) {
@@ -46,8 +47,8 @@ export default function InventoryDashboard() {
 
     const fetchProducts = async () => {
         try {
-            const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
-            const res = await fetch(`${apiUrl}/products`);
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://backen-inventario.vercel.app/api";
+            const res = await fetch(`${apiUrl}/products`); // GET productos sigue siendo público (o puedes usar fetchWithAuth si lo deseas proteger en el dashboard)
             const text = await res.text();
             try {
                 const data = JSON.parse(text);

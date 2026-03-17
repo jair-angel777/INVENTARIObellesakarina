@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth, Guard } from '@/context/AuthContext';
+import { fetchWithAuth } from '@/lib/api';
 
 interface Employee {
     id: string;
@@ -83,7 +84,7 @@ export default function EmployeesPage() {
         setLoading(true);
         try {
             const endpoint = activeTab === 'employees' ? '/employees' : '/users';
-            const res = await fetch(`${API_URL}${endpoint}`);
+            const res = await fetchWithAuth(`${API_URL}${endpoint}`);
             const data = await res.json();
             if (activeTab === 'employees') setEmployees(Array.isArray(data) ? data : []);
             else setUsers(Array.isArray(data) ? data : []);
@@ -99,7 +100,7 @@ export default function EmployeesPage() {
         setSaving(true);
         setNotification(null);
         try {
-            const res = await fetch(`${API_URL}/employees${editingEmployee ? `/${editingEmployee.id}` : ''}`, {
+            const res = await fetchWithAuth(`${API_URL}/employees${editingEmployee ? `/${editingEmployee.id}` : ''}`, {
                 method: editingEmployee ? 'PATCH' : 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(empForm)
@@ -141,7 +142,7 @@ export default function EmployeesPage() {
         };
 
         try {
-            const res = await fetch(`${API_URL}/users${editingUser ? `/${editingUser.id}` : ''}`, {
+            const res = await fetchWithAuth(`${API_URL}/users${editingUser ? `/${editingUser.id}` : ''}`, {
                 method: editingUser ? 'PATCH' : 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
@@ -174,7 +175,7 @@ export default function EmployeesPage() {
     const handleDeleteEmployee = async (id: string) => {
         if (!window.confirm('¿Estás seguro de eliminar este empleado?')) return;
         try {
-            const res = await fetch(`${API_URL}/employees/${id}`, { method: 'DELETE' });
+            const res = await fetchWithAuth(`${API_URL}/employees/${id}`, { method: 'DELETE' });
             if (res.ok) fetchData();
             else window.alert('Error al eliminar');
         } catch (error) {
@@ -185,7 +186,7 @@ export default function EmployeesPage() {
     const handleDeleteUser = async (id: string) => {
         if (!window.confirm('¿Estás seguro de eliminar este usuario?')) return;
         try {
-            const res = await fetch(`${API_URL}/users/${id}`, { method: 'DELETE' });
+            const res = await fetchWithAuth(`${API_URL}/users/${id}`, { method: 'DELETE' });
             if (res.ok) fetchData();
             else window.alert('Error al eliminar');
         } catch (error) {

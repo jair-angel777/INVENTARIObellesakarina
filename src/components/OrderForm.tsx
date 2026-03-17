@@ -19,9 +19,9 @@ import {
     ChevronLeft,
     X,
     Printer,
-    ArrowRightCircle,
     ShoppingBag
 } from "lucide-react";
+import { fetchWithAuth } from "@/lib/api";
 
 interface Product {
     id: string;
@@ -63,10 +63,10 @@ export function OrderForm() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
+                const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://backen-inventario.vercel.app/api";
                 const [suppRes, prodRes] = await Promise.all([
-                    fetch(`${apiUrl}/suppliers`),
-                    fetch(`${apiUrl}/products`)
+                    fetchWithAuth(`${apiUrl}/suppliers`),
+                    fetch(`${apiUrl}/products`) // Productos publico
                 ]);
                 const suppData = await suppRes.json();
                 const prodData = await prodRes.json();
@@ -130,8 +130,8 @@ export function OrderForm() {
 
         setSaving(true);
         try {
-            const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
-            const res = await fetch(`${apiUrl}/orders`, {
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://backen-inventario.vercel.app/api";
+            const res = await fetchWithAuth(`${apiUrl}/orders`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({

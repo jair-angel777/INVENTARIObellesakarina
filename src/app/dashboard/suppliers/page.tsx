@@ -15,6 +15,7 @@ import {
     Edit3,
     ArrowRight
 } from "lucide-react";
+import { fetchWithAuth } from "@/lib/api";
 
 interface Supplier {
     id: string;
@@ -51,7 +52,7 @@ export default function SuppliersPage() {
     const fetchSuppliers = async () => {
         setLoading(true);
         try {
-            const res = await fetch(`${API_URL}/suppliers`);
+            const res = await fetchWithAuth(`${API_URL}/suppliers`);
             const data = await res.json();
             setSuppliers(Array.isArray(data) ? data : []);
         } catch (error) {
@@ -66,7 +67,7 @@ export default function SuppliersPage() {
         setSaving(true);
         setAlert(null);
         try {
-            const res = await fetch(`${API_URL}/suppliers`, {
+            const res = await fetchWithAuth(`${API_URL}/suppliers`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(form)

@@ -15,6 +15,7 @@ import {
     Truck
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Guard } from "@/context/AuthContext";
 
 export default function SelectionPanel() {
     const menuItems = [
@@ -110,8 +111,9 @@ export default function SelectionPanel() {
     ];
 
     return (
-        <div className="min-h-screen bg-[#FDFBF7] p-4 md:p-8 selection:bg-orange-500/30">
-            <div className="max-w-7xl mx-auto space-y-12">
+        <Guard roles={['GERENTE', 'EMPLEADO']}>
+            <div className="min-h-screen bg-[#FDFBF7] p-4 md:p-8 selection:bg-orange-500/30">
+                <div className="max-w-7xl mx-auto space-y-12">
                 {/* Header */}
                 <header className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
@@ -200,5 +202,6 @@ export default function SelectionPanel() {
                 </footer>
             </div>
         </div>
+        </Guard>
     );
 }

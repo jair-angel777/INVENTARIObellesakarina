@@ -12,8 +12,12 @@ import {
     Package,
     Tag,
     Clock,
-    CheckCircle2
+    CheckCircle2,
+    X,
+    Printer,
+    Download
 } from "lucide-react";
+import { fetchWithAuth } from "@/lib/api";
 
 interface OrderDetail {
     id: string;
@@ -31,21 +35,37 @@ interface Order {
     subtotal: number;
     estado: string;
     notas: string;
+    proveedor_id: string;
     detalles: OrderDetail[];
 }
 
 export default function OrdersHistoryPage() {
     const [orders, setOrders] = useState<Order[]>([]);
+    const [suppliers, setSuppliers] = useState<any[]>([]);
+    const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         fetchOrders();
+        fetchSuppliers();
     }, []);
+
+    const fetchSuppliers = async () => {
+        try {
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
+            // Usamos fetchWithAuth para que la seguridad implementada funcione
+            const res = await fetchWithAuth(`${apiUrl}/suppliers`);
+            const data = await res.json();
+            setSuppliers(Array.isArray(data) ? data : []);
+        } catch (error) {
+            console.error("Error fetching suppliers:", error);
+        }
+    };
 
     const fetchOrders = async () => {
         try {
             const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
-            const res = await fetch(`${apiUrl}/orders`);
+            const res = await fetchWithAuth(`${apiUrl}/orders`);
             const data = await res.json();
             setOrders(Array.isArray(data) ? data : []);
         } catch (error) {
@@ -58,7 +78,7 @@ export default function OrdersHistoryPage() {
     const handleUpdateStatus = async (orderId: string, newStatus: string) => {
         try {
             const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
-            const res = await fetch(`${apiUrl}/orders/${orderId}/status`, {
+            const res = await fetchWithAuth(`${apiUrl}/orders/${orderId}/status`, {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ estado: newStatus })
@@ -73,6 +93,34 @@ export default function OrdersHistoryPage() {
         } catch (error) {
             console.error("Error updating status:", error);
         }
+    };
+
+    const handleDownloadPDF = async () => {
+        const element = document.getElementById('boleta-formal');
+        if (!element) return;
+        
+        // Dynamically import html2pdf to avoid SSR issues
+        const html2pdf = (await import('html2pdf.js')).default;
+        const opt: any = {
+            margin:       0.5,
+            filename:     `orden_compra_${selectedOrder?.id.slice(-5).toUpperCase() || 'doc'}.pdf`,
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2 },
+            jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+        };
+        
+        html2pdf().set(opt).from(element).save();
+    };
+
+    const handlePrint = () => {
+        const printContent = document.getElementById('boleta-formal');
+        if (!printContent) return;
+
+        const originalContents = document.body.innerHTML;
+        document.body.innerHTML = printContent.innerHTML;
+        window.print();
+        document.body.innerHTML = originalContents;
+        window.location.reload(); // Reload to restore event listeners after DOM replacement
     };
 
     return (
@@ -215,7 +263,10 @@ export default function OrdersHistoryPage() {
                                                             Recibido
                                                         </button>
                                                     )}
-                                                    <button className="bg-stone-100 hover:bg-stone-900 hover:text-white p-3 rounded-xl transition-all group-hover:scale-105 active:scale-95">
+                                                    <button 
+                                                        onClick={() => setSelectedOrder(order)}
+                                                        className="bg-stone-100 hover:bg-stone-900 hover:text-white p-3 rounded-xl transition-all group-hover:scale-105 active:scale-95"
+                                                    >
                                                         <ArrowUpRight size={18} />
                                                     </button>
                                                 </div>
@@ -245,6 +296,119 @@ export default function OrdersHistoryPage() {
                     </button>
                 </div>
             </div>
+
+            {/* Modal de la Boleta Formal */}
+            {selectedOrder && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-sm">
+                    <div className="bg-white rounded-3xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95">
+                        {/* Header del Modal */}
+                        <div className="px-6 py-4 border-b border-stone-100 flex items-center justify-between bg-stone-50">
+                            <h3 className="text-sm font-black uppercase tracking-widest text-stone-500">Visualización de Orden</h3>
+                            <div className="flex gap-2">
+                                <button onClick={handlePrint} className="p-2 text-stone-500 hover:text-stone-900 hover:bg-white rounded-lg transition-colors shadow-sm" title="Imprimir">
+                                    <Printer size={18} />
+                                </button>
+                                <button onClick={handleDownloadPDF} className="p-2 text-stone-500 hover:text-red-600 hover:bg-white rounded-lg transition-colors shadow-sm" title="Descargar PDF">
+                                    <Download size={18} />
+                                </button>
+                                <button onClick={() => setSelectedOrder(null)} className="p-2 text-stone-400 hover:text-stone-600 hover:bg-stone-200 rounded-lg transition-colors" title="Cerrar">
+                                    <X size={18} />
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Área Imprimible de la Boleta */}
+                        <div className="overflow-y-auto flex-1 p-8 bg-white document-body">
+                            <div id="boleta-formal" className="max-w-xl mx-auto space-y-8 font-mono text-sm text-stone-900 print:p-0">
+                                
+                                {/* Encabezado Formal */}
+                                <div className="border border-stone-300 rounded-xl p-4 flex flex-col md:flex-row justify-between items-start md:items-center bg-stone-50/50">
+                                    <div>
+                                        <h2 className="text-xl font-bold tracking-widest">ORDEN DE COMPRA</h2>
+                                        <p className="font-semibold text-stone-600 mt-1">N° {selectedOrder.id.slice(-5).toUpperCase()}</p>
+                                    </div>
+                                    <div className="mt-4 md:mt-0 text-right">
+                                        <p className="font-medium text-stone-600">Fecha: {new Date(selectedOrder.fecha).toLocaleDateString()}</p>
+                                    </div>
+                                </div>
+
+                                {/* Información de Empresa y Proveedor */}
+                                <div className="grid grid-cols-1 gap-6">
+                                    <div className="border border-stone-200 rounded-xl p-4 bg-stone-50/30">
+                                        <h4 className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-2 border-b border-stone-200 pb-2">Empresa:</h4>
+                                        <p><span className="font-semibold">Empresa:</span> Bellesas Karina</p>
+                                        <p><span className="font-semibold">RUC:</span> 12345678912</p>
+                                        <p><span className="font-semibold">Dirección:</span> Lima, Perú</p>
+                                    </div>
+
+                                    {(() => {
+                                        const prov = suppliers.find(s => s.id === selectedOrder.proveedor_id) || {};
+                                        return (
+                                            <div className="border border-stone-200 rounded-xl p-4 bg-stone-50/30">
+                                                <h4 className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-2 border-b border-stone-200 pb-2">Proveedor:</h4>
+                                                <p><span className="font-semibold">Proveedor:</span> {prov.nombre || 'Desconocido'}</p>
+                                                <p><span className="font-semibold">RUC / ID:</span> {prov.notas?.match(/ruc:?\s*(\d+)/i)?.[1] || 'XXXXX'}</p>
+                                                <p><span className="font-semibold">Correo:</span> {prov.email || 'No registrado'}</p>
+                                                <p><span className="font-semibold">Teléfono:</span> {prov.telefono || 'No registrado'}</p>
+                                            </div>
+                                        );
+                                    })()}
+                                </div>
+
+                                {/* Tabla de Productos */}
+                                <div>
+                                    <h4 className="text-lg font-bold mb-4">Tabla de productos</h4>
+                                    <table className="w-full text-left border-collapse">
+                                        <thead>
+                                            <tr className="border-b-2 border-stone-300">
+                                                <th className="py-2 font-bold">Producto</th>
+                                                <th className="py-2 font-bold text-center">Cantidad</th>
+                                                <th className="py-2 font-bold text-right">Precio</th>
+                                                <th className="py-2 font-bold text-right">Subtotal</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-stone-200">
+                                            {selectedOrder.detalles.map((d, index) => (
+                                                <tr key={index}>
+                                                    <td className="py-3 pr-4">{d.nombre_producto}</td>
+                                                    <td className="py-3 text-center">{d.cantidad}</td>
+                                                    <td className="py-3 text-right">S/ {d.costo_unitario.toFixed(2)}</td>
+                                                    <td className="py-3 text-right">S/ {d.subtotal.toFixed(2)}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                {/* Resumen Financiero */}
+                                <div className="flex justify-end pt-4 border-t-2 border-stone-300">
+                                    <div className="w-48 space-y-2 text-right">
+                                        <p className="flex justify-between">
+                                            <span className="font-bold text-stone-500">Subtotal:</span>
+                                            <span>S/ {selectedOrder.subtotal.toFixed(2)}</span>
+                                        </p>
+                                        <p className="flex justify-between text-xs text-stone-400">
+                                            <span>IGV (18%):</span>
+                                            <span>S/ {selectedOrder.igv.toFixed(2)}</span>
+                                        </p>
+                                        <div className="border-t border-stone-300 pt-2 font-bold text-lg flex justify-between">
+                                            <span>TOTAL:</span>
+                                            <span>S/ {selectedOrder.total.toFixed(2)}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                {/* Nota en el pie */}
+                                {selectedOrder.notas && (
+                                    <div className="mt-8 text-xs italic text-stone-500 border-t border-dashed border-stone-300 pt-4">
+                                        <span className="font-bold">Nota de la orden:</span> {selectedOrder.notas}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

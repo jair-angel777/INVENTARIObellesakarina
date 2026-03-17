@@ -15,6 +15,7 @@ import {
     DollarSign,
     ShoppingBag
 } from "lucide-react";
+import { fetchWithAuth } from "@/lib/api";
 
 interface SaleDetail {
     id: string;
@@ -47,7 +48,7 @@ export default function SalesPage() {
     const fetchSales = async () => {
         setLoading(true);
         try {
-            const res = await fetch(`${API_URL}/sales`);
+            const res = await fetchWithAuth(`${API_URL}/sales`);
             if (res.ok) {
                 const data = await res.json();
                 setSales(data);

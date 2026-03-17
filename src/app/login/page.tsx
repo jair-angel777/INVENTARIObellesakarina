@@ -39,7 +39,8 @@ export default function LoginPage() {
 
             if (res.ok) {
                 // Éxito: Guardar sesión y redirigir
-                setAuth(data.rol);
+                localStorage.setItem('bellesas_token', data.token);
+                setAuth(data.user.rol);
                 router.push("/dashboard");
             } else {
                 setError(data.error || "Error al iniciar sesión");

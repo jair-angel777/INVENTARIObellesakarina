@@ -13,6 +13,7 @@ import {
     Image as ImageIcon,
     Truck
 } from "lucide-react";
+import { fetchWithAuth } from "@/lib/api";
 
 interface ProductFormProps {
     initialData?: any;
@@ -39,8 +40,8 @@ export function ProductForm({ initialData, isEdit = false }: ProductFormProps) {
     React.useEffect(() => {
         const fetchProveedores = async () => {
             try {
-                const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
-                const res = await fetch(`${apiUrl}/suppliers`);
+                const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://backen-inventario.vercel.app/api";
+                const res = await fetchWithAuth(`${apiUrl}/suppliers`);
                 if (res.ok) {
                     const data = await res.json();
                     setProveedores(data);
@@ -61,7 +62,7 @@ export function ProductForm({ initialData, isEdit = false }: ProductFormProps) {
         const method = isEdit ? "PATCH" : "POST";
 
         try {
-            const res = await fetch(url, {
+            const res = await fetchWithAuth(url, {
                 method: method,
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({

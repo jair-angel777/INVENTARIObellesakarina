@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "clsx": "latest",
+    "html2pdf.js": "^0.14.0",
     "lucide-react": "latest",
     "next": "latest",
     "react": "latest",
