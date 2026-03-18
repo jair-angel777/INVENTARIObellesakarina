@@ -4,4 +4,6 @@ out
 build
 # Keep environment variables out of version control
 .env
+.env.local
+.backend_tmp
 /src/generated/prisma
