@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Lock, User, Eye, EyeOff, LogIn } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
@@ -57,11 +58,13 @@ export default function LoginPage() {
         <div className="min-h-screen bg-[#FDFBF7] flex items-center justify-center p-4">
             <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-3xl border border-orange-200 shadow-xl shadow-orange-900/5">
                 <div className="text-center">
-                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-orange-100 text-orange-600 mb-4">
-                        <Lock size={32} />
+                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-rose-50 text-rose-600 mb-6 group-hover:scale-110 transition-transform duration-500">
+                        <User size={32} />
                     </div>
-                    <h2 className="text-3xl font-bold text-stone-900">Seguridad</h2>
-                    <p className="text-stone-500 mt-2">Acceso exclusivo: Gerente General</p>
+                    <h2 className="text-3xl font-serif font-bold text-stone-900 tracking-tight">Bienvenido</h2>
+                    <p className="text-stone-500 mt-3 font-medium text-sm leading-relaxed px-4">
+                        Inicia sesión para acceder a tus pedidos y beneficios exclusivos de Bellesas Karina.
+                    </p>
                 </div>
 
                 <form onSubmit={handleLogin} className="space-y-6">
@@ -91,19 +94,19 @@ export default function LoginPage() {
                         <div className="space-y-2">
                             <label className="text-sm font-bold text-stone-600 ml-1">Contraseña</label>
                             <div className="relative">
-                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" size={20} />
+                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-300" size={20} />
                                 <input
                                     required
                                     type={showPassword ? "text" : "password"}
                                     placeholder="••••••••"
-                                    className="w-full bg-stone-50 border border-orange-100 rounded-xl py-3 pl-10 pr-12 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500/40 transition-all text-stone-800 tabular-nums"
+                                    className="w-full bg-stone-50 border border-stone-200 rounded-xl py-3.5 pl-10 pr-12 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500/40 transition-all text-stone-800 tabular-nums"
                                     value={formData.password}
                                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                                 />
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-orange-600 transition-colors"
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-rose-600 transition-colors"
                                 >
                                     {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                                 </button>
@@ -111,23 +114,28 @@ export default function LoginPage() {
                         </div>
                     </div>
 
+                    <div className="flex items-center justify-between px-1">
+                        <Link href="#" className="text-xs font-bold text-rose-600 hover:underline">¿Olvidaste tu contraseña?</Link>
+                        <Link href="#" className="text-xs font-bold text-stone-400 hover:text-stone-600 transition-colors">Crear Cuenta</Link>
+                    </div>
+
                     <button
                         disabled={loading}
                         type="submit"
-                        className="w-full flex items-center justify-center gap-3 bg-orange-600 hover:bg-orange-500 text-white py-4 rounded-2xl font-bold text-lg transition-all hover:scale-[1.02] active:scale-95 shadow-lg shadow-orange-900/20 disabled:opacity-50 disabled:scale-100"
+                        className="w-full flex items-center justify-center gap-3 bg-stone-900 hover:bg-stone-800 text-white py-4 rounded-2xl font-bold text-lg transition-all hover:scale-[1.02] active:scale-95 shadow-xl shadow-stone-900/10 disabled:opacity-50 disabled:scale-100"
                     >
                         {loading ? (
                             <div className="h-6 w-6 border-3 border-white/30 border-t-white rounded-full animate-spin" />
                         ) : (
                             <>
-                                <LogIn size={22} />
-                                Entrar al Sistema
+                                <LogIn size={22} strokeWidth={2.5} />
+                                Iniciar Sesión
                             </>
                         )}
                     </button>
 
-                    <p className="text-center text-xs text-stone-400">
-                        BellesasKarina © 2026 - Módulo de Seguridad Interno
+                    <p className="text-center text-[10px] text-stone-400 font-bold uppercase tracking-widest pt-4">
+                        BellesasKarina © 2026
                     </p>
                 </form>
             </div>

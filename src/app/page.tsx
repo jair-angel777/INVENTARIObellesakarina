@@ -71,12 +71,12 @@ export default function LandingPage() {
                 <Search strokeWidth={1.5} size={22} />
               </button>
               
-              {/* Acceso Inventario */}
+              {/* Acceso Clientes */}
               <Link 
                 href="/login" 
-                aria-label="Acceso Inventario"
+                aria-label="Acceso Clientes"
                 className="text-stone-900 hover:text-rose-600 transition-colors flex items-center gap-2 group"
-                title="Acceso al Sistema de Inventario"
+                title="Acceso Clientes"
               >
                 <div className="bg-stone-100 p-2 rounded-full group-hover:bg-rose-50 transition-colors">
                   <User strokeWidth={1.5} size={20} />
@@ -128,17 +128,16 @@ export default function LandingPage() {
               <div className="flex flex-col sm:flex-row items-center lg:justify-start justify-center gap-4 pt-4">
                 <Link 
                   href="/catalogo" 
-                  className="w-full sm:w-auto px-8 py-4 bg-white text-stone-900 text-[10px] sm:text-xs font-black uppercase tracking-[0.15em] hover:bg-stone-100 transition-all rounded-full flex items-center justify-center gap-2"
+                  className="w-full sm:w-auto px-10 py-5 bg-white text-stone-900 text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] hover:bg-stone-100 transition-all rounded-full flex items-center justify-center gap-2 shadow-2xl shadow-rose-950/20"
                 >
-                  <span className="text-lg leading-none">☺</span>
-                  Ir al Catálogo
+                  <span className="text-lg leading-none">🛒</span>
+                  Ver Colección
                 </Link>
                 <Link 
-                  href="/login" 
-                  className="w-full sm:w-auto px-8 py-4 bg-transparent text-white border border-white/30 text-[10px] sm:text-xs font-black uppercase tracking-[0.15em] hover:bg-white/10 transition-all rounded-full flex items-center justify-center gap-2"
+                  href="#nosotros" 
+                  className="w-full sm:w-auto px-10 py-5 bg-transparent text-white border border-white/30 text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] hover:bg-white/10 transition-all rounded-full flex items-center justify-center gap-2"
                 >
-                  <ShieldCheck size={16} />
-                  Sistema de Inventario
+                  Descubrir Más
                 </Link>
               </div>
             </div>
@@ -193,6 +192,61 @@ export default function LandingPage() {
               <div>
                 <h4 className="font-bold text-sm tracking-wide uppercase">Compra Segura</h4>
                 <p className="text-xs text-stone-500 mt-1">Tus datos están protegidos siempre</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* SECCIÓN NOSOTROS */}
+        <section id="nosotros" className="py-32 bg-[#FAF8F5] overflow-hidden">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+              <div className="relative">
+                <div className="absolute -top-10 -left-10 w-40 h-40 bg-rose-100 rounded-full blur-3xl opacity-60 animate-pulse" />
+                <div className="relative z-10 space-y-8">
+                  <header>
+                    <span className="text-rose-600 font-bold uppercase tracking-[0.3em] text-[10px]">Nuestra Historia</span>
+                    <h3 className="text-4xl md:text-6xl font-serif font-medium tracking-tight mt-4 text-stone-900 leading-tight">
+                      Curaduría de <br />
+                      <span className="italic text-rose-500">Belleza Global</span>
+                    </h3>
+                  </header>
+                  
+                  <div className="space-y-6 text-stone-600 leading-relaxed font-light text-lg">
+                    <p>
+                      <strong>Bellesas Karina</strong> nace de la pasión por acercar las marcas de cosmética más exclusivas del mundo a tu puerta. No somos solo una tienda; somos un destino de confianza para quienes buscan resultados reales y calidad garantizada.
+                    </p>
+                    <p>
+                      Nuestra fundadora, <strong>Karina Paris</strong>, seleccionó cada marca de nuestro catálogo bajo una premisa simple: la belleza auténtica comienza con productos de calidad superior. Desde los rincones más innovadores de Europa hasta los favoritos globales, traemos lo mejor para ti.
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-8 pt-6">
+                    <div>
+                      <h4 className="text-3xl font-serif font-bold text-stone-900">20+</h4>
+                      <p className="text-xs uppercase tracking-widest text-stone-400 mt-1">Marcas Exclusivas</p>
+                    </div>
+                    <div>
+                      <h4 className="text-3xl font-serif font-bold text-stone-900">100%</h4>
+                      <p className="text-xs uppercase tracking-widest text-stone-400 mt-1">Originalidad</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="relative">
+                <div className="aspect-[4/5] rounded-[3rem] overflow-hidden shadow-2xl rotate-3 hover:rotate-0 transition-transform duration-700">
+                  <img 
+                    src="https://images.unsplash.com/photo-1512496011212-32c70115b615?q=80&w=1000&auto=format&fit=crop" 
+                    alt="Bellesas Karina Store" 
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="absolute -bottom-8 -right-8 w-48 h-48 bg-white p-4 rounded-3xl shadow-xl -rotate-6 hidden sm:block">
+                   <div className="w-full h-full border border-stone-100 rounded-2xl flex flex-col items-center justify-center text-center p-4">
+                      <ShieldCheck size={32} className="text-rose-600 mb-2" />
+                      <p className="text-[9px] font-black uppercase tracking-widest text-stone-900">Sello de Autenticidad</p>
+                   </div>
+                </div>
               </div>
             </div>
           </div>
