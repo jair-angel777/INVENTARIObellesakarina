@@ -337,5 +337,6 @@ export function ProductForm({ initialData, isEdit = false }: ProductFormProps) {
                 </button>
             </div>
         </form>
+    </>
     );
 }
