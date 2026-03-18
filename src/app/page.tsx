@@ -357,7 +357,7 @@ export default function LandingPage() {
                  Acceso exclusivo para personal autorizado de Bellesas Karina.
                </p>
                <Link 
-                 href="/login" 
+                 href="/admin/login" 
                  className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-stone-800 hover:bg-rose-600 text-white text-xs font-bold uppercase tracking-widest rounded-xl transition-all"
                >
                  <ShieldCheck size={16} /> Entrar al Sistema
