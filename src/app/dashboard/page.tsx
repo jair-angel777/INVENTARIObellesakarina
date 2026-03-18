@@ -16,6 +16,9 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Guard } from "@/context/AuthContext";
+import { BarcodeScanner } from "@/components/BarcodeScanner";
+import { fetchWithAuth } from "@/lib/api";
+import { X, Search, DollarSign, Package as PackageIcon, Info } from "lucide-react";
 
 export default function SelectionPanel() {
     const menuItems = [
@@ -110,8 +113,121 @@ export default function SelectionPanel() {
         }
     ];
 
+    const [scannedProduct, setScannedProduct] = React.useState<any>(null);
+    const [scanning, setScanning] = React.useState(false);
+
+    const handleScan = async (code: string) => {
+        setScanning(true);
+        try {
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://backen-inventario.vercel.app/api";
+            // Buscamos productos que coincidan con el SKU
+            const res = await fetchWithAuth(`${apiUrl}/products`);
+            if (res.ok) {
+                const products = await res.json();
+                const product = products.find((p: any) => p.sku === code || p.id === code);
+                
+                if (product) {
+                    setScannedProduct(product);
+                } else {
+                    console.log("Producto no encontrado:", code);
+                    // Opcional: Mostrar un toast o alerta discreta
+                }
+            }
+        } catch (error) {
+            console.error("Error al buscar producto escaneado:", error);
+        } finally {
+            setScanning(false);
+        }
+    };
+
     return (
         <Guard roles={['GERENTE', 'EMPLEADO']}>
+            <BarcodeScanner onScan={handleScan} />
+            
+            {/* Modal de Producto Escaneado */}
+            {scannedProduct && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+                    <div className="bg-white rounded-[2.5rem] shadow-2xl max-w-lg w-full overflow-hidden border border-stone-200 animate-in zoom-in-95 duration-300">
+                        <div className="relative h-64 bg-stone-100">
+                            {scannedProduct.imagen ? (
+                                <img 
+                                    src={scannedProduct.imagen} 
+                                    alt={scannedProduct.nombre} 
+                                    className="w-full h-full object-cover"
+                                />
+                            ) : (
+                                <div className="w-full h-full flex items-center justify-center text-stone-300">
+                                    <PackageIcon size={64} strokeWidth={1} />
+                                </div>
+                            )}
+                            <button 
+                                onClick={() => setScannedProduct(null)}
+                                className="absolute top-4 right-4 p-2 bg-white/80 backdrop-blur-md rounded-full text-stone-900 hover:bg-white transition-colors shadow-lg"
+                            >
+                                <X size={20} />
+                            </button>
+                            <div className="absolute bottom-4 left-4">
+                                <span className="px-4 py-2 bg-orange-600 text-white text-[10px] font-black tracking-widest uppercase rounded-full shadow-lg">
+                                    Escaneado: {scannedProduct.sku}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div className="p-8 space-y-6">
+                            <div>
+                                <h2 className="text-3xl font-serif font-bold text-stone-900 leading-tight">
+                                    {scannedProduct.nombre}
+                                </h2>
+                                <p className="text-stone-500 font-medium">{scannedProduct.categoria}</p>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="bg-orange-50 p-4 rounded-2xl border border-orange-100">
+                                    <p className="text-[10px] font-bold text-orange-600 uppercase tracking-widest mb-1">Precio</p>
+                                    <p className="text-2xl font-black text-orange-900 flex items-center">
+                                        <span className="text-sm mr-1">S/</span>
+                                        {scannedProduct.precio.toFixed(2)}
+                                    </p>
+                                </div>
+                                <div className={cn(
+                                    "p-4 rounded-2xl border",
+                                    scannedProduct.stock <= (scannedProduct.stock_minimo || 5) 
+                                        ? "bg-red-50 border-red-100" 
+                                        : "bg-emerald-50 border-emerald-100"
+                                )}>
+                                    <p className={cn(
+                                        "text-[10px] font-bold uppercase tracking-widest mb-1",
+                                        scannedProduct.stock <= (scannedProduct.stock_minimo || 5) ? "text-red-600" : "text-emerald-600"
+                                    )}>Stock Actual</p>
+                                    <p className={cn(
+                                        "text-2xl font-black flex items-center",
+                                        scannedProduct.stock <= (scannedProduct.stock_minimo || 5) ? "text-red-900" : "text-emerald-900"
+                                    )}>
+                                        {scannedProduct.stock}
+                                        <span className="text-xs ml-2 font-bold uppercase opacity-60">unids</span>
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="flex gap-3">
+                                <Link 
+                                    href={`/dashboard/inventory?edit=${scannedProduct.id}`}
+                                    className="flex-1 bg-stone-900 hover:bg-stone-800 text-white py-4 rounded-2xl font-bold text-center transition-all hover:scale-[1.02] active:scale-95"
+                                >
+                                    Editar Producto
+                                </Link>
+                                <button 
+                                    onClick={() => setScannedProduct(null)}
+                                    className="px-6 py-4 bg-stone-100 hover:bg-stone-200 text-stone-600 rounded-2xl font-bold transition-all"
+                                >
+                                    Cerrar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <div className="min-h-screen bg-[#FDFBF7] p-4 md:p-8 selection:bg-orange-500/30">
                 <div className="max-w-7xl mx-auto space-y-12">
                 {/* Header */}

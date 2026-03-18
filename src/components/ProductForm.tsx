@@ -11,9 +11,11 @@ import {
     Layout,
     Hash,
     Image as ImageIcon,
-    Truck
+    Truck,
+    UploadCloud
 } from "lucide-react";
 import { fetchWithAuth } from "@/lib/api";
+import Script from "next/script";
 
 interface ProductFormProps {
     initialData?: any;
@@ -89,8 +91,48 @@ export function ProductForm({ initialData, isEdit = false }: ProductFormProps) {
         }
     };
 
+    const handleUploadClick = () => {
+        // @ts-ignore
+        const widget = window.cloudinary.createUploadWidget(
+            {
+                cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "dimv8kos8",
+                uploadPreset: process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "preajuste de bellas",
+                sources: ["local", "url", "camera"],
+                multiple: false,
+                clientAllowedFormats: ["png", "jpg", "jpeg", "webp"],
+                maxFileSize: 2000000, // 2MB
+                language: "es",
+                text: {
+                    es: {
+                        menu: {
+                            files: "Mis Archivos",
+                            web: "URL Web",
+                            camera: "Cámara"
+                        },
+                        local: {
+                            browse: "Buscar",
+                            dd_title_single: "Arrastra tu imagen aquí"
+                        }
+                    }
+                }
+            },
+            (error: any, result: any) => {
+                if (!error && result && result.event === "success") {
+                    console.log("Imagen subida con éxito:", result.info.secure_url);
+                    setFormData({ ...formData, imagen: result.info.secure_url });
+                }
+            }
+        );
+        widget.open();
+    };
+
     return (
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <>
+            <Script 
+                src="https://upload-widget.cloudinary.com/global/all.js" 
+                strategy="afterInteractive" 
+            />
+            <form onSubmit={handleSubmit} className="space-y-6">
             <div className="bg-white p-6 md:p-8 rounded-3xl border border-orange-200 shadow-sm backdrop-blur-md space-y-8">
                 {/* Basic Info Section */}
                 <div className="space-y-4">
@@ -239,16 +281,37 @@ export function ProductForm({ initialData, isEdit = false }: ProductFormProps) {
                         <ImageIcon size={18} />
                         Imagen (URL)
                     </h2>
-                    <div className="space-y-2">
-                        <label className="text-sm font-bold text-stone-600 ml-1">URL de la Imagen</label>
-                        <input
-                            type="url"
-                            placeholder="https://ejemplo.com/producto.jpg"
-                            className="w-full bg-stone-50 border border-stone-200 rounded-xl py-2.5 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/30 transition-all text-stone-800"
-                            value={formData.imagen}
-                            onChange={e => setFormData({ ...formData, imagen: e.target.value })}
-                        />
+                    <div className="flex flex-col sm:flex-row gap-4">
+                        <div className="flex-1 space-y-2">
+                            <label className="text-sm font-bold text-stone-600 ml-1">URL de la Imagen</label>
+                            <input
+                                type="url"
+                                placeholder="https://ejemplo.com/producto.jpg"
+                                className="w-full bg-stone-50 border border-stone-200 rounded-xl py-2.5 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/30 transition-all text-stone-800"
+                                value={formData.imagen}
+                                onChange={e => setFormData({ ...formData, imagen: e.target.value })}
+                            />
+                        </div>
+                        <div className="flex flex-col justify-end">
+                            <button
+                                type="button"
+                                onClick={handleUploadClick}
+                                className="flex items-center justify-center gap-2 bg-blue-50 hover:bg-blue-100 text-blue-600 px-6 py-2.5 rounded-xl font-bold border border-blue-200 transition-all hover:scale-[1.02] active:scale-95"
+                            >
+                                <UploadCloud size={18} />
+                                Subir Imagen
+                            </button>
+                        </div>
                     </div>
+                    {formData.imagen && (
+                        <div className="mt-4 relative w-32 h-32 rounded-2xl overflow-hidden border-2 border-blue-100 shadow-sm">
+                            <img 
+                                src={formData.imagen} 
+                                alt="Vista previa" 
+                                className="w-full h-full object-cover"
+                            />
+                        </div>
+                    )}
                 </div>
             </div>
 
