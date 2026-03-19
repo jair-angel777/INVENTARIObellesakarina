@@ -17,7 +17,7 @@ import {
     AlertCircle
 } from "lucide-react";
 import { fetchWithAuth } from "@/lib/api";
-import BarcodeScanner from "@/components/BarcodeScanner";
+import { BarcodeScanner } from "@/components/BarcodeScanner";
 
 interface SaleItem {
     producto_id: string;
