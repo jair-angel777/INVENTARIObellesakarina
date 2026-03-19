@@ -37,7 +37,7 @@ export default function SelectionPanel() {
             title: "Ventas",
             description: "Registro de transacciones",
             icon: <ShoppingCart size={32} />,
-            href: "#",
+            href: "/ventas",
             color: "bg-yellow-500",
             hoverColor: "hover:bg-yellow-600",
             lightColor: "bg-yellow-100",
