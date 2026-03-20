@@ -32,7 +32,7 @@ export default function SuppliersPage() {
     const [searchTerm, setSearchTerm] = useState("");
     const [showModal, setShowModal] = useState(false);
     const [saving, setSaving] = useState(false);
-    const [alert, setAlert] = useState<{ type: 'success' | 'error', message: string } | null>(null);
+    const [alertInfo, setAlertInfo] = useState<{ type: 'success' | 'error', message: string } | null>(null);
     const [form, setForm] = useState({
         nombre: "",
         email: "",
@@ -40,6 +40,9 @@ export default function SuppliersPage() {
         direccion: "",
         categoria: ""
     });
+
+    const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
+    const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null);
 
     // Normalización de la URL de API v3.6
     const rawUrl = process.env.NEXT_PUBLIC_API_URL || 'https://backen-inventario.vercel.app';
@@ -65,31 +68,66 @@ export default function SuppliersPage() {
     const handleCreateSupplier = async (e: React.FormEvent) => {
         e.preventDefault();
         setSaving(true);
-        setAlert(null);
+        setAlertInfo(null);
         try {
-            const res = await fetchWithAuth(`${API_URL}/suppliers`, {
-                method: 'POST',
+            const method = editingSupplier ? 'PATCH' : 'POST';
+            const url = editingSupplier ? `${API_URL}/suppliers/${editingSupplier.id}` : `${API_URL}/suppliers`;
+            
+            const res = await fetchWithAuth(url, {
+                method: method,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(form)
             });
 
             if (res.ok) {
-                setAlert({ type: 'success', message: '¡Proveedor registrado con éxito!' });
+                setAlertInfo({ type: 'success', message: editingSupplier ? '¡Proveedor actualizado!' : '¡Proveedor registrado!' });
                 setForm({ nombre: "", email: "", telefono: "", direccion: "", categoria: "" });
+                setEditingSupplier(null);
                 setTimeout(() => {
                     setShowModal(false);
-                    setAlert(null);
+                    setAlertInfo(null);
                 }, 1500);
                 fetchSuppliers();
             } else {
                 const data = await res.json();
-                setAlert({ type: 'error', message: data.error || 'Error al guardar' });
+                setAlertInfo({ type: 'error', message: data.error || 'Error al guardar' });
             }
         } catch (error) {
-            setAlert({ type: 'error', message: 'Falla de conexión' });
+            setAlertInfo({ type: 'error', message: 'Falla de conexión' });
         } finally {
             setSaving(false);
         }
+    };
+
+    const handleDeleteSupplier = async (id: string) => {
+        if (!confirm("¿Está seguro de eliminar este proveedor?")) return;
+        
+        try {
+            const res = await fetchWithAuth(`${API_URL}/suppliers/${id}`, {
+                method: 'DELETE'
+            });
+            if (res.ok) {
+                fetchSuppliers();
+            } else {
+                const data = await res.json();
+                alert(data.error || "Error al eliminar");
+            }
+        } catch (error) {
+            console.error("Delete error:", error);
+        }
+    };
+
+    const openEditModal = (supplier: Supplier) => {
+        setEditingSupplier(supplier);
+        setForm({
+            nombre: supplier.nombre,
+            email: supplier.email || "",
+            telefono: supplier.telefono || "",
+            direccion: supplier.direccion || "",
+            categoria: supplier.categoria || ""
+        });
+        setShowModal(true);
+        setActiveMenuId(null);
     };
 
     const filteredSuppliers = suppliers.filter(s =>
@@ -161,8 +199,39 @@ export default function SuppliersPage() {
                                         <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-500/20">
                                             <Truck size={30} />
                                         </div>
-                                        <div className="bg-stone-50 p-2 rounded-xl text-stone-300">
-                                            <MoreVertical size={20} />
+                                        <div className="relative">
+                                            <button 
+                                                onClick={() => setActiveMenuId(activeMenuId === supplier.id ? null : supplier.id)}
+                                                className="bg-stone-50 p-2 rounded-xl text-stone-300 hover:text-blue-600 hover:bg-blue-50 transition-all active:scale-90"
+                                            >
+                                                <MoreVertical size={20} />
+                                            </button>
+                                            
+                                            {/* Action Dropdown */}
+                                            {activeMenuId === supplier.id && (
+                                                <>
+                                                    <div 
+                                                        className="fixed inset-0 z-10" 
+                                                        onClick={() => setActiveMenuId(null)}
+                                                    />
+                                                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-2xl shadow-2xl border border-stone-100 py-2 z-20 animate-in fade-in slide-in-from-top-2 duration-200">
+                                                        <button 
+                                                            onClick={() => openEditModal(supplier)}
+                                                            className="w-full text-left px-4 py-3 text-sm font-bold text-stone-700 hover:bg-blue-50 hover:text-blue-600 flex items-center gap-3 transition-colors"
+                                                        >
+                                                            <Edit3 size={16} />
+                                                            Editar Datos
+                                                        </button>
+                                                        <button 
+                                                            onClick={() => handleDeleteSupplier(supplier.id)}
+                                                            className="w-full text-left px-4 py-3 text-sm font-bold text-red-600 hover:bg-red-50 flex items-center gap-3 transition-colors"
+                                                        >
+                                                            <Trash2 size={16} />
+                                                            Eliminar
+                                                        </button>
+                                                    </div>
+                                                </>
+                                            )}
                                         </div>
                                     </div>
 
@@ -186,18 +255,14 @@ export default function SuppliersPage() {
                                         </div>
                                     </div>
 
-                                    <div className="pt-6 border-t border-stone-50 flex items-center justify-between group-hover:border-blue-100 transition-colors">
+                                    <div className="pt-6 border-t border-stone-50 flex items-center justify-between group-hover:border-blue-100 transition-colors mt-auto">
                                         <Link
                                             href={`/dashboard/suppliers/new-order?supplierId=${supplier.id}`}
-                                            className="text-stone-900 font-black uppercase text-[10px] tracking-widest flex items-center gap-2 hover:text-blue-600 transition-colors"
+                                            className="text-stone-900 font-black uppercase text-[10px] tracking-widest flex items-center gap-2 hover:text-blue-600 transition-colors bg-stone-50 px-4 py-2 rounded-full"
                                         >
                                             Generar Pedido
                                             <ArrowRight size={14} />
                                         </Link>
-                                        <div className="flex gap-2">
-                                            <button className="p-2 text-stone-300 hover:text-blue-500 transition-colors"><Edit3 size={18} /></button>
-                                            <button className="p-2 text-stone-300 hover:text-red-500 transition-colors"><Trash2 size={18} /></button>
-                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -222,21 +287,29 @@ export default function SuppliersPage() {
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-sm animate-in fade-in duration-300">
                     <div className="bg-white w-full max-w-lg rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 border border-stone-100">
                         <div className="bg-blue-600 p-8 text-white relative">
-                            <button
-                                onClick={() => setShowModal(false)}
+                             <button
+                                onClick={() => {
+                                    setShowModal(false);
+                                    setEditingSupplier(null);
+                                    setForm({ nombre: "", email: "", telefono: "", direccion: "", categoria: "" });
+                                }}
                                 className="absolute top-6 right-6 hover:rotate-90 transition-transform"
                             >
                                 <Plus className="rotate-45" size={24} />
                             </button>
-                            <h2 className="text-3xl font-black italic uppercase tracking-tighter">Registrar Proveedor</h2>
-                            <p className="text-blue-100 text-[10px] font-bold uppercase tracking-widest mt-1">Nuevo Contacto Comercial</p>
+                            <h2 className="text-3xl font-black italic uppercase tracking-tighter">
+                                {editingSupplier ? 'Editar Proveedor' : 'Registrar Proveedor'}
+                            </h2>
+                            <p className="text-blue-100 text-[10px] font-bold uppercase tracking-widest mt-1">
+                                {editingSupplier ? 'Actualizar Información' : 'Nuevo Contacto Comercial'}
+                            </p>
                         </div>
 
                         <form onSubmit={handleCreateSupplier} className="p-8 space-y-5">
-                            {alert && (
-                                <div className={`p-4 rounded-2xl text-xs font-black uppercase tracking-widest flex items-center gap-3 animate-bounce ${alert.type === 'success' ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>
-                                    <div className={`w-2 h-2 rounded-full ${alert.type === 'success' ? 'bg-green-500' : 'bg-red-500'}`} />
-                                    {alert.message}
+                            {alertInfo && (
+                                <div className={`p-4 rounded-2xl text-xs font-black uppercase tracking-widest flex items-center gap-3 animate-bounce ${alertInfo.type === 'success' ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>
+                                    <div className={`w-2 h-2 rounded-full ${alertInfo.type === 'success' ? 'bg-green-500' : 'bg-red-500'}`} />
+                                    {alertInfo.message}
                                 </div>
                             )}
 
@@ -299,9 +372,9 @@ export default function SuppliersPage() {
                                 type="submit"
                                 className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-2xl font-black uppercase italic tracking-tighter transition-all hover:scale-[1.02] active:scale-95 shadow-xl shadow-blue-500/20 disabled:opacity-50 mt-4 h-14 flex items-center justify-center"
                             >
-                                {saving ? (
+                                 {saving ? (
                                     <div className="w-6 h-6 border-4 border-white/30 border-t-white rounded-full animate-spin" />
-                                ) : "Guardar Proveedor"}
+                                ) : (editingSupplier ? "Actualizar Proveedor" : "Guardar Proveedor")}
                             </button>
                         </form>
                     </div>

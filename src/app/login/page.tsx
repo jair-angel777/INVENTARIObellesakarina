@@ -126,7 +126,7 @@ export default function LoginPage() {
 
                     <div className="flex items-center justify-between px-1">
                         <Link href="#" className="text-xs font-bold text-rose-600 hover:underline">¿Olvidaste tu contraseña?</Link>
-                        <Link href="#" className="text-xs font-bold text-stone-400 hover:text-stone-600 transition-colors">Crear Cuenta</Link>
+                        <Link href="/register" className="text-xs font-bold text-stone-400 hover:text-stone-600 transition-colors">Crear Cuenta</Link>
                     </div>
 
                     <button

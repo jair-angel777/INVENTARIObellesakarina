@@ -81,35 +81,35 @@ export default function SelectionPanel() {
             title: "Reportes",
             description: "Análisis y estadísticas",
             icon: <BarChart3 size={32} />,
-            href: "#",
+            href: "/dashboard/reports",
             color: "bg-rose-900",
             hoverColor: "hover:bg-rose-950",
             lightColor: "bg-rose-100",
             textColor: "text-rose-900",
-            label: "ETC",
+            label: "ESTADÍSTICAS",
             dark: true
         },
         {
             title: "Ajustes",
             description: "Configuración del sistema",
             icon: <Settings size={32} />,
-            href: "#",
+            href: "/dashboard/settings",
             color: "bg-[#E6D5B8]",
             hoverColor: "hover:bg-[#D4C4A8]",
             lightColor: "bg-[#F3EAD8]",
             textColor: "text-stone-700",
-            label: "ETC"
+            label: "PERFIL"
         },
         {
             title: "Categorías",
             description: "Organización de catálogo",
             icon: <Layers size={32} />,
-            href: "#",
+            href: "/dashboard/categories",
             color: "bg-emerald-600",
             hoverColor: "hover:bg-emerald-700",
             lightColor: "bg-emerald-50",
             textColor: "text-emerald-700",
-            label: "MOVIDO"
+            label: "GESTIÓN"
         }
     ];
 

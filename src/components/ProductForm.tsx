@@ -38,21 +38,31 @@ export function ProductForm({ initialData, isEdit = false }: ProductFormProps) {
     });
 
     const [proveedores, setProveedores] = useState<any[]>([]);
+    const [categoriasList, setCategoriasList] = useState<any[]>([]);
 
     React.useEffect(() => {
-        const fetchProveedores = async () => {
+        const fetchInitialData = async () => {
             try {
                 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://backen-inventario.vercel.app/api";
-                const res = await fetchWithAuth(`${apiUrl}/suppliers`);
-                if (res.ok) {
-                    const data = await res.json();
+                
+                // Fetch Providers
+                const resProv = await fetchWithAuth(`${apiUrl}/suppliers`);
+                if (resProv.ok) {
+                    const data = await resProv.json();
                     setProveedores(data);
                 }
+
+                // Fetch Categories
+                const resCat = await fetchWithAuth(`${apiUrl}/categories`);
+                if (resCat.ok) {
+                    const data = await resCat.json();
+                    setCategoriasList(data);
+                }
             } catch (error) {
-                console.error("Error fetching suppliers:", error);
+                console.error("Error fetching form data:", error);
             }
         };
-        fetchProveedores();
+        fetchInitialData();
     }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -157,15 +167,22 @@ export function ProductForm({ initialData, isEdit = false }: ProductFormProps) {
                         </div>
                         <div className="space-y-2">
                             <label className="text-sm font-bold text-stone-600 ml-1">Categoría</label>
-                            <div className="relative">
-                                <Tag className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" size={18} />
-                                <input
-                                    type="text"
-                                    placeholder="Ej. Maquillaje"
-                                    className="w-full bg-stone-50 border border-stone-200 rounded-xl py-2.5 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500/30 transition-all text-stone-800"
+                            <div className="relative flex items-center">
+                                <Tag className="absolute left-3 text-stone-400" size={18} />
+                                <select
+                                    required
+                                    className="w-full bg-stone-50 border border-stone-200 rounded-xl py-2.5 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500/30 transition-all text-stone-800 appearance-none"
                                     value={formData.categoria}
                                     onChange={e => setFormData({ ...formData, categoria: e.target.value })}
-                                />
+                                >
+                                    <option value="">Seleccionar categoría</option>
+                                    {categoriasList.map(cat => (
+                                        <option key={cat.id} value={cat.nombre}>{cat.nombre}</option>
+                                    ))}
+                                </select>
+                                <div className="absolute right-4 pointer-events-none text-stone-400">
+                                    <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" fillRule="evenodd"></path></svg>
+                                </div>
                             </div>
                         </div>
                         <div className="space-y-2 md:col-span-2">
