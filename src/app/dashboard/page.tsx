@@ -247,13 +247,22 @@ export default function SelectionPanel() {
                         </div>
                     </div>
 
-                    <Link
-                        href="/"
-                        className="p-3 text-stone-400 hover:text-red-500 hover:bg-red-50 rounded-2xl transition-all active:scale-95 group"
-                        title="Cerrar Sesión"
-                    >
-                        <LogOut size={24} className="group-hover:rotate-180 transition-transform duration-500" />
-                    </Link>
+                    <div className="flex items-center gap-2">
+                        <Link
+                            href="/"
+                            className="p-3 text-stone-400 hover:text-blue-600 hover:bg-blue-50 rounded-2xl transition-all active:scale-95 group"
+                            title="Ir al Inicio"
+                        >
+                            <LayoutDashboard size={24} />
+                        </Link>
+                        <Link
+                            href="/"
+                            className="p-3 text-stone-400 hover:text-red-500 hover:bg-red-50 rounded-2xl transition-all active:scale-95 group"
+                            title="Cerrar Sesión"
+                        >
+                            <LogOut size={24} className="group-hover:rotate-180 transition-transform duration-500" />
+                        </Link>
+                    </div>
                 </header>
 
                 {/* Grid */}
