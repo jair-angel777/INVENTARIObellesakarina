@@ -17,7 +17,15 @@ export default function SettingsPage() {
     const { userRole } = useAuth();
 
     return (
-        <div className="min-h-screen bg-[#FDFBF7] p-4 md:p-8">
+        <div className="min-h-screen bg-[#FDFBF7] p-4 md:p-8 relative">
+            {/* Overlay de Bloqueo */}
+            <div className="absolute inset-0 z-50 bg-[#FDFBF7]/90 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center">
+                <Settings size={48} className="text-stone-300 mb-4 animate-pulse" />
+                <h2 className="text-2xl font-black text-stone-800 uppercase tracking-tight">Acceso Privado</h2>
+                <p className="text-stone-500 text-sm mt-2">Configuración no disponible en este momento.</p>
+                <Link href="/dashboard" className="underline mt-6 font-bold text-stone-900">Regresar</Link>
+            </div>
+            
             <div className="max-w-4xl mx-auto space-y-10">
                 {/* Header */}
                 <header className="space-y-4">

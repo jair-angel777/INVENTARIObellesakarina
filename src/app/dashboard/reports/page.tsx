@@ -43,14 +43,26 @@ export default function ReportsPage() {
 
     const totalIncome = sales.reduce((acc, s) => acc + s.total, 0);
     const totalTransactions = sales.length;
-    
+
     // Simplificación: últimos 30 días vs anteriores
     // Para una demo, solo mostraremos los totales y una lista de ventas recientes
-    
+
     const recentSales = sales.slice(0, 10);
 
     return (
-        <div className="min-h-screen bg-[#FDFBF7] p-4 md:p-8">
+        <div className="min-h-screen bg-[#FDFBF7] p-4 md:p-8 relative">
+            {/* Overlay de Bloqueo */}
+            <div className="absolute inset-0 z-50 bg-white/80 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center">
+                <div className="w-20 h-20 bg-stone-100 text-stone-400 rounded-3xl flex items-center justify-center mb-6">
+                    <BarChart3 size={40} />
+                </div>
+                <h2 className="text-3xl font-black text-stone-900 italic uppercase tracking-tighter mb-2">Sección Restringida</h2>
+                <p className="text-stone-500 max-w-xs font-medium">Esta función está temporalmente deshabilitada por mantenimiento o falta de permisos.</p>
+                <Link href="/dashboard" className="mt-8 px-8 py-4 bg-stone-900 text-white rounded-2xl font-bold uppercase text-[10px] tracking-widest">
+                    Volver al Panel
+                </Link>
+            </div>
+
             <div className="max-w-7xl mx-auto space-y-10">
                 {/* Header */}
                 <header className="space-y-4">
