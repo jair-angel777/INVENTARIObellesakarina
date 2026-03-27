@@ -92,27 +92,28 @@ export default function InventoryV4() {
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       
-      {/* Header v4 */}
+      {/* Header v4 (PDF Adapted) */}
       <header className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-2">
         <div className="space-y-1">
           <div className="flex items-center gap-3">
              <h2 className="text-3xl font-serif font-black text-[#121212]">Control de Existencias</h2>
-             <div className="px-3 py-1 bg-[#D4AF37]/10 text-[#D4AF37] text-[10px] font-black uppercase tracking-widest rounded-full border border-[#D4AF37]/20">
-                v4.0 Premium
+             <div className="px-3 py-1 bg-verde/10 text-verde text-[10px] font-black uppercase tracking-widest rounded-full border border-verde/20">
+                v4.0 Sistema Oficial
              </div>
           </div>
           <p className="text-[#121212]/50 text-sm font-medium">Bellesas Karinas — {selectedLocation === 'all' ? 'Vista Global Consolidada' : `Sede: ${currentLoc?.nombre}`}</p>
         </div>
 
         <div className="flex items-center gap-3">
-           <div className="flex items-center bg-white border border-[#121212]/10 rounded-2xl p-1 shadow-sm">
+           <div className="flex items-center bg-white border border-[#121212]/10 rounded-2xl p-1.5 shadow-sm">
               <button 
                 onClick={() => setSelectedLocation("all")}
                 className={cn(
-                  "px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all",
-                  selectedLocation === "all" ? "bg-[#121212] text-white shadow-lg" : "text-[#121212]/40 hover:text-[#121212]"
+                  "px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2",
+                  selectedLocation === "all" ? "bg-[#121212] text-white shadow-xl" : "text-[#121212]/40 hover:text-[#121212]"
                 )}
               >
+                <Eye size={16} className={selectedLocation === "all" ? "text-celeste" : ""} />
                 Global
               </button>
               {locations.map(loc => (
@@ -120,18 +121,19 @@ export default function InventoryV4() {
                   key={loc.id}
                   onClick={() => setSelectedLocation(loc.id)}
                   className={cn(
-                    "px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all flex items-center gap-2",
-                    selectedLocation === loc.id ? "bg-[#121212] text-white shadow-lg" : "text-[#121212]/40 hover:text-[#121212]"
+                    "px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2",
+                    selectedLocation === loc.id ? "bg-[#121212] text-white shadow-xl" : "text-[#121212]/40 hover:text-[#121212]"
                   )}
                 >
-                  <MapPin size={14} className={selectedLocation === loc.id ? "text-[#D4AF37]" : ""} />
+                  <MapPin size={16} className={selectedLocation === loc.id ? "text-verde" : ""} />
                   {loc.nombre}
                 </button>
               ))}
+              <div className="w-px h-6 bg-[#121212]/10 mx-2" />
               <button 
                 onClick={() => setShowLocationModal(true)}
-                className="p-2 text-[#D4AF37] hover:bg-[#D4AF37]/10 rounded-xl transition-all ml-1"
-                title="Agregar Sede"
+                className="p-2 bg-white text-[#121212] hover:bg-[#121212] hover:text-white border border-[#121212]/10 rounded-xl transition-all shadow-sm"
+                title="Nueva Sede (+)"
               >
                 <Plus size={20} />
               </button>
@@ -139,65 +141,68 @@ export default function InventoryV4() {
         </div>
       </header>
 
-      {/* Stats Bar */}
+      {/* Stats Bar (Colorful PDF Version) */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-         <div className="bg-white p-6 rounded-[2rem] border border-[#121212]/5 shadow-sm flex items-center gap-6">
-            <div className="w-14 h-14 bg-[#FDFBF7] rounded-2xl flex items-center justify-center text-[#121212] shadow-inner">
-               <Package size={24} />
+         <div className="bg-celeste text-white p-7 rounded-[2.5rem] shadow-xl shadow-celeste/20 flex items-center gap-6 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl group-hover:scale-150 transition-all duration-700" />
+            <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center text-white shadow-inner relative z-10">
+               <Package size={28} />
             </div>
-            <div>
-               <p className="text-[10px] font-black uppercase tracking-widest text-[#121212]/30">Stock Total</p>
-               <h3 className="text-2xl font-serif font-bold">{loading ? "..." : stats.total} <span className="text-xs font-sans font-medium text-[#121212]/40 uppercase ml-1">SKUs</span></h3>
+            <div className="relative z-10">
+               <p className="text-[10px] font-black uppercase tracking-widest text-white/60 mb-1">Total SKUs</p>
+               <h3 className="text-3xl font-serif font-black">{loading ? "..." : stats.total}</h3>
             </div>
          </div>
          <div className={cn(
-           "p-6 rounded-[2rem] border transition-all flex items-center gap-6",
-           stats.lowStock > 0 ? "bg-rose-50 border-rose-100 shadow-rose-900/5 shadow-xl" : "bg-white border-[#121212]/5 shadow-sm"
+           "p-7 rounded-[2.5rem] transition-all flex items-center gap-6 relative overflow-hidden group",
+           stats.lowStock > 0 ? "bg-naranja text-white shadow-xl shadow-naranja/20" : "bg-white border border-[#121212]/5 text-[#121212] shadow-sm"
          )}>
+            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl group-hover:scale-150 transition-all duration-700" />
             <div className={cn(
-              "w-14 h-14 rounded-2xl flex items-center justify-center shadow-inner",
-              stats.lowStock > 0 ? "bg-rose-100 text-rose-600" : "bg-[#FDFBF7] text-[#121212]"
+              "w-14 h-14 rounded-2xl flex items-center justify-center shadow-inner relative z-10",
+              stats.lowStock > 0 ? "bg-white/20 text-white" : "bg-[#FDFBF7] text-naranja"
             )}>
-               <AlertCircle size={24} className={stats.lowStock > 0 ? "animate-pulse" : ""} />
+               <AlertCircle size={28} className={stats.lowStock > 0 ? "animate-bounce" : ""} />
             </div>
-            <div>
-               <p className="text-[10px] font-black uppercase tracking-widest text-[#121212]/30">Stock Bajo</p>
-               <h3 className={cn("text-2xl font-serif font-bold", stats.lowStock > 0 ? "text-rose-600" : "")}>{loading ? "..." : stats.lowStock}</h3>
+            <div className="relative z-10">
+               <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1", stats.lowStock > 0 ? "text-white/60" : "text-[#121212]/30")}>Stock Crítico (!)</p>
+               <h3 className="text-3xl font-serif font-black">{loading ? "..." : stats.lowStock}</h3>
             </div>
          </div>
-         <div className="bg-[#121212] p-6 rounded-[2rem] shadow-2xl flex items-center gap-6">
-            <div className="w-14 h-14 bg-white/5 rounded-2xl flex items-center justify-center text-[#D4AF37] border border-white/10">
-               <TrendingUp size={24} />
+         <div className="bg-primary text-white p-7 rounded-[2.5rem] shadow-xl shadow-primary/20 flex items-center gap-6 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl group-hover:scale-150 transition-all duration-700" />
+            <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center text-accent border border-white/5 shadow-inner relative z-10">
+               <TrendingUp size={28} />
             </div>
-            <div className="text-white">
-               <p className="text-[10px] font-black uppercase tracking-widest text-white/30">Valor Activo</p>
-               <h3 className="text-2xl font-serif font-bold">S/ {loading ? "..." : stats.value.toLocaleString()}</h3>
+            <div className="relative z-10">
+               <p className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-1">Valor de Inventario</p>
+               <h3 className="text-3xl font-serif font-black">S/ {loading ? "..." : stats.value.toLocaleString()}</h3>
             </div>
          </div>
       </div>
 
       {/* Main Table Area */}
-      <div className="bg-white rounded-[2.5rem] border border-[#121212]/5 shadow-xl overflow-hidden relative">
-        <div className="p-8 border-b border-[#121212]/5 flex flex-col md:flex-row items-center justify-between gap-6 bg-white/50 backdrop-blur-sm sticky top-0 z-10">
-           <div className="relative w-full md:w-96">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[#121212]/20" size={18} />
+      <div className="bg-white rounded-[3rem] border border-[#121212]/5 shadow-2xl shadow-[#121212]/5 overflow-hidden relative">
+        <div className="p-8 border-b border-[#121212]/5 flex flex-col md:flex-row items-center justify-between gap-6">
+           <div className="relative w-full md:w-96 group">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[#121212]/20 group-focus-within:text-celeste transition-colors" size={18} />
               <input 
                 type="text"
-                placeholder="Buscar por nombre, SKU o categoría..."
-                className="w-full bg-[#FDFBF7] border border-[#121212]/10 rounded-2xl py-3 pl-12 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/20 focus:border-[#D4AF37] transition-all"
+                placeholder="Búsqueda rápida de productos..."
+                className="w-full bg-[#FDFBF7] border border-[#121212]/10 rounded-[1.5rem] py-4 pl-12 pr-4 text-sm font-medium focus:outline-none focus:ring-4 focus:ring-celeste/10 focus:border-celeste transition-all"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
            </div>
-           <div className="flex items-center gap-3 w-full md:w-auto">
-              <button className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-[#FDFBF7] text-[#121212]/60 hover:text-[#121212] border border-[#121212]/5 rounded-2xl text-xs font-bold uppercase tracking-widest transition-all">
-                 <Filter size={16} /> Filtros
+           <div className="flex items-center gap-4 w-full md:w-auto">
+              <button className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-4 bg-[#FDFBF7] text-[#121212]/40 hover:text-naranja border border-[#121212]/5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all">
+                 <Filter size={16} /> Filtros (Naranja)
               </button>
               <Link 
-                href="/products/new"
-                className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-[#121212] text-white rounded-2xl text-xs font-bold uppercase tracking-widest hover:bg-[#121212]/90 transition-all shadow-lg"
+                href="/dashboard/inventory/new"
+                className="flex-1 md:flex-none flex items-center justify-center gap-2 px-8 py-4 bg-[#121212] text-white rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest hover:bg-celeste hover:text-white transition-all shadow-lg active:scale-95"
               >
-                 <Plus size={16} /> Agregar Producto
+                 <Plus size={16} /> Alta de Producto
               </Link>
            </div>
         </div>
@@ -205,91 +210,98 @@ export default function InventoryV4() {
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
-              <tr className="bg-[#FDFBF7]/50 text-[#121212]/40 text-[10px] uppercase font-black tracking-[0.2em] border-b border-[#121212]/5">
-                <th className="px-8 py-5">Información General</th>
-                <th className="px-8 py-5 text-center">Categoría</th>
-                <th className="px-8 py-5 text-center">Existencias</th>
+              <tr className="bg-[#FDFBF7]/80 text-[#121212]/40 text-[9px] uppercase font-black tracking-[0.25em] border-b border-[#121212]/5">
+                <th className="px-10 py-6">Producto & Referencia</th>
+                <th className="px-8 py-6 text-center">Clase (Verde)</th>
+                <th className="px-8 py-6 text-center">Nivel de Stock</th>
                 <th className="px-8 py-5 text-right">Precio / Valor</th>
                 <th className="px-8 py-5 text-right">Acciones</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#121212]/5">
-              {loading ? (
-                <tr>
-                   <td colSpan={5} className="py-20 text-center">
-                      <div className="flex flex-col items-center gap-4">
-                         <Loader2 className="animate-spin text-[#D4AF37]" size={32} />
-                         <p className="text-xs font-bold uppercase tracking-widest text-[#121212]/30">Sincronizando base de datos...</p>
-                      </div>
-                   </td>
-                </tr>
-              ) : filteredProducts.length === 0 ? (
-                <tr>
-                   <td colSpan={5} className="py-20 text-center text-[#121212]/20 font-serif italic text-xl">
-                      No se encontraron resultados para tu búsqueda
-                   </td>
-                </tr>
-              ) : filteredProducts.map((p) => {
-                const threshold = isTienda ? 1 : (p.stock_minimo || 5);
-                const isLow = p.stock <= threshold;
-                
-                return (
-                  <tr key={p.id} className="group hover:bg-[#FDFBF7]/50 transition-colors">
-                    <td className="px-8 py-6">
-                       <div className="flex items-center gap-4">
-                          <div className="w-14 h-14 bg-[#FDFBF7] rounded-2xl border border-[#121212]/5 overflow-hidden group-hover:border-[#D4AF37]/30 transition-all">
-                             {p.imagen ? <img src={p.imagen} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-[#121212]/20"><Package size={24} /></div>}
-                          </div>
-                          <div>
-                             <p className="font-serif font-bold text-lg text-[#121212] leading-none mb-1">{p.nombre}</p>
-                             <p className="text-[10px] font-black uppercase tracking-widest text-[#121212]/30 flex items-center gap-2">
-                                <span className="px-1.5 py-0.5 bg-[#121212]/5 rounded">{p.sku || 'N/A'}</span>
-                                • {p.proveedor_id ? 'Original Verified' : 'Standard'}
-                             </p>
-                          </div>
+               {loading ? (
+                 <tr>
+                    <td colSpan={5} className="py-24 text-center">
+                       <div className="flex flex-col items-center gap-4">
+                          <Loader2 className="animate-spin text-celeste" size={40} />
+                          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#121212]/30">Consultando Almacén Central...</p>
                        </div>
                     </td>
-                    <td className="px-8 py-6 text-center">
-                       <span className="px-4 py-1.5 bg-[#FDFBF7] border border-[#121212]/5 text-[#121212]/60 text-[10px] font-black uppercase tracking-widest rounded-full">
-                         {p.categoria || 'Sin clase'}
-                       </span>
+                 </tr>
+               ) : filteredProducts.length === 0 ? (
+                 <tr>
+                    <td colSpan={5} className="py-24 text-center text-[#121212]/20 font-serif italic text-2xl">
+                       "Sin registros que coincidan"
                     </td>
-                    <td className="px-8 py-6 text-center">
-                       <div className="flex flex-col items-center">
-                          <span className={cn(
-                            "px-4 py-2 rounded-2xl text-xs font-black tracking-widest transition-all shadow-sm flex items-center gap-2",
-                            isLow ? "bg-rose-500 text-white shadow-rose-900/20" : "bg-[#121212]/5 text-[#121212]"
-                          )}>
-                             {p.stock} <span className="opacity-60 text-[9px] font-bold">UNIDS</span>
-                             {isLow && (
-                               <button 
-                                 title="Realizar pedido rápido"
-                                 className="ml-1 p-1 bg-white/20 hover:bg-white rounded-lg transition-all text-white hover:text-rose-500"
-                               >
-                                  <AlertCircle size={14} />
-                               </button>
-                             )}
-                          </span>
-                       </div>
-                    </td>
-                    <td className="px-8 py-6 text-right">
-                       <p className="text-lg font-serif font-bold text-[#121212]">S/ {p.precio.toFixed(2)}</p>
-                       <p className="text-[10px] font-bold text-[#121212]/30 uppercase tracking-widest mt-0.5">S/ {(p.precio * p.stock).toLocaleString()} Total</p>
-                    </td>
-                    <td className="px-8 py-6 text-right">
-                       <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all">
-                          <button className="p-3 bg-white border border-[#121212]/5 text-[#121212]/40 hover:text-[#D4AF37] hover:border-[#D4AF37]/30 rounded-xl transition-all shadow-sm">
-                             <Edit size={18} />
-                          </button>
-                          <button className="p-3 bg-white border border-[#121212]/5 text-[#121212]/40 hover:text-rose-500 hover:border-rose-100 rounded-xl transition-all shadow-sm">
-                             <Trash2 size={18} />
-                          </button>
-                       </div>
-                       <MoreVertical size={18} className="ml-auto text-[#121212]/10 group-hover:hidden" />
-                    </td>
-                  </tr>
-                );
-              })}
+                 </tr>
+               ) : filteredProducts.map((p) => {
+                 const threshold = isTienda ? 1 : (p.stock_minimo || 5);
+                 const isLow = p.stock <= threshold;
+                 
+                 return (
+                   <tr key={p.id} className="group hover:bg-[#FDFBF7] transition-all duration-300">
+                     <td className="px-10 py-7">
+                        <div className="flex items-center gap-5">
+                           <div className="w-16 h-16 bg-[#FDFBF7] rounded-[1.25rem] border border-[#121212]/5 overflow-hidden group-hover:border-celeste/30 group-hover:shadow-xl group-hover:shadow-celeste/5 transition-all duration-500">
+                              {p.imagen ? <img src={p.imagen} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-[#121212]/10"><Package size={28} strokeWidth={1} /></div>}
+                           </div>
+                           <div>
+                              <div className="flex items-center gap-2 mb-1">
+                                <p className="font-serif font-black text-xl text-[#121212] tracking-tight">{p.nombre}</p>
+                                {isLow && (
+                                  <div className="w-6 h-6 bg-naranja text-white rounded-full flex items-center justify-center text-[10px] font-black animate-pulse shadow-lg shadow-naranja/40" title="¡STOCK CRÍTICO!">
+                                    !
+                                  </div>
+                                )}
+                              </div>
+                              <p className="text-[10px] font-black uppercase tracking-widest text-[#121212]/20 flex items-center gap-2 italic">
+                                 <span className="text-[#121212] not-italic">{p.sku || 'REF:---'}</span>
+                                 • VERIFICADO POR ADMIN
+                              </p>
+                           </div>
+                        </div>
+                     </td>
+                     <td className="px-8 py-7 text-center">
+                        <span className="px-5 py-2 bg-verde/10 border border-verde/20 text-verde text-[9px] font-black uppercase tracking-[0.15em] rounded-full shadow-sm">
+                          {p.categoria || 'Sin clase'}
+                        </span>
+                     </td>
+                     <td className="px-8 py-7 text-center">
+                        <div className="flex flex-col items-center">
+                           <span className={cn(
+                             "px-5 py-2.5 rounded-[1rem] text-[11px] font-black tracking-widest transition-all shadow-sm flex items-center gap-3",
+                             isLow ? "bg-naranja text-white shadow-naranja/30" : "bg-[#121212] text-white"
+                           )}>
+                              {p.stock} <span className="opacity-40 text-[9px]">UND</span>
+                              {isLow && (
+                                <button 
+                                  title="Pedido Automático (PDF logic)"
+                                  className="ml-1 p-1.5 bg-white/20 hover:bg-white rounded-lg transition-all text-white hover:text-naranja"
+                                >
+                                   <ArrowRight size={14} />
+                                </button>
+                              )}
+                           </span>
+                        </div>
+                     </td>
+                     <td className="px-8 py-7 text-right">
+                        <p className="text-xl font-serif font-black text-[#121212]">S/ {p.precio.toFixed(2)}</p>
+                        <p className="text-[9px] font-black text-primary uppercase tracking-widest mt-1 opacity-40">CARGO: S/ {(p.precio * p.stock).toLocaleString()}</p>
+                     </td>
+                     <td className="px-10 py-7 text-right">
+                        <div className="flex items-center justify-end gap-3 opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0 transition-all duration-500">
+                           <button className="p-3.5 bg-white border border-[#121212]/5 text-[#121212]/30 hover:text-celeste hover:border-celeste/20 rounded-xl transition-all shadow-lg hover:shadow-celeste/5">
+                              <Edit size={20} />
+                           </button>
+                           <button className="p-3.5 bg-white border border-[#121212]/5 text-[#121212]/40 hover:text-rose-500 hover:border-rose-100 rounded-xl transition-all shadow-lg hover:shadow-rose-100/5">
+                              <Trash2 size={20} />
+                           </button>
+                        </div>
+                        <MoreVertical size={20} className="ml-auto text-[#121212]/5 group-hover:opacity-0 transition-all" />
+                     </td>
+                   </tr>
+                 );
+               })}
             </tbody>
           </table>
         </div>

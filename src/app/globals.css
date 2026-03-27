@@ -4,9 +4,12 @@
 :root {
   --background: #FDFBF7;
   --foreground: #121212;
-  --primary: #121212;
-  --accent: #D4AF37; /* Champagne Gold */
-  --accent-rose: #E299B1;
+  --primary: #2C3E50; /* Azul Oscuro - Pedidos */
+  --accent: #D4AF37; /* Champagne Gold - Branding */
+  --celeste: #00D2FF; /* Proveedores */
+  --verde: #00C853; /* Categorías */
+  --naranja: #FF9100; /* Filtros y Stock Bajo */
+  --luxury-cream: #FDFBF7;
 }
 
 body {
@@ -21,10 +24,12 @@ h1, h2, h3, h4, .font-serif {
 }
 
 @theme {
-  --color-primary: #121212;
-  --color-accent: #D4AF37;
-  --color-accent-rose: #E299B1;
-  --color-luxury-cream: #FDFBF7;
+  --color-primary: var(--primary);
+  --color-accent: var(--accent);
+  --color-celeste: var(--celeste);
+  --color-verde: var(--verde);
+  --color-naranja: var(--naranja);
+  --color-luxury-cream: var(--luxury-cream);
   --color-luxury-dark: #121212;
   
   --font-serif: 'Playfair Display', serif;
@@ -32,19 +37,36 @@ h1, h2, h3, h4, .font-serif {
   --font-outfit: 'Outfit', sans-serif;
 }
 
-/* Glassmorphism Utilities */
-.glass {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+/* Modal Split View logic (PDF) */
+.glass-overlay {
+  background: rgba(18, 18, 18, 0.4);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
-.glass-dark {
-  background: rgba(18, 18, 18, 0.75);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+.split-window {
+  background: white;
+  border-radius: 2.5rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+  display: flex;
+  overflow: hidden;
+  width: 90vw;
+  max-width: 1200px;
+  height: 85vh;
+}
+
+.split-left {
+  flex: 0 0 400px;
+  border-right: 1px solid rgba(18, 18, 18, 0.05);
+  padding: 2.5rem;
+  overflow-y: auto;
+}
+
+.split-right {
+  flex: 1;
+  background: #FDFBF7;
+  padding: 2.5rem;
+  overflow-y: auto;
 }
 
 .luxury-shadow {
