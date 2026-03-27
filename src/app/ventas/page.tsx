@@ -307,7 +307,7 @@ export default function VentasV4() {
                          )}
                        >
                           <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center", metodoPago === m.id ? 'bg-celeste text-primary' : 'bg-[#FDFBF7] text-[#121212]/20')}>
-                             {React.cloneElement(m.icon as React.ReactElement, { size: 24 })}
+                             {React.cloneElement(m.icon as React.ReactElement<any>, { size: 24 })}
                           </div>
                           <div>
                              <p className="text-xs font-black uppercase tracking-widest">{m.label}</p>

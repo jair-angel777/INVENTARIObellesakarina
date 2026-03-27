@@ -117,7 +117,7 @@ export default function SuppliersV4() {
          ].map((s, i) => (
            <div key={i} className="bg-white p-6 rounded-[2rem] border border-[#121212]/5 shadow-sm flex items-center gap-4">
               <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center text-white shadow-lg", s.color)}>
-                 {React.cloneElement(s.icon as React.ReactElement, { size: 20 })}
+                 {React.cloneElement(s.icon as React.ReactElement<any>, { size: 20 })}
               </div>
               <div>
                  <p className="text-[9px] font-black uppercase tracking-widest text-[#121212]/30">{s.label}</p>

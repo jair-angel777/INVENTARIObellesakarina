@@ -111,7 +111,7 @@ export default function MovementsV4() {
          ].map((stat, i) => (
            <div key={i} className="bg-white border border-[#121212]/5 p-6 rounded-[2.5rem] shadow-sm flex items-center gap-5">
               <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-lg", stat.color)}>
-                 {React.cloneElement(stat.icon as React.ReactElement, { size: 20 })}
+                 {React.cloneElement(stat.icon as React.ReactElement<any>, { size: 20 })}
               </div>
               <div>
                  <p className="text-[9px] font-black uppercase tracking-widest text-[#121212]/30">{stat.label}</p>
