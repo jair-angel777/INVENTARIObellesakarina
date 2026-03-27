@@ -145,7 +145,7 @@ export default function MovementsV4() {
                                 <p className="text-[9px] font-black uppercase tracking-widest text-[#121212]/30">{m.tipo.replace("_", " ")} • ID:{m.id.slice(-6).toUpperCase()}</p>
                              </div>
                           </div>
-                       </th>
+                       </td>
                        <td className="px-8 py-6">
                           <div className="flex items-center gap-2">
                              <MapPin size={14} className="text-[#D4AF37]" />
