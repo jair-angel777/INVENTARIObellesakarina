@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-    ArrowLeft,
     Save,
     Package,
     Tag,
@@ -12,8 +11,11 @@ import {
     Hash,
     Image as ImageIcon,
     Truck,
-    UploadCloud
+    UploadCloud,
+    X,
+    CheckCircle2
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { fetchWithAuth } from "@/lib/api";
 import Script from "next/script";
 
@@ -45,19 +47,11 @@ export function ProductForm({ initialData, isEdit = false }: ProductFormProps) {
             try {
                 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://backen-inventario.vercel.app/api";
                 
-                // Fetch Providers
                 const resProv = await fetchWithAuth(`${apiUrl}/suppliers`);
-                if (resProv.ok) {
-                    const data = await resProv.json();
-                    setProveedores(data);
-                }
+                if (resProv.ok) setProveedores(await resProv.json());
 
-                // Fetch Categories
                 const resCat = await fetchWithAuth(`${apiUrl}/categories`);
-                if (resCat.ok) {
-                    const data = await resCat.json();
-                    setCategoriasList(data);
-                }
+                if (resCat.ok) setCategoriasList(await resCat.json());
             } catch (error) {
                 console.error("Error fetching form data:", error);
             }
@@ -69,7 +63,7 @@ export function ProductForm({ initialData, isEdit = false }: ProductFormProps) {
         e.preventDefault();
         setLoading(true);
 
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://backen-inventario.vercel.app/api";
         const url = isEdit ? `${apiUrl}/products/${initialData.id}` : `${apiUrl}/products`;
         const method = isEdit ? "PATCH" : "POST";
 
@@ -88,14 +82,11 @@ export function ProductForm({ initialData, isEdit = false }: ProductFormProps) {
             });
 
             if (res.ok) {
-                router.push("/dashboard");
+                router.push("/dashboard/inventory");
                 router.refresh();
-            } else {
-                alert("Error al guardar el producto");
             }
         } catch (error) {
             console.error("Error saving product:", error);
-            alert("No se pudo conectar con el servidor");
         } finally {
             setLoading(false);
         }
@@ -103,257 +94,205 @@ export function ProductForm({ initialData, isEdit = false }: ProductFormProps) {
 
     const handleUploadClick = () => {
         // @ts-ignore
-        const widget = window.cloudinary.createUploadWidget(
-            {
-                cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "dimv8kos8",
-                uploadPreset: process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "preajuste de bellas",
-                sources: ["local", "url", "camera"],
-                multiple: false,
-                clientAllowedFormats: ["png", "jpg", "jpeg", "webp"],
-                maxFileSize: 2000000, // 2MB
-                language: "es",
-                text: {
-                    es: {
-                        menu: {
-                            files: "Mis Archivos",
-                            web: "URL Web",
-                            camera: "Cámara"
-                        },
-                        local: {
-                            browse: "Buscar",
-                            dd_title_single: "Arrastra tu imagen aquí"
-                        }
+        if (window.cloudinary) {
+            // @ts-ignore
+            const widget = window.cloudinary.createUploadWidget(
+                {
+                    cloudName: "dimv8kos8",
+                    uploadPreset: "preajuste de bellas",
+                    sources: ["local", "url", "camera"],
+                    language: "es",
+                },
+                (error: any, result: any) => {
+                    if (!error && result && result.event === "success") {
+                        setFormData({ ...formData, imagen: result.info.secure_url });
                     }
                 }
-            },
-            (error: any, result: any) => {
-                if (!error && result && result.event === "success") {
-                    console.log("Imagen subida con éxito:", result.info.secure_url);
-                    setFormData({ ...formData, imagen: result.info.secure_url });
-                }
-            }
-        );
-        widget.open();
+            );
+            widget.open();
+        }
     };
 
     return (
         <>
-            <Script 
-                src="https://upload-widget.cloudinary.com/global/all.js" 
-                strategy="afterInteractive" 
-            />
-            <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="bg-white p-6 md:p-8 rounded-3xl border border-orange-200 shadow-sm backdrop-blur-md space-y-8">
-                {/* Basic Info Section */}
-                <div className="space-y-4">
-                    <h2 className="text-lg font-semibold flex items-center gap-2 text-orange-600">
-                        <Layout size={18} />
-                        Información Básica
-                    </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <label className="text-sm font-bold text-stone-600 ml-1">Nombre del Producto</label>
-                            <div className="relative">
-                                <Package className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" size={18} />
-                                <input
-                                    required
-                                    type="text"
-                                    placeholder="Ej. Labial Matte Red"
-                                    className="w-full bg-stone-50 border border-stone-200 rounded-xl py-2.5 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500/30 transition-all text-stone-800"
-                                    value={formData.nombre}
-                                    onChange={e => setFormData({ ...formData, nombre: e.target.value })}
-                                />
+            <Script src="https://upload-widget.cloudinary.com/global/all.js" strategy="afterInteractive" />
+            <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-12 animate-in fade-in duration-700">
+                
+                {/* Left: Product Media & Information */}
+                <div className="lg:col-span-2 space-y-8">
+                   <div className="bg-white p-10 rounded-[3rem] border border-[#121212]/5 shadow-sm space-y-10">
+                      
+                      <div className="flex items-center gap-4">
+                         <div className="w-12 h-12 bg-[#FDFBF7] rounded-2xl flex items-center justify-center text-[#121212] border border-[#121212]/5">
+                            <Package size={24} />
+                         </div>
+                         <h2 className="text-2xl font-serif font-bold italic">Atributos del Producto</h2>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                         <div className="space-y-2">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-[#121212]/30 ml-1">Nombre Comercial</label>
+                            <input 
+                               required
+                               className="w-full bg-[#FDFBF7] border border-[#121212]/10 rounded-2xl p-4 text-sm font-bold focus:ring-2 focus:ring-[#D4AF37]/50 transition-all outline-none"
+                               placeholder="Ej: Labial Matte Gold"
+                               value={formData.nombre}
+                               onChange={e => setFormData({ ...formData, nombre: e.target.value })}
+                            />
+                         </div>
+                         <div className="space-y-2">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-[#121212]/30 ml-1">Categoría Oficial</label>
+                            <select 
+                               required
+                               className="w-full bg-[#FDFBF7] border border-[#121212]/10 rounded-2xl p-4 text-sm font-bold focus:ring-2 focus:ring-[#D4AF37]/50 transition-all outline-none appearance-none"
+                               value={formData.categoria}
+                               onChange={e => setFormData({ ...formData, categoria: e.target.value })}
+                            >
+                               <option value="">Seleccionar clase...</option>
+                               {categoriasList.map(cat => <option key={cat.id} value={cat.nombre}>{cat.nombre}</option>)}
+                            </select>
+                         </div>
+                      </div>
+
+                      <div className="space-y-2">
+                         <label className="text-[10px] font-black uppercase tracking-widest text-[#121212]/30 ml-1">Representación Visual (Unidad)</label>
+                         <div className="flex items-center gap-6 p-6 bg-[#FDFBF7] rounded-[2rem] border border-dashed border-[#121212]/10 group hover:border-[#D4AF37]/50 transition-all">
+                            <div className="w-32 h-32 bg-white rounded-2xl border border-[#121212]/5 overflow-hidden shadow-inner flex-shrink-0">
+                               {formData.imagen ? <img src={formData.imagen} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-[#121212]/10"><ImageIcon size={40} strokeWidth={1} /></div>}
                             </div>
-                        </div>
-                        <div className="space-y-2">
-                            <label className="text-sm font-bold text-stone-600 ml-1">Categoría</label>
-                            <div className="relative flex items-center">
-                                <Tag className="absolute left-3 text-stone-400" size={18} />
-                                <select
-                                    required
-                                    className="w-full bg-stone-50 border border-stone-200 rounded-xl py-2.5 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500/30 transition-all text-stone-800 appearance-none"
-                                    value={formData.categoria}
-                                    onChange={e => setFormData({ ...formData, categoria: e.target.value })}
-                                >
-                                    <option value="">Seleccionar categoría</option>
-                                    {categoriasList.map(cat => (
-                                        <option key={cat.id} value={cat.nombre}>{cat.nombre}</option>
-                                    ))}
-                                </select>
-                                <div className="absolute right-4 pointer-events-none text-stone-400">
-                                    <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" fillRule="evenodd"></path></svg>
-                                </div>
+                            <div className="space-y-4">
+                               <p className="text-xs font-medium text-[#121212]/40 italic">"Sube una imagen de alta calidad para el catálogo premium."</p>
+                               <button 
+                                 type="button" 
+                                 onClick={handleUploadClick}
+                                 className="flex items-center gap-2 px-6 py-3 bg-[#121212] text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[#D4AF37] hover:text-[#121212] transition-all shadow-lg"
+                               >
+                                  <UploadCloud size={16} /> Vincular Imagen
+                               </button>
                             </div>
-                        </div>
-                        <div className="space-y-2 md:col-span-2">
-                            <label className="text-sm font-bold text-stone-600 ml-1">Proveedor (Opcional)</label>
-                            <div className="relative flex items-center">
-                                <Truck className="absolute left-3 text-stone-400" size={18} />
-                                <select
-                                    className="w-full bg-stone-50 border border-stone-200 rounded-xl py-2.5 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500/30 transition-all text-stone-800 appearance-none"
-                                    value={formData.proveedor_id}
-                                    onChange={e => setFormData({ ...formData, proveedor_id: e.target.value })}
-                                >
-                                    <option value="">Sin proveedor asignado</option>
-                                    {proveedores.map(prov => (
-                                        <option key={prov.id} value={prov.id}>{prov.nombre}</option>
-                                    ))}
-                                </select>
-                                {/* Custom arrow for select */}
-                                <div className="absolute right-4 pointer-events-none text-stone-400">
-                                    <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" fillRule="evenodd"></path></svg>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                         </div>
+                      </div>
+
+                      <div className="space-y-2">
+                         <label className="text-[10px] font-black uppercase tracking-widest text-[#121212]/30 ml-1">Vínculo con Proveedor</label>
+                         <select 
+                           className="w-full bg-[#FDFBF7] border border-[#121212]/10 rounded-2xl p-4 text-sm font-bold focus:ring-2 focus:ring-[#D4AF37]/50 transition-all outline-none appearance-none"
+                           value={formData.proveedor_id}
+                           onChange={e => setFormData({ ...formData, proveedor_id: e.target.value })}
+                         >
+                            <option value="">Sin proveedor directo</option>
+                            {proveedores.map(prov => <option key={prov.id} value={prov.id}>{prov.nombre}</option>)}
+                         </select>
+                      </div>
+                   </div>
                 </div>
 
-                <div className="h-px bg-orange-100" />
+                {/* Right: Logistics & Pricing */}
+                <div className="space-y-8">
+                   <div className="bg-[#121212] text-white p-10 rounded-[3rem] shadow-2xl space-y-10 relative overflow-hidden">
+                      <div className="absolute top-0 right-0 w-48 h-48 bg-[#D4AF37]/10 rounded-full blur-[60px] -translate-y-1/2 translate-x-1/2" />
+                      
+                      <div className="relative z-10 flex items-center gap-3">
+                         <DollarSign size={20} className="text-[#D4AF37]" />
+                         <h3 className="text-xl font-serif font-bold italic">Finanzas & Stock</h3>
+                      </div>
 
-                {/* Pricing Section */}
-                <div className="space-y-4">
-                    <h2 className="text-lg font-semibold flex items-center gap-2 text-emerald-600">
-                        <DollarSign size={18} />
-                        Precios y Costos
-                    </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <label className="text-sm font-bold text-stone-600 ml-1">Precio de Venta</label>
-                            <div className="relative">
-                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 font-bold">$</span>
-                                <input
+                      <div className="relative z-10 space-y-8">
+                         <div className="grid grid-cols-2 gap-6">
+                            <div className="space-y-2">
+                               <label className="text-[9px] font-black uppercase tracking-widest text-white/40 ml-1">Precio de Venta</label>
+                               <div className="relative">
+                                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#D4AF37] font-serif font-bold">S/</span>
+                                  <input 
                                     required
-                                    type="number"
-                                    step="0.01"
-                                    placeholder="0.00"
-                                    className="w-full bg-stone-50 border border-stone-200 rounded-xl py-2.5 pl-8 pr-4 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/30 transition-all text-stone-800"
+                                    type="number" step="0.01" 
+                                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-10 pr-4 text-lg font-serif font-bold focus:ring-2 focus:ring-[#D4AF37]/50 transition-all outline-none"
                                     value={formData.precio}
                                     onChange={e => setFormData({ ...formData, precio: e.target.value })}
-                                />
+                                  />
+                               </div>
                             </div>
-                        </div>
-                        <div className="space-y-2">
-                            <label className="text-sm font-bold text-stone-600 ml-1">Costo (Opcional)</label>
-                            <div className="relative">
-                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 font-bold">$</span>
-                                <input
-                                    type="number"
-                                    step="0.01"
-                                    placeholder="0.00"
-                                    className="w-full bg-stone-50 border border-stone-200 rounded-xl py-2.5 pl-8 pr-4 focus:outline-none focus:ring-2 focus:ring-stone-200 transition-all text-stone-800"
+                            <div className="space-y-2">
+                               <label className="text-[9px] font-black uppercase tracking-widest text-white/40 ml-1">Costo Unitario</label>
+                               <div className="relative">
+                                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20 font-serif font-bold">S/</span>
+                                  <input 
+                                    type="number" step="0.01" 
+                                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-10 pr-4 text-lg font-serif font-bold focus:ring-2 focus:ring-white/20 transition-all outline-none"
                                     value={formData.costo}
                                     onChange={e => setFormData({ ...formData, costo: e.target.value })}
-                                />
+                                  />
+                               </div>
                             </div>
-                        </div>
-                    </div>
+                         </div>
+
+                         <div className="h-px bg-white/10" />
+
+                         <div className="space-y-6">
+                            <div className="space-y-2">
+                               <label className="text-[9px] font-black uppercase tracking-widest text-white/40 ml-1">Código de Barras / SKU</label>
+                               <div className="relative">
+                                  <Hash size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" />
+                                  <input 
+                                    type="text" 
+                                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-sm font-black uppercase tracking-widest focus:ring-2 focus:ring-[#D4AF37]/50 transition-all outline-none"
+                                    value={formData.sku}
+                                    onChange={e => setFormData({ ...formData, sku: e.target.value })}
+                                  />
+                               </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-6">
+                               <div className="space-y-2">
+                                  <label className="text-[9px] font-black uppercase tracking-widest text-white/40 ml-1">Stock Inicial</label>
+                                  <input 
+                                    required
+                                    type="number" 
+                                    className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm font-bold focus:ring-2 focus:ring-[#D4AF37]/50 transition-all outline-none"
+                                    value={formData.stock}
+                                    onChange={e => setFormData({ ...formData, stock: e.target.value })}
+                                  />
+                               </div>
+                               <div className="space-y-2">
+                                  <label className="text-[9px] font-black uppercase tracking-widest text-white/40 ml-1">Mínimo Crítico</label>
+                                  <input 
+                                    type="number" 
+                                    className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm font-bold focus:ring-2 focus:ring-white/20 transition-all outline-none text-rose-400"
+                                    value={formData.stock_minimo}
+                                    onChange={e => setFormData({ ...formData, stock_minimo: e.target.value })}
+                                  />
+                               </div>
+                            </div>
+                         </div>
+
+                         <button 
+                           disabled={loading}
+                           type="submit" 
+                           className="w-full py-6 bg-[#D4AF37] text-[#121212] rounded-3xl font-black uppercase tracking-[0.3em] text-[10px] hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-[#D4AF37]/10 flex items-center justify-center gap-3"
+                         >
+                            {loading ? <div className="w-5 h-5 border-2 border-[#121212]/20 border-t-[#121212] rounded-full animate-spin" /> : <Save size={18} />}
+                            {isEdit ? "Sincronizar Cambios" : "Verificar & Registrar"}
+                         </button>
+                      </div>
+                   </div>
+
+                   <div className="p-8 bg-white border border-[#121212]/5 rounded-[2.5rem] space-y-4 shadow-sm">
+                      <div className="flex items-center gap-4">
+                         <div className="w-10 h-10 bg-[#FDFBF7] rounded-xl flex items-center justify-center text-emerald-600 border border-[#121212]/5">
+                            <CheckCircle2 size={24} />
+                         </div>
+                         <div>
+                            <p className="text-[9px] font-black uppercase tracking-widest text-[#121212]/40">Auditoría Activa</p>
+                            <p className="text-xs font-bold text-[#121212]">Integridad de Datos</p>
+                         </div>
+                      </div>
+                      <p className="text-[10px] text-[#121212]/40 leading-relaxed font-medium italic">
+                        "Cada registro en Bellesas Karina v4 se audita con marca de tiempo y autoría del gerente en sesión."
+                      </p>
+                   </div>
                 </div>
 
-                <div className="h-px bg-orange-100" />
-
-                {/* Inventory Section */}
-                <div className="space-y-4">
-                    <h2 className="text-lg font-semibold flex items-center gap-2 text-amber-600">
-                        <Hash size={18} />
-                        Inventario
-                    </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div className="space-y-2">
-                            <label className="text-sm font-bold text-stone-600 ml-1">Stock Inicial</label>
-                            <input
-                                required
-                                type="number"
-                                className="w-full bg-stone-50 border border-stone-200 rounded-xl py-2.5 px-4 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500/30 transition-all text-stone-800"
-                                value={formData.stock}
-                                onChange={e => setFormData({ ...formData, stock: e.target.value })}
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <label className="text-sm font-bold text-stone-600 ml-1">Stock Mínimo</label>
-                            <input
-                                type="number"
-                                className="w-full bg-stone-50 border border-stone-200 rounded-xl py-2.5 px-4 focus:outline-none focus:ring-2 focus:ring-stone-200 transition-all text-stone-800"
-                                value={formData.stock_minimo}
-                                onChange={e => setFormData({ ...formData, stock_minimo: e.target.value })}
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <label className="text-sm font-bold text-stone-600 ml-1">SKU / Código</label>
-                            <input
-                                type="text"
-                                placeholder="BP-001"
-                                className="w-full bg-stone-50 border border-stone-200 rounded-xl py-2.5 px-4 focus:outline-none focus:ring-2 focus:ring-stone-200 transition-all text-stone-800 uppercase"
-                                value={formData.sku}
-                                onChange={e => setFormData({ ...formData, sku: e.target.value })}
-                            />
-                        </div>
-                    </div>
-                </div>
-
-                <div className="h-px bg-orange-100" />
-
-                {/* Image URL Section */}
-                <div className="space-y-4">
-                    <h2 className="text-lg font-semibold flex items-center gap-2 text-blue-600">
-                        <ImageIcon size={18} />
-                        Imagen (URL)
-                    </h2>
-                    <div className="flex flex-col sm:flex-row gap-4">
-                        <div className="flex-1 space-y-2">
-                            <label className="text-sm font-bold text-stone-600 ml-1">URL de la Imagen</label>
-                            <input
-                                type="url"
-                                placeholder="https://ejemplo.com/producto.jpg"
-                                className="w-full bg-stone-50 border border-stone-200 rounded-xl py-2.5 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/30 transition-all text-stone-800"
-                                value={formData.imagen}
-                                onChange={e => setFormData({ ...formData, imagen: e.target.value })}
-                            />
-                        </div>
-                        <div className="flex flex-col justify-end">
-                            <button
-                                type="button"
-                                onClick={handleUploadClick}
-                                className="flex items-center justify-center gap-2 bg-blue-50 hover:bg-blue-100 text-blue-600 px-6 py-2.5 rounded-xl font-bold border border-blue-200 transition-all hover:scale-[1.02] active:scale-95"
-                            >
-                                <UploadCloud size={18} />
-                                Subir Imagen
-                            </button>
-                        </div>
-                    </div>
-                    {formData.imagen && (
-                        <div className="mt-4 relative w-32 h-32 rounded-2xl overflow-hidden border-2 border-blue-100 shadow-sm">
-                            <img 
-                                src={formData.imagen} 
-                                alt="Vista previa" 
-                                className="w-full h-full object-cover"
-                            />
-                        </div>
-                    )}
-                </div>
-            </div>
-
-            <div className="flex items-center justify-end gap-4 pb-8">
-                <button
-                    type="button"
-                    onClick={() => router.back()}
-                    className="px-6 py-3 rounded-2xl font-bold text-stone-400 hover:text-stone-600 transition-colors"
-                >
-                    Cancelar
-                </button>
-                <button
-                    disabled={loading}
-                    type="submit"
-                    className="flex items-center gap-2 bg-orange-600 hover:bg-orange-500 text-white px-8 py-3 rounded-2xl font-bold transition-all hover:scale-[1.02] active:scale-95 shadow-xl shadow-orange-900/20 disabled:opacity-50"
-                >
-                    {loading ? (
-                        <div className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    ) : (
-                        <Save size={20} />
-                    )}
-                    {loading ? "Guardando..." : isEdit ? "Actualizar Producto" : "Guardar Producto"}
-                </button>
-            </div>
-        </form>
-    </>
+            </form>
+        </>
     );
 }

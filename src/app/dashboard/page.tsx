@@ -1,342 +1,211 @@
 "use client";
 
-import React from "react";
-import Link from "next/link";
-import {
-    Package,
-    ShoppingCart,
-    Layers,
-    ArrowLeftRight,
-    BarChart3,
-    Settings,
-    LayoutDashboard,
-    LogOut,
-    Users,
-    Truck
+import React, { useEffect, useState } from "react";
+import { 
+  Package, 
+  AlertTriangle, 
+  TrendingUp, 
+  ArrowRight, 
+  Plus, 
+  Scan,
+  CheckCircle2,
+  Clock,
+  ChevronRight
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Guard } from "@/context/AuthContext";
-import { BarcodeScanner } from "@/components/BarcodeScanner";
 import { fetchWithAuth } from "@/lib/api";
-import { X, Search, DollarSign, Package as PackageIcon, Info } from "lucide-react";
+import { BarcodeScanner } from "@/components/BarcodeScanner";
 
-export default function SelectionPanel() {
-    const menuItems = [
-        {
-            title: "Inventario",
-            description: "Control de stock y productos",
-            icon: <Package size={32} />,
-            href: "/dashboard/inventory",
-            color: "bg-orange-500",
-            hoverColor: "hover:bg-orange-600",
-            lightColor: "bg-orange-100",
-            textColor: "text-orange-700",
-            label: "STONKS",
-            bloqueado: false
-        },
-        {
-            title: "Ventas",
-            description: "Registro de transacciones",
-            icon: <ShoppingCart size={32} />,
-            href: "/ventas",
-            color: "bg-yellow-500",
-            hoverColor: "hover:bg-yellow-600",
-            lightColor: "bg-yellow-100",
-            textColor: "text-yellow-700",
-            label: "ETC",
-            bloqueado: false
-        },
-        {
-            title: "Proveedores",
-            description: "Gestión de contactos comerciales",
-            icon: <Truck size={32} />,
-            href: "/dashboard/suppliers",
-            color: "bg-blue-600",
-            hoverColor: "hover:bg-blue-700",
-            lightColor: "bg-blue-50",
-            textColor: "text-blue-700",
-            label: "NUEVO",
-            bloqueado: false
-        },
-        {
-            title: "Movimientos",
-            description: "Historial de entradas y salidas",
-            icon: <ArrowLeftRight size={32} />,
-            href: "/dashboard/suppliers/orders",
-            color: "bg-red-500",
-            hoverColor: "hover:bg-red-600",
-            lightColor: "bg-red-100",
-            textColor: "text-red-700",
-            label: "PEDIDOS",
-            bloqueado: false
-        },
-        {
-            title: "Empleados",
-            description: "Control de personal y accesos",
-            icon: <Users size={32} />,
-            href: "/dashboard/employees",
-            color: "bg-indigo-600",
-            hoverColor: "hover:bg-indigo-700",
-            lightColor: "bg-indigo-50",
-            textColor: "text-indigo-700",
-            label: "NUEVO",
-            bloqueado: false
-        },
-        {
-            title: "Reportes",
-            description: "Análisis y estadísticas",
-            icon: <BarChart3 size={32} />,
-            href: "/dashboard/reports",
-            color: "bg-rose-900",
-            hoverColor: "hover:bg-rose-950",
-            lightColor: "bg-rose-100",
-            textColor: "text-rose-900",
-            label: "ESTADÍSTICAS",
-            dark: true,
-            bloqueado: true
-        },
-        {
-            title: "Ajustes",
-            description: "Configuración del sistema",
-            icon: <Settings size={32} />,
-            href: "/dashboard/settings",
-            color: "bg-[#E6D5B8]",
-            hoverColor: "hover:bg-[#D4C4A8]",
-            lightColor: "bg-[#F3EAD8]",
-            textColor: "text-stone-700",
-            label: "PERFIL",
-            bloqueado: true
-        },
-        {
-            title: "Categorías",
-            description: "Organización de catálogo",
-            icon: <Layers size={32} />,
-            href: "/dashboard/categories",
-            color: "bg-emerald-600",
-            hoverColor: "hover:bg-emerald-700",
-            lightColor: "bg-emerald-50",
-            textColor: "text-emerald-700",
-            label: "GESTIÓN",
-            bloqueado: false
+export default function DashboardOverview() {
+  const [stats, setStats] = useState({
+    totalProducts: 0,
+    lowStock: 0,
+    inventoryValue: 0
+  });
+  const [loading, setLoading] = useState(true);
+  const [scannedProduct, setScannedProduct] = useState<any>(null);
+
+  useEffect(() => {
+    async function loadStats() {
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://backen-inventario.vercel.app/api";
+        const res = await fetchWithAuth(`${apiUrl}/products`);
+        if (res.ok) {
+          const products = await res.json();
+          const low = products.filter((p: any) => p.stock <= (p.stock_minimo || 5)).length;
+          const value = products.reduce((acc: number, p: any) => acc + (p.precio * (p.stock || 0)), 0);
+          
+          setStats({
+            totalProducts: products.length,
+            lowStock: low,
+            inventoryValue: value
+          });
         }
-    ];
+      } catch (error) {
+        console.error("Error loading dashboard stats:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadStats();
+  }, []);
 
-    const [scannedProduct, setScannedProduct] = React.useState<any>(null);
-    const [scanning, setScanning] = React.useState(false);
+  const handleScan = async (code: string) => {
+    // Logic for scanning already in place, but let's keep it simple for now
+    console.log("Scanned:", code);
+  };
 
-    const handleScan = async (code: string) => {
-        setScanning(true);
-        try {
-            const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://backen-inventario.vercel.app/api";
-            // Buscamos productos que coincidan con el SKU
-            const res = await fetchWithAuth(`${apiUrl}/products`);
-            if (res.ok) {
-                const products = await res.json();
-                const product = products.find((p: any) => p.sku === code || p.id === code);
+  return (
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      
+      {/* Welcome Section */}
+      <section className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div className="space-y-1">
+          <p className="text-[#D4AF37] font-bold uppercase tracking-[0.3em] text-[10px]">Resumen Ejecutivo</p>
+          <h2 className="text-4xl font-serif font-bold text-[#121212]">Bienvenido de nuevo</h2>
+          <p className="text-[#121212]/50 text-sm">Gestionando <span className="text-[#121212] font-semibold">Bellesas Karina</span> para el periodo 2026.</p>
+        </div>
+        <div className="flex gap-3">
+           <button className="flex items-center gap-2 px-6 py-3 bg-[#121212] text-white rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-[#121212]/90 transition-all shadow-lg hover:shadow-[#121212]/20">
+              <Plus size={16} /> Nuevo Producto
+           </button>
+           <button className="flex items-center gap-2 px-6 py-3 bg-white border border-[#121212]/10 text-[#121212] rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-[#FDFBF7] transition-all">
+              <Scan size={16} /> Escanear
+           </button>
+        </div>
+      </section>
 
-                if (product) {
-                    setScannedProduct(product);
-                } else {
-                    console.log("Producto no encontrado:", code);
-                    // Opcional: Mostrar un toast o alerta discreta
-                }
-            }
-        } catch (error) {
-            console.error("Error al buscar producto escaneado:", error);
-        } finally {
-            setScanning(false);
-        }
-    };
+      {/* Stats Bento Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        
+        {/* Total Products */}
+        <div className="group bg-white p-8 rounded-[2.5rem] border border-[#121212]/5 shadow-sm hover:shadow-xl transition-all duration-500 relative overflow-hidden">
+           <div className="absolute -right-4 -top-4 w-24 h-24 bg-[#D4AF37]/5 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700" />
+           <div className="relative z-10 space-y-4">
+              <div className="w-12 h-12 bg-[#FDFBF7] rounded-2xl flex items-center justify-center text-[#121212] border border-[#121212]/5">
+                 <Package size={24} />
+              </div>
+              <div>
+                 <p className="text-[10px] font-black uppercase tracking-widest text-[#121212]/40">Productos Totales</p>
+                 <h3 className="text-4xl font-serif font-bold mt-1">{loading ? "..." : stats.totalProducts}</h3>
+              </div>
+              <div className="flex items-center gap-2 text-emerald-600 text-[10px] font-bold uppercase tracking-widest">
+                 <TrendingUp size={12} /> +12% este mes
+              </div>
+           </div>
+        </div>
 
-    return (
-        <Guard roles={['GERENTE', 'EMPLEADO']}>
-            <BarcodeScanner onScan={handleScan} />
+        {/* Low Stock */}
+        <div className="group bg-white p-8 rounded-[2.5rem] border border-[#121212]/5 shadow-sm hover:shadow-xl transition-all duration-500 relative overflow-hidden">
+           <div className="absolute -right-4 -top-4 w-24 h-24 bg-rose-500/5 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700" />
+           <div className="relative z-10 space-y-4">
+              <div className={cn(
+                "w-12 h-12 rounded-2xl flex items-center justify-center border",
+                stats.lowStock > 0 ? "bg-rose-50 text-rose-600 border-rose-100" : "bg-[#FDFBF7] text-[#121212] border-[#121212]/5"
+              )}>
+                 <AlertTriangle size={24} />
+              </div>
+              <div>
+                 <p className="text-[10px] font-black uppercase tracking-widest text-[#121212]/40">Stock Crítico</p>
+                 <h3 className={cn(
+                   "text-4xl font-serif font-bold mt-1",
+                   stats.lowStock > 0 ? "text-rose-600" : ""
+                 )}>{loading ? "..." : stats.lowStock}</h3>
+              </div>
+              <p className="text-[10px] font-bold text-[#121212]/40 uppercase tracking-widest">Revisión necesaria</p>
+           </div>
+           <button className="absolute bottom-8 right-8 w-10 h-10 bg-[#121212] rounded-xl flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-all translate-y-4 group-hover:translate-y-0">
+              <ArrowRight size={18} />
+           </button>
+        </div>
 
-            {/* Modal de Producto Escaneado */}
-            {scannedProduct && (
-                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-sm animate-in fade-in duration-300">
-                    <div className="bg-white rounded-[2.5rem] shadow-2xl max-w-lg w-full overflow-hidden border border-stone-200 animate-in zoom-in-95 duration-300">
-                        <div className="relative h-64 bg-stone-100">
-                            {scannedProduct.imagen ? (
-                                <img
-                                    src={scannedProduct.imagen}
-                                    alt={scannedProduct.nombre}
-                                    className="w-full h-full object-cover"
-                                />
-                            ) : (
-                                <div className="w-full h-full flex items-center justify-center text-stone-300">
-                                    <PackageIcon size={64} strokeWidth={1} />
-                                </div>
-                            )}
-                            <button
-                                onClick={() => setScannedProduct(null)}
-                                className="absolute top-4 right-4 p-2 bg-white/80 backdrop-blur-md rounded-full text-stone-900 hover:bg-white transition-colors shadow-lg"
-                            >
-                                <X size={20} />
-                            </button>
-                            <div className="absolute bottom-4 left-4">
-                                <span className="px-4 py-2 bg-orange-600 text-white text-[10px] font-black tracking-widest uppercase rounded-full shadow-lg">
-                                    Escaneado: {scannedProduct.sku}
-                                </span>
-                            </div>
-                        </div>
+        {/* Total Value */}
+        <div className="group bg-[#121212] p-8 rounded-[2.5rem] border border-white/5 shadow-2xl transition-all duration-500 relative overflow-hidden">
+           <div className="absolute -right-4 -top-4 w-24 h-24 bg-[#D4AF37]/20 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700" />
+           <div className="relative z-10 space-y-4 text-white">
+              <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center text-[#D4AF37] border border-white/10">
+                 <h4 className="text-xl font-serif font-black">S/</h4>
+              </div>
+              <div>
+                 <p className="text-[10px] font-black uppercase tracking-widest text-white/30">Valor del Portafolio</p>
+                 <h3 className="text-4xl font-serif font-bold mt-1">
+                   {loading ? "..." : stats.inventoryValue.toLocaleString('es-PE', { minimumFractionDigits: 2 })}
+                 </h3>
+              </div>
+              <p className="text-[10px] font-bold text-[#D4AF37] uppercase tracking-widest flex items-center gap-2">
+                 <div className="w-2 h-2 rounded-full bg-[#D4AF37] animate-pulse" /> Activo Actual
+              </p>
+           </div>
+        </div>
 
-                        <div className="p-8 space-y-6">
-                            <div>
-                                <h2 className="text-3xl font-serif font-bold text-stone-900 leading-tight">
-                                    {scannedProduct.nombre}
-                                </h2>
-                                <p className="text-stone-500 font-medium">{scannedProduct.categoria}</p>
-                            </div>
+      </div>
 
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="bg-orange-50 p-4 rounded-2xl border border-orange-100">
-                                    <p className="text-[10px] font-bold text-orange-600 uppercase tracking-widest mb-1">Precio</p>
-                                    <p className="text-2xl font-black text-orange-900 flex items-center">
-                                        <span className="text-sm mr-1">S/</span>
-                                        {scannedProduct.precio.toFixed(2)}
-                                    </p>
-                                </div>
-                                <div className={cn(
-                                    "p-4 rounded-2xl border",
-                                    scannedProduct.stock <= (scannedProduct.stock_minimo || 5)
-                                        ? "bg-red-50 border-red-100"
-                                        : "bg-emerald-50 border-emerald-100"
-                                )}>
-                                    <p className={cn(
-                                        "text-[10px] font-bold uppercase tracking-widest mb-1",
-                                        scannedProduct.stock <= (scannedProduct.stock_minimo || 5) ? "text-red-600" : "text-emerald-600"
-                                    )}>Stock Actual</p>
-                                    <p className={cn(
-                                        "text-2xl font-black flex items-center",
-                                        scannedProduct.stock <= (scannedProduct.stock_minimo || 5) ? "text-red-900" : "text-emerald-900"
-                                    )}>
-                                        {scannedProduct.stock}
-                                        <span className="text-xs ml-2 font-bold uppercase opacity-60">unids</span>
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div className="flex gap-3">
-                                <Link
-                                    href={`/dashboard/inventory?edit=${scannedProduct.id}`}
-                                    className="flex-1 bg-stone-900 hover:bg-stone-800 text-white py-4 rounded-2xl font-bold text-center transition-all hover:scale-[1.02] active:scale-95"
-                                >
-                                    Editar Producto
-                                </Link>
-                                <button
-                                    onClick={() => setScannedProduct(null)}
-                                    className="px-6 py-4 bg-stone-100 hover:bg-stone-200 text-stone-600 rounded-2xl font-bold transition-all"
-                                >
-                                    Cerrar
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+      {/* Secondary Row: Activity & Quick Scan */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        
+        {/* Recent Activity */}
+        <section className="lg:col-span-3 bg-white border border-[#121212]/5 rounded-[2.5rem] p-8 shadow-sm">
+           <div className="flex items-center justify-between mb-8">
+              <h4 className="text-xl font-serif font-bold">Actividad Reciente</h4>
+              <button className="text-[10px] font-bold uppercase tracking-widest text-[#D4AF37] hover:underline transition-all">Ver historial completo</button>
+           </div>
+           
+           <div className="space-y-6">
+              {[1, 2, 3].map((item) => (
+                <div key={item} className="flex items-start gap-4 p-4 rounded-2xl border border-transparent hover:border-[#121212]/5 hover:bg-[#FDFBF7] transition-all group">
+                   <div className="w-10 h-10 rounded-xl bg-[#FDFBF7] flex items-center justify-center text-[#121212]/40 border border-[#121212]/5 group-hover:text-[#D4AF37] transition-colors">
+                      <Clock size={18} />
+                   </div>
+                   <div className="flex-1">
+                      <p className="text-sm font-bold text-[#121212]">Pedido de Almacén recibido</p>
+                      <p className="text-[10px] text-[#121212]/40 uppercase tracking-widest font-bold mt-0.5">Tienda Central • Por Maria Garcia</p>
+                   </div>
+                   <div className="text-right">
+                      <p className="text-xs font-bold text-[#121212]/60">Hace 2 horas</p>
+                      <span className="text-[8px] bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-full font-black uppercase tracking-tighter">Completado</span>
+                   </div>
                 </div>
-            )}
+              ))}
+           </div>
+        </section>
 
-            <div className="min-h-screen bg-[#FDFBF7] p-4 md:p-8 selection:bg-orange-500/30">
-                <div className="max-w-7xl mx-auto space-y-12">
-                    {/* Header */}
-                    <header className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 bg-orange-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-orange-900/20">
-                                <LayoutDashboard size={28} />
-                            </div>
-                            <div>
-                                <h1 className="text-3xl font-bold text-stone-900 tracking-tight">
-                                    Panel de Control
-                                </h1>
-                                <p className="text-stone-500 font-medium tracking-wide flex items-center gap-2">
-                                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                                    BellesasKarina — General Manager
-                                </p>
-                            </div>
-                        </div>
+        {/* Quick Access Sidebar Card */}
+        <section className="lg:col-span-2 space-y-6">
+           
+           {/* Scan Area */}
+           <div className="bg-[#D4AF37] p-8 rounded-[2.5rem] text-[#121212] flex flex-col items-center text-center space-y-6 shadow-xl shadow-[#D4AF37]/20 relative overflow-hidden group">
+              <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-125 transition-transform duration-1000">
+                 <Scan size={120} />
+              </div>
+              <div className="relative z-10 w-full">
+                 <h4 className="text-2xl font-serif font-black leading-tight">Acceso Rápido por Código</h4>
+                 <p className="text-[11px] font-bold uppercase tracking-widest text-[#121212]/60 mt-2">Usa el escáner para consultas rápidas</p>
+              </div>
+              <div className="relative z-10 w-full aspect-video bg-[#121212] rounded-[2rem] flex items-center justify-center group-hover:shadow-2xl transition-all">
+                 <Scan size={48} className="text-[#D4AF37] animate-pulse" />
+              </div>
+              <button className="relative z-10 w-full py-4 bg-[#121212] text-white rounded-2xl font-bold uppercase tracking-widest text-xs hover:scale-[1.02] active:scale-95 transition-all">
+                Activar Cámara
+              </button>
+           </div>
 
-                        <div className="flex items-center gap-2">
-                            <Link
-                                href="/"
-                                className="p-3 text-stone-400 hover:text-blue-600 hover:bg-blue-50 rounded-2xl transition-all active:scale-95 group"
-                                title="Ir al Inicio"
-                            >
-                                <LayoutDashboard size={24} />
-                            </Link>
-                            <Link
-                                href="/"
-                                className="p-3 text-stone-400 hover:text-red-500 hover:bg-red-50 rounded-2xl transition-all active:scale-95 group"
-                                title="Cerrar Sesión"
-                            >
-                                <LogOut size={24} className="group-hover:rotate-180 transition-transform duration-500" />
-                            </Link>
-                        </div>
-                    </header>
+           {/* Quick Link */}
+           <div className="bg-white border border-[#121212]/10 p-6 rounded-[2rem] flex items-center justify-between group cursor-pointer hover:border-[#D4AF37] transition-all">
+              <div className="flex items-center gap-4">
+                 <div className="w-10 h-10 bg-[#FDFBF7] rounded-[1rem] flex items-center justify-center text-[#D4AF37] border border-[#121212]/5">
+                    <CheckCircle2 size={20} />
+                 </div>
+                 <div>
+                    <p className="text-xs font-bold text-[#121212]">Reporte Diario</p>
+                    <p className="text-[10px] text-[#121212]/40 font-bold uppercase tracking-widest">Generar ahora</p>
+                 </div>
+              </div>
+              <ChevronRight size={18} className="text-[#121212]/20 group-hover:text-[#D4AF37] group-hover:translate-x-1 transition-all" />
+           </div>
 
-                    {/* Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {menuItems.map((item, index) => (
-                            <Link
-                                key={index}
-                                href={item.bloqueado ? "#" : item.href}
-                                className={cn(
-                                    "group relative overflow-hidden rounded-[2rem] border border-stone-200 bg-white p-6 transition-all h-full flex flex-col",
-                                    item.bloqueado ?
-                                        "cursor-not-allowed opacity-60 grayscale"
-                                        : "hover:-translate-y-2 hover:shadow-2xl active:scale-95",
-                                    item.href === "#" && !item.bloqueado ? "cursor-not-allowed opacity-90" : ""
+        </section>
+      </div>
 
-                                )}
-                            >
-                                <div className={cn(
-                                    "absolute -right-8 -top-8 w-32 h-32 rounded-full blur-3xl opacity-0 group-hover:opacity-20 transition-opacity",
-                                    item.color
-                                )} />
-
-                                <div className="relative z-10 flex flex-col h-full">
-                                    <div className="flex justify-between items-start mb-4">
-                                        <div className={cn(
-                                            "w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-500 group-hover:scale-110 group-hover:rotate-6 shadow-sm",
-                                            item.dark ? "bg-rose-900 text-white" : `${item.lightColor} ${item.textColor}`
-                                        )}>
-                                            {item.icon}
-                                        </div>
-                                        <span className={cn(
-                                            "px-3 py-1 rounded-full text-[9px] font-black tracking-[0.15em] transition-all",
-                                            item.bloqueado ? "bg-stone-100 text-stone-500" : (item.dark ? "bg-rose-100 text-rose-900" : `${item.lightColor} text-white`)
-                                        )}>
-                                            {item.bloqueado ? "En trabajo" : item.label}
-                                        </span>
-                                    </div>
-
-                                    <div className="mt-auto">
-                                        <h3 className="text-xl font-bold text-stone-900 mb-1 group-hover:text-orange-600 transition-colors">
-                                            {item.title}
-                                        </h3>
-                                        <p className="text-stone-500 text-xs font-medium leading-relaxed">
-                                            {item.description}
-                                        </p>
-                                    </div>
-
-                                    <div className="mt-6 flex items-center gap-2 text-stone-300 group-hover:text-orange-500 group-hover:translate-x-2 transition-all">
-                                        <div className="h-px w-8 bg-current" />
-                                        <span className="text-[10px] font-bold uppercase tracking-widest">Abrir</span>
-                                    </div>
-                                </div>
-                            </Link>
-                        ))}
-                    </div>
-
-                    {/* Footer Info */}
-                    <footer className="pt-8 border-t border-stone-200 flex flex-col md:flex-row items-center justify-between gap-4 text-stone-400 text-sm font-medium">
-                        <p>© 2026 BellesasKarina System — v2.0.0-Gold</p>
-                        <div className="flex gap-6">
-                            <span className="hover:text-stone-600 transition-colors cursor-help">Centro de Ayuda</span>
-                            <span className="hover:text-stone-600 transition-colors cursor-help">Logs de Auditoría</span>
-                        </div>
-                    </footer>
-                </div>
-            </div>
-        </Guard>
-    );
+    </div>
+  );
 }

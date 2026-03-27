@@ -3,383 +3,263 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import {
-    Truck,
-    Plus,
-    Search,
-    Mail,
-    Phone,
-    MapPin,
-    ChevronLeft,
-    MoreVertical,
-    Trash2,
-    Edit3,
-    ArrowRight
+  Truck,
+  Plus,
+  Search,
+  Mail,
+  Phone,
+  MapPin,
+  ChevronLeft,
+  MoreVertical,
+  Trash2,
+  Edit3,
+  ArrowRight,
+  X,
+  History,
+  CheckCircle2,
+  AlertCircle
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { fetchWithAuth } from "@/lib/api";
 
-interface Supplier {
-    id: string;
-    nombre: string;
-    email: string;
-    telefono: string;
-    direccion: string;
-    categoria: string;
-}
+export default function SuppliersV4() {
+  const [suppliers, setSuppliers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [showOrderModal, setShowOrderModal] = useState(false);
+  const [selectedSupplier, setSelectedSupplier] = useState<any>(null);
+  
+  const [orderForm, setOrderForm] = useState({
+    cantidad: "",
+    notas: ""
+  });
 
-export default function SuppliersPage() {
-    const [suppliers, setSuppliers] = useState<Supplier[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [searchTerm, setSearchTerm] = useState("");
-    const [showModal, setShowModal] = useState(false);
-    const [saving, setSaving] = useState(false);
-    const [alertInfo, setAlertInfo] = useState<{ type: 'success' | 'error', message: string } | null>(null);
-    const [form, setForm] = useState({
-        nombre: "",
-        email: "",
-        telefono: "",
-        direccion: "",
-        categoria: ""
-    });
+  useEffect(() => {
+    fetchSuppliers();
+  }, []);
 
-    const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
-    const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null);
+  const fetchSuppliers = async () => {
+    setLoading(true);
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://backen-inventario.vercel.app/api";
+      const res = await fetchWithAuth(`${apiUrl}/suppliers`);
+      if (res.ok) setSuppliers(await res.json());
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    // Normalización de la URL de API v3.6
-    const rawUrl = process.env.NEXT_PUBLIC_API_URL || 'https://backen-inventario.vercel.app';
-    const API_URL = rawUrl.endsWith('/api') ? rawUrl : `${rawUrl.replace(/\/$/, '')}/api`;
+  const filteredSuppliers = suppliers.filter(s =>
+    s.nombre.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
-    useEffect(() => {
-        fetchSuppliers();
-    }, []);
+  const openOrderModal = (supplier: any) => {
+    setSelectedSupplier(supplier);
+    setShowOrderModal(true);
+  };
 
-    const fetchSuppliers = async () => {
-        setLoading(true);
-        try {
-            const res = await fetchWithAuth(`${API_URL}/suppliers`);
-            const data = await res.json();
-            setSuppliers(Array.isArray(data) ? data : []);
-        } catch (error) {
-            console.error("Error fetching suppliers:", error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleCreateSupplier = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setSaving(true);
-        setAlertInfo(null);
-        try {
-            const method = editingSupplier ? 'PATCH' : 'POST';
-            const url = editingSupplier ? `${API_URL}/suppliers/${editingSupplier.id}` : `${API_URL}/suppliers`;
-            
-            const res = await fetchWithAuth(url, {
-                method: method,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(form)
-            });
-
-            if (res.ok) {
-                setAlertInfo({ type: 'success', message: editingSupplier ? '¡Proveedor actualizado!' : '¡Proveedor registrado!' });
-                setForm({ nombre: "", email: "", telefono: "", direccion: "", categoria: "" });
-                setEditingSupplier(null);
-                setTimeout(() => {
-                    setShowModal(false);
-                    setAlertInfo(null);
-                }, 1500);
-                fetchSuppliers();
-            } else {
-                const data = await res.json();
-                setAlertInfo({ type: 'error', message: data.error || 'Error al guardar' });
-            }
-        } catch (error) {
-            setAlertInfo({ type: 'error', message: 'Falla de conexión' });
-        } finally {
-            setSaving(false);
-        }
-    };
-
-    const handleDeleteSupplier = async (id: string) => {
-        if (!confirm("¿Está seguro de eliminar este proveedor?")) return;
-        
-        try {
-            const res = await fetchWithAuth(`${API_URL}/suppliers/${id}`, {
-                method: 'DELETE'
-            });
-            if (res.ok) {
-                fetchSuppliers();
-            } else {
-                const data = await res.json();
-                alert(data.error || "Error al eliminar");
-            }
-        } catch (error) {
-            console.error("Delete error:", error);
-        }
-    };
-
-    const openEditModal = (supplier: Supplier) => {
-        setEditingSupplier(supplier);
-        setForm({
-            nombre: supplier.nombre,
-            email: supplier.email || "",
-            telefono: supplier.telefono || "",
-            direccion: supplier.direccion || "",
-            categoria: supplier.categoria || ""
-        });
-        setShowModal(true);
-        setActiveMenuId(null);
-    };
-
-    const filteredSuppliers = suppliers.filter(s =>
-        s.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        s.email?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-
-    return (
-        <div className="min-h-screen bg-[#FDFBF7] p-4 md:p-8">
-            <div className="max-w-7xl mx-auto space-y-10">
-                {/* Header */}
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-                    <div className="space-y-4">
-                        <Link
-                            href="/dashboard"
-                            className="flex items-center gap-2 text-stone-400 hover:text-stone-900 transition-colors font-bold uppercase text-[10px] tracking-widest"
-                        >
-                            <ChevronLeft size={16} />
-                            Volver
-                        </Link>
-                        <div>
-                            <h1 className="text-5xl font-black text-stone-900 italic uppercase tracking-tighter leading-none">
-                                Directorio de <br />
-                                <span className="text-blue-600">Proveedores</span>
-                            </h1>
-                            <p className="text-stone-400 font-bold uppercase text-xs tracking-[0.2em] mt-4">
-                                Gestión de Contactos Comerciales y Logística
-                            </p>
-                        </div>
-                    </div>
-
-                    <div className="flex flex-col sm:flex-row gap-4">
-                        <div className="relative group">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 group-focus-within:text-blue-600 transition-colors" size={20} />
-                            <input
-                                type="text"
-                                placeholder="Buscar proveedor..."
-                                className="bg-white border border-stone-200 rounded-2xl py-4 pl-12 pr-6 w-full sm:w-80 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all shadow-sm"
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                            />
-                        </div>
-                        <Link
-                            href="/dashboard/suppliers/new-order"
-                            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-2xl font-black uppercase italic tracking-tighter transition-all hover:scale-105 active:scale-95 shadow-xl shadow-blue-500/20 flex items-center justify-center gap-3"
-                        >
-                            <Plus size={20} />
-                            Nuevo Pedido
-                        </Link>
-                    </div>
-                </div>
-
-                {/* Grid */}
-                {loading ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
-                        {[1, 2, 3].map(i => <div key={i} className="bg-stone-100 h-64 rounded-[3rem]" />)}
-                    </div>
-                ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {filteredSuppliers.map(supplier => (
-                            <div
-                                key={supplier.id}
-                                className="group bg-white border border-stone-100 rounded-[3rem] p-8 hover:shadow-2xl hover:shadow-blue-900/5 transition-all hover:-translate-y-2 flex flex-col h-full relative overflow-hidden"
-                            >
-                                <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-full translate-x-16 -translate-y-16 group-hover:scale-150 transition-transform duration-700" />
-
-                                <div className="relative z-10 space-y-6 flex flex-col h-full">
-                                    <div className="flex justify-between items-start">
-                                        <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-500/20">
-                                            <Truck size={30} />
-                                        </div>
-                                        <div className="relative">
-                                            <button 
-                                                onClick={() => setActiveMenuId(activeMenuId === supplier.id ? null : supplier.id)}
-                                                className="bg-stone-50 p-2 rounded-xl text-stone-300 hover:text-blue-600 hover:bg-blue-50 transition-all active:scale-90"
-                                            >
-                                                <MoreVertical size={20} />
-                                            </button>
-                                            
-                                            {/* Action Dropdown */}
-                                            {activeMenuId === supplier.id && (
-                                                <>
-                                                    <div 
-                                                        className="fixed inset-0 z-10" 
-                                                        onClick={() => setActiveMenuId(null)}
-                                                    />
-                                                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-2xl shadow-2xl border border-stone-100 py-2 z-20 animate-in fade-in slide-in-from-top-2 duration-200">
-                                                        <button 
-                                                            onClick={() => openEditModal(supplier)}
-                                                            className="w-full text-left px-4 py-3 text-sm font-bold text-stone-700 hover:bg-blue-50 hover:text-blue-600 flex items-center gap-3 transition-colors"
-                                                        >
-                                                            <Edit3 size={16} />
-                                                            Editar Datos
-                                                        </button>
-                                                        <button 
-                                                            onClick={() => handleDeleteSupplier(supplier.id)}
-                                                            className="w-full text-left px-4 py-3 text-sm font-bold text-red-600 hover:bg-red-50 flex items-center gap-3 transition-colors"
-                                                        >
-                                                            <Trash2 size={16} />
-                                                            Eliminar
-                                                        </button>
-                                                    </div>
-                                                </>
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                        <h3 className="text-2xl font-black text-stone-900 uppercase italic tracking-tight">{supplier.nombre}</h3>
-                                        <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest">{supplier.categoria || "General"}</span>
-                                    </div>
-
-                                    <div className="space-y-3 flex-1">
-                                        <div className="flex items-center gap-3 text-stone-500 text-xs font-bold">
-                                            <Mail size={16} className="text-stone-300" />
-                                            {supplier.email || "Sin correo"}
-                                        </div>
-                                        <div className="flex items-center gap-3 text-stone-500 text-xs font-bold">
-                                            <Phone size={16} className="text-stone-300" />
-                                            {supplier.telefono || "Sin teléfono"}
-                                        </div>
-                                        <div className="flex items-center gap-3 text-stone-500 text-xs font-bold">
-                                            <MapPin size={16} className="text-stone-300" />
-                                            <span className="truncate">{supplier.direccion || "Sin dirección"}</span>
-                                        </div>
-                                    </div>
-
-                                    <div className="pt-6 border-t border-stone-50 flex items-center justify-between group-hover:border-blue-100 transition-colors mt-auto">
-                                        <Link
-                                            href={`/dashboard/suppliers/new-order?supplierId=${supplier.id}`}
-                                            className="text-stone-900 font-black uppercase text-[10px] tracking-widest flex items-center gap-2 hover:text-blue-600 transition-colors bg-stone-50 px-4 py-2 rounded-full"
-                                        >
-                                            Generar Pedido
-                                            <ArrowRight size={14} />
-                                        </Link>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-
-                        {/* Card para añadir nuevo */}
-                        <button
-                            onClick={() => setShowModal(true)}
-                            className="border-2 border-dashed border-stone-200 rounded-[3rem] p-8 flex flex-col items-center justify-center text-stone-300 hover:border-blue-400 hover:text-blue-500 transition-all hover:bg-blue-50/30 group min-h-[300px]"
-                        >
-                            <div className="w-16 h-16 rounded-full border-2 border-current flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                                <Plus size={32} />
-                            </div>
-                            <span className="font-black uppercase text-xs tracking-widest">Nuevo Proveedor</span>
-                        </button>
-                    </div>
-                )}
-            </div>
-
-            {/* Modal de Creación */}
-            {showModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-sm animate-in fade-in duration-300">
-                    <div className="bg-white w-full max-w-lg rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 border border-stone-100">
-                        <div className="bg-blue-600 p-8 text-white relative">
-                             <button
-                                onClick={() => {
-                                    setShowModal(false);
-                                    setEditingSupplier(null);
-                                    setForm({ nombre: "", email: "", telefono: "", direccion: "", categoria: "" });
-                                }}
-                                className="absolute top-6 right-6 hover:rotate-90 transition-transform"
-                            >
-                                <Plus className="rotate-45" size={24} />
-                            </button>
-                            <h2 className="text-3xl font-black italic uppercase tracking-tighter">
-                                {editingSupplier ? 'Editar Proveedor' : 'Registrar Proveedor'}
-                            </h2>
-                            <p className="text-blue-100 text-[10px] font-bold uppercase tracking-widest mt-1">
-                                {editingSupplier ? 'Actualizar Información' : 'Nuevo Contacto Comercial'}
-                            </p>
-                        </div>
-
-                        <form onSubmit={handleCreateSupplier} className="p-8 space-y-5">
-                            {alertInfo && (
-                                <div className={`p-4 rounded-2xl text-xs font-black uppercase tracking-widest flex items-center gap-3 animate-bounce ${alertInfo.type === 'success' ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>
-                                    <div className={`w-2 h-2 rounded-full ${alertInfo.type === 'success' ? 'bg-green-500' : 'bg-red-500'}`} />
-                                    {alertInfo.message}
-                                </div>
-                            )}
-
-                            <div className="space-y-4">
-                                <div className="grid grid-cols-1 gap-4">
-                                    <div className="space-y-1">
-                                        <label className="text-[10px] font-black text-stone-400 uppercase tracking-widest ml-1">Nombre Comercial</label>
-                                        <input
-                                            required
-                                            className="w-full bg-stone-50 border border-stone-100 rounded-xl py-3 px-4 focus:outline-none focus:border-blue-500 transition-colors font-bold text-sm"
-                                            placeholder="Ej: Inversiones Karinas S.A.C"
-                                            value={form.nombre}
-                                            onChange={(e) => setForm({ ...form, nombre: e.target.value })}
-                                        />
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-1">
-                                            <label className="text-[10px] font-black text-stone-400 uppercase tracking-widest ml-1">Categoría</label>
-                                            <input
-                                                className="w-full bg-stone-50 border border-stone-100 rounded-xl py-3 px-4 focus:outline-none focus:border-blue-500 transition-colors font-bold text-sm text-blue-600"
-                                                placeholder="Ej: Calzado"
-                                                value={form.categoria}
-                                                onChange={(e) => setForm({ ...form, categoria: e.target.value })}
-                                            />
-                                        </div>
-                                        <div className="space-y-1">
-                                            <label className="text-[10px] font-black text-stone-400 uppercase tracking-widest ml-1">Teléfono</label>
-                                            <input
-                                                className="w-full bg-stone-50 border border-stone-100 rounded-xl py-3 px-4 focus:outline-none focus:border-blue-500 transition-colors font-bold text-sm"
-                                                placeholder="987 654 321"
-                                                value={form.telefono}
-                                                onChange={(e) => setForm({ ...form, telefono: e.target.value })}
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="space-y-1">
-                                        <label className="text-[10px] font-black text-stone-400 uppercase tracking-widest ml-1">Correo Electrónico</label>
-                                        <input
-                                            type="email"
-                                            className="w-full bg-stone-50 border border-stone-100 rounded-xl py-3 px-4 focus:outline-none focus:border-blue-500 transition-colors font-bold text-sm"
-                                            placeholder="contacto@proveedor.com"
-                                            value={form.email}
-                                            onChange={(e) => setForm({ ...form, email: e.target.value })}
-                                        />
-                                    </div>
-                                    <div className="space-y-1">
-                                        <label className="text-[10px] font-black text-stone-400 uppercase tracking-widest ml-1">Dirección Física</label>
-                                        <input
-                                            className="w-full bg-stone-50 border border-stone-100 rounded-xl py-3 px-4 focus:outline-none focus:border-blue-500 transition-colors font-bold text-sm"
-                                            placeholder="Av. Principal 123, Lima"
-                                            value={form.direccion}
-                                            onChange={(e) => setForm({ ...form, direccion: e.target.value })}
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-
-                            <button
-                                disabled={saving}
-                                type="submit"
-                                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-2xl font-black uppercase italic tracking-tighter transition-all hover:scale-[1.02] active:scale-95 shadow-xl shadow-blue-500/20 disabled:opacity-50 mt-4 h-14 flex items-center justify-center"
-                            >
-                                 {saving ? (
-                                    <div className="w-6 h-6 border-4 border-white/30 border-t-white rounded-full animate-spin" />
-                                ) : (editingSupplier ? "Actualizar Proveedor" : "Guardar Proveedor")}
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            )}
+  return (
+    <div className="space-y-8 animate-in fade-in duration-700">
+      
+      {/* Header */}
+      <header className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
+        <div className="space-y-1">
+          <p className="text-[#D4AF37] font-bold uppercase tracking-[0.3em] text-[10px]">Socios Estratégicos</p>
+          <h2 className="text-4xl font-serif font-bold text-[#121212]">Directorio de Proveedores</h2>
+          <p className="text-[#121212]/50 text-sm">Gestionando <span className="text-[#121212] font-semibold">{suppliers.length} vinculaciones</span> activas.</p>
         </div>
-    );
+        <div className="flex gap-3">
+           <div className="relative">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[#121212]/20" size={18} />
+              <input 
+                type="text"
+                placeholder="Buscar proveedor..."
+                className="bg-white border border-[#121212]/10 rounded-2xl py-3 pl-12 pr-6 text-sm focus:ring-2 focus:ring-[#D4AF37]/20 transition-all w-full lg:w-64"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+           </div>
+           <button className="flex items-center gap-2 px-6 py-3 bg-[#121212] text-white rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-[#121212]/90 transition-all shadow-lg">
+              <Plus size={16} /> Nuevo Aliado
+           </button>
+        </div>
+      </header>
+
+      {/* Suppliers Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        {loading ? (
+          [1, 2, 3].map(i => <div key={i} className="h-64 bg-[#121212]/5 rounded-[2.5rem] animate-pulse" />)
+        ) : filteredSuppliers.map(s => (
+          <div key={s.id} className="group bg-white border border-[#121212]/5 rounded-[2.5rem] p-8 hover:shadow-2xl transition-all duration-500 flex flex-col relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-[#D4AF37]/5 rounded-full translate-x-16 -translate-y-16 group-hover:scale-150 transition-transform duration-1000" />
+            
+            <div className="relative z-10 flex flex-col h-full">
+               <div className="flex justify-between items-start mb-6">
+                  <div className="w-14 h-14 bg-[#FDFBF7] rounded-2xl flex items-center justify-center text-[#121212] shadow-sm border border-[#121212]/5 group-hover:border-[#D4AF37]/30 transition-all">
+                     <Truck size={24} />
+                  </div>
+                  <button className="p-2 text-[#121212]/20 hover:text-[#121212] transition-colors">
+                     <MoreVertical size={20} />
+                  </button>
+               </div>
+
+               <div className="mb-6">
+                  <h3 className="text-2xl font-serif font-bold text-[#121212]">{s.nombre}</h3>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-[#D4AF37] mt-1">{s.categoria || "Suministros Generales"}</p>
+               </div>
+
+               <div className="space-y-3 flex-1">
+                  <div className="flex items-center gap-3 text-sm text-[#121212]/60 font-medium">
+                     <Mail size={16} className="text-[#121212]/20" /> {s.email || "No especificado"}
+                  </div>
+                  <div className="flex items-center gap-3 text-sm text-[#121212]/60 font-medium">
+                     <Phone size={16} className="text-[#121212]/20" /> {s.telefono || "No registrado"}
+                  </div>
+               </div>
+
+               <div className="pt-6 mt-6 border-t border-[#121212]/5 flex items-center justify-between">
+                  <button 
+                    onClick={() => openOrderModal(s)}
+                    className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[#121212] group-hover:text-[#D4AF37] transition-all"
+                  >
+                     Crear Pedido <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                  </button>
+                  <div className="flex gap-2">
+                     <button className="p-2 hover:bg-[#FDFBF7] rounded-xl text-[#121212]/20 hover:text-[#121212] transition-all">
+                        <Edit3 size={16} />
+                     </button>
+                     <button className="p-2 hover:bg-rose-50 rounded-xl text-[#121212]/20 hover:text-rose-500 transition-all">
+                        <Trash2 size={16} />
+                     </button>
+                  </div>
+               </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Split-Screen Order Modal (v4 Key Feature) */}
+      {showOrderModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 lg:p-12 overflow-hidden">
+           <div className="fixed inset-0 bg-[#121212]/60 backdrop-blur-md" onClick={() => setShowOrderModal(false)} />
+           
+           <div className="relative bg-[#FDFBF7] w-full max-w-6xl h-full max-h-[85vh] rounded-[3rem] shadow-2xl flex flex-col lg:flex-row overflow-hidden animate-in zoom-in-95 duration-500">
+              
+              {/* Left Side: Order Form */}
+              <div className="flex-1 p-8 lg:p-12 border-r border-[#121212]/5 overflow-y-auto">
+                 <div className="flex justify-between items-start mb-10">
+                    <div>
+                       <h3 className="text-3xl font-serif font-bold text-[#121212]">Pedido de Reabastecimiento</h3>
+                       <p className="text-[10px] font-black uppercase tracking-widest text-[#D4AF37] mt-1">Proveedor: {selectedSupplier?.nombre}</p>
+                    </div>
+                    <button onClick={() => setShowOrderModal(false)} className="p-2 hover:bg-[#121212]/5 rounded-xl transition-all lg:hidden">
+                       <X size={20} />
+                    </button>
+                 </div>
+
+                 <form className="space-y-8">
+                    <div className="space-y-6">
+                       <div className="space-y-2">
+                          <label className="text-[10px] font-black uppercase tracking-widest text-[#121212]/40 ml-1">Producto a Solicitar</label>
+                          <select className="w-full bg-white border border-[#121212]/10 rounded-2xl p-4 text-sm font-bold focus:ring-2 focus:ring-[#D4AF37]/50 transition-all">
+                             <option>Seleccionar producto catalogado...</option>
+                             {/* ... list of products from this supplier if applicable ... */}
+                          </select>
+                       </div>
+
+                       <div className="grid grid-cols-2 gap-6">
+                          <div className="space-y-2">
+                             <label className="text-[10px] font-black uppercase tracking-widest text-[#121212]/40 ml-1">Cantidad (Unidades)</label>
+                             <input 
+                               type="number" 
+                               className="w-full bg-white border border-[#121212]/10 rounded-2xl p-4 text-sm font-bold focus:ring-2 focus:ring-[#D4AF37]/50 transition-all" 
+                               placeholder="Ej: 50"
+                             />
+                          </div>
+                          <div className="space-y-2">
+                             <label className="text-[10px] font-black uppercase tracking-widest text-[#121212]/40 ml-1">Sede de Destino</label>
+                             <select className="w-full bg-white border border-[#121212]/10 rounded-2xl p-4 text-sm font-bold focus:ring-2 focus:ring-[#D4AF37]/50 transition-all">
+                                <option>Almacén Central</option>
+                             </select>
+                          </div>
+                       </div>
+
+                       <div className="space-y-2">
+                          <label className="text-[10px] font-black uppercase tracking-widest text-[#121212]/40 ml-1">Notas Adicionales</label>
+                          <textarea 
+                            className="w-full bg-white border border-[#121212]/10 rounded-2xl p-4 text-sm font-medium focus:ring-2 focus:ring-[#D4AF37]/50 transition-all h-32 resize-none"
+                            placeholder="Instrucciones de entrega, embalaje, etc."
+                          />
+                       </div>
+                    </div>
+
+                    <button className="w-full py-5 bg-[#121212] text-white rounded-2xl font-black uppercase tracking-[0.2em] text-xs hover:bg-[#121212]/90 transition-all shadow-xl shadow-[#121212]/20 flex items-center justify-center gap-3">
+                       <Truck size={18} className="text-[#D4AF37]" />
+                       Emitir Orden de Compra
+                    </button>
+                 </form>
+              </div>
+
+              {/* Right Side: Order History / Context */}
+              <div className="w-full lg:w-[400px] bg-[#121212] p-8 lg:p-12 text-white overflow-y-auto hidden lg:block">
+                 <div className="flex justify-between items-start mb-10">
+                    <h4 className="text-xl font-serif font-bold italic">Últimas Interacciones</h4>
+                    <button onClick={() => setShowOrderModal(false)} className="p-2 text-white/40 hover:text-white transition-all">
+                       <X size={20} />
+                    </button>
+                 </div>
+
+                 <div className="space-y-8">
+                    {[1, 2].map(i => (
+                      <div key={i} className="relative pl-8 border-l border-white/10 space-y-2">
+                         <div className="absolute -left-[5px] top-1 w-2.5 h-2.5 rounded-full bg-[#D4AF37] shadow-lg shadow-[#D4AF37]/40" />
+                         <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#D4AF37]">12 MAR 2026</p>
+                         <h5 className="font-bold text-sm">Pedido #2293 Recibido</h5>
+                         <p className="text-xs text-white/40 leading-relaxed font-medium italic">"120 unidades de Labial Premium Rose, entregadas en Almacén Sur sin observaciones."</p>
+                         <div className="flex items-center gap-2 text-emerald-500 pt-2 font-black uppercase text-[8px] tracking-widest">
+                            <CheckCircle2 size={12} /> Archivo de Auditoría OK
+                         </div>
+                      </div>
+                    ))}
+
+                    <div className="pt-8 mt-8 border-t border-white/5">
+                       <div className="bg-white/5 rounded-3xl p-6 space-y-4">
+                          <div className="flex items-center gap-3">
+                             <div className="w-10 h-10 rounded-xl bg-[#D4AF37]/20 flex items-center justify-center text-[#D4AF37]">
+                                <History size={20} />
+                             </div>
+                             <div>
+                                <p className="text-xs font-bold uppercase tracking-widest">Resumen Histórico</p>
+                                <p className="text-[9px] text-white/30 uppercase font-black">Periodo Actual</p>
+                             </div>
+                          </div>
+                          <div className="grid grid-cols-2 gap-4">
+                             <div className="bg-white/5 rounded-2xl p-4 border border-white/5">
+                                <p className="text-[8px] font-black uppercase text-white/30 mb-1">Total Pedidos</p>
+                                <p className="text-xl font-serif font-bold">14</p>
+                             </div>
+                             <div className="bg-white/5 rounded-2xl p-4 border border-white/5">
+                                <p className="text-[8px] font-black uppercase text-white/30 mb-1">Eficiencia</p>
+                                <p className="text-xl font-serif font-bold text-emerald-400">98%</p>
+                             </div>
+                          </div>
+                       </div>
+                    </div>
+
+                    <div className="p-6 bg-rose-500/10 border border-rose-500/20 rounded-3xl flex items-start gap-3">
+                       <AlertCircle size={18} className="text-rose-500 shrink-0 mt-0.5" />
+                       <p className="text-[10px] font-medium text-rose-200/60 leading-relaxed italic">
+                          "Recuerda verificar el stock actual antes de emitir pedidos duplicados."
+                       </p>
+                    </div>
+                 </div>
+              </div>
+
+           </div>
+        </div>
+      )}
+    </div>
+  );
 }

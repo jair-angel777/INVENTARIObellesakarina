@@ -1,0 +1,132 @@
+ 
+  
+Bellesas Karinas 
+ALMACEN  -  control de stock y productos 
+VENTAS     -    registro de transisciones 
+ 
+REPORTES     -    Analisis de datos y estadisticas 
+ 
+  
+TABLA/S 
+VISUALISAN
+DO EN ESTE 
+MOMENTO: 
+“nombre de 
+la tabla o 
+tablas” 
+Bellesas Karinas 
+“Vista Usuario” 
+ACCIO
+NES 
+DE 
+USUA
+RIO  
+ACCIO
+NES 
+DE 
+Admin  
+Total de productos Total de productos 
+con stonks bajos 
+Total del valor del 
+inventario 
+Un agregado pequeño seria la implemtacion de un icono de 
+esclamacion al lado de un producto de estonck bajo para destacarlo 
+de los demás y también que tenga la función de un botón para que 
+atomaticamente se realice un pedido de provedor si es una tabla de 
+almacen o si es una tabla de tienda que realice un pedido de 
+almacen. Llevandolo a la interfas con los campos de provedor y 
+nombre del producto ya pre-echos para que se relalise el formulario 
+mas rapido 
+¡! 
+ 
+  TABLA/S 
+VISUALISAN
+DO EN ESTE 
+MOMENTO: 
+“nombre de 
+la tabla o 
+tablas” 
+Bellesas Karinas 
+“Vista Usuario” 
+ACCIO
+NES 
+DE 
+USUA
+RIO  
+ACCIO
+NES 
+DE 
+Admin  
+Total de productos Total de productos 
+con stonks bajos 
+Total del valor del 
+inventario 
+Este nueva función de las tablas “almacen “ y “tienda” espara poder 
+diferenciar el inventario y la ubicación de los productos en los 
+diverson almacenes y tiendas de la empresa Bellesas Karina, la 
+primera función con las tablas con el ojo, es para poder fucionar las 
+tablas de almacen en uno solo o por su parte mirar solo un almacen o 
+varios, lo mismo para la tabla tiendas que es para mirar los productos 
+que están siendo ecividos al publico, para solucionar el conflicto de 
+los stonck diferentes de los productos debido que no abra el mismo 
+espacio en un almacen que en una tienda, cuando se seleccione una 
+tabla tienda para mirar su estock solo se pondrá en modo “estock 
+bajo” cuando su valor sea solo 1. 
+Ahora la 2da función con la cruz blanca es para crear la tabla 
+clasificándola como si es para un almacen o una tienda, dandole un 
+nombre y agregando su direccion 
+z 
+z 
+Tablas 
+almacén: 
+z 
+z 
+Tablas 
+tiendas: 
+ 
+ 
+TABLA/S 
+VISUALISAN
+DO EN ESTE 
+MOMENTO: 
+“nombre de 
+la tabla o 
+tablas” 
+Bellesas Karinas 
+“Vista Usuario” 
+ACCIO
+NES 
+DE 
+USUA
+RIO  
+Total de productos Total de productos 
+con stonks bajos 
+Total del valor del 
+inventario 
+Las acciones usuario son las funciones que antes teníamos en el panel de 
+“control” , los separe por colores pero lo ideal serian iconos ahora el 
+celeste representa “PROVEDORES” y el verde “Categorías”, cuando el 
+usuario le de click a cualquier “acción” se abrirá una venta alfrente de la 
+tabla con una tinides baja para que se pueda visualizar un poco del fondo 
+de la tabla, eso en parte del estilo ahora en la parte de fucionalidad de 
+“proveedores”  la ventana se dividirá en 2 a la izquierda estará la interfas 
+de “agregar provedor” y a la derecha se vera la tabla completa de 
+proveedores que se actualisara cuando hayamos agregado un nuevo 
+provedor. La misma lógica iría también para la “acción” “categoria”. 
+Para las acciones de color naranja son simplemente para el filtrado el 
+primer es de una en especifico que es “solo productos de stonk bajo” y el 
+segundo filtrara por categoría, nombre, etc. 
+Para la acción de color azul oscuro será “pedido especifico “donde tendra 
+casi la misma intefas anterior “nuevo pedido” pero ahora estará adactado 
+para esta nueva versión y que en la otra mitad de la ventana estarán todos 
+los pedidos con su fecha y la opción de eliminar, descargar en pdf, editar 
+“observaciones” y enviar a “Movimientos”, Lo mismo para acción “pedidos 
+de almacen” de color naranja 
+Para la opción de movimiento, será el lugar donde se encuentro los 
+“pedidos de provedor” y además  de “los pedidos de almacen” donde se le 
+podrá cambiar el estado de  PENDIENTE A RECIVIDO y también se podrá ver 
+desde que tabla de almacen se realiso el pedido y fue recibido,además se 
+podrá ver que tienda realiso el pedido a un almacen y obvianmente 
+también la fecha y el usario que lo ordeno y el usuario que comfirmo el 
+recibido. 
+ 
