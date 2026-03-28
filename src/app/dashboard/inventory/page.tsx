@@ -59,12 +59,12 @@ export default function InventoryPage() {
     setShowModal('order-specific');
   };
 
-  const handleUpdateMovementStatus = async (id: string, status: string) => {
+  const handleUpdateMovementStatus = async (id: string, estado: string) => {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://backen-inventario.vercel.app/api";
     const res = await fetchWithAuth(`${apiUrl}/movements/${id}/status`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status, recibidoPor: "Usuario Admin" }) // Mocking user for now
+      body: JSON.stringify({ estado, recibido_nombre: "Usuario Admin" }) 
     });
     if (res.ok) {
        loadAuxiliaryData();
@@ -403,11 +403,11 @@ export default function InventoryPage() {
                                   <p className="font-bold text-stone-800">{item.nombre || `Pedido #${item.id.slice(-4)}`}</p>
                                   <div className="flex gap-4 mt-1">
                                      <p className="text-[8px] text-stone-400 font-bold uppercase tracking-widest">
-                                        Por: {item.solicitadoPor || item.email || 'Admin'}
+                                        Por: {item.solicitado_nombre || item.email || 'Admin'}
                                      </p>
-                                     {item.recibidoPor && (
+                                     {item.recibido_nombre && (
                                         <p className="text-[8px] text-emerald-400 font-bold uppercase tracking-widest">
-                                           Recibido: {item.recibidoPor}
+                                           Recibido: {item.recibido_nombre}
                                         </p>
                                      )}
                                   </div>
