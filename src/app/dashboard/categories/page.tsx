@@ -11,8 +11,10 @@ import {
   X, 
   Loader2,
   CheckCircle2,
-  Filter
+  Filter,
+  ArrowLeft
 } from "lucide-react";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { fetchWithAuth } from "@/lib/api";
 
@@ -79,55 +81,60 @@ export default function CategoriesV4() {
   );
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-700">
+    <div className="space-y-8 animate-in fade-in duration-700 font-sans">
       
-      {/* Header (PDF "Acción Verde") */}
+      {/* Header */}
       <header className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-2">
-        <div className="space-y-1">
-          <div className="flex items-center gap-3">
-             <h2 className="text-3xl font-serif font-black text-[#121212]">Gestión de Categorías</h2>
-             <div className="px-3 py-1 bg-verde/10 text-verde text-[10px] font-black uppercase tracking-widest rounded-full border border-verde/20">
-                Módulo Verde
-             </div>
+        <div className="flex items-center gap-6">
+          <Link 
+            href="/dashboard" 
+            className="w-12 h-12 bg-white border-4 border-[#FF9100] rounded-2xl flex items-center justify-center text-[#FF9100] hover:bg-[#FF9100] hover:text-white transition-all shadow-md active:scale-95"
+            title="Regresar al Dashboard"
+          >
+            <ArrowLeft size={24} strokeWidth={3} />
+          </Link>
+          <div className="space-y-1">
+            <h2 className="text-3xl font-black text-[#121212]">Categorías</h2>
+            <p className="text-[#121212]/50 text-[10px] font-black uppercase tracking-widest">Organización de Catálogo</p>
           </div>
-          <p className="text-[#121212]/50 text-sm font-medium">Bellesas Karinas — Organización de Catálogo Maestro</p>
         </div>
 
         <button 
           onClick={() => setShowManager(true)}
-          className="flex items-center gap-3 px-8 py-4 bg-verde text-white rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest hover:brightness-110 transition-all shadow-xl shadow-verde/30 active:scale-95"
+          className="flex items-center gap-3 px-8 py-4 bg-[#FF9100] text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:brightness-110 transition-all shadow-lg active:scale-95 border-b-4 border-orange-700"
+          title="Agregar nueva categoría"
         >
-           <Plus size={18} /> Nueva Categoría
+           <Plus size={18} strokeWidth={3} /> Nueva Categoría
         </button>
       </header>
 
       {/* Stats Bar */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-         <div className="bg-white p-6 rounded-[2rem] border border-[#121212]/5 shadow-sm flex items-center gap-6">
-            <div className="w-14 h-14 bg-verde/10 rounded-2xl flex items-center justify-center text-verde shadow-inner">
+         <div className="bg-white p-6 rounded-[2rem] border-2 border-[#121212]/5 shadow-sm flex items-center gap-6">
+            <div className="w-14 h-14 bg-emerald-100 rounded-2xl flex items-center justify-center text-emerald-600 shadow-inner">
                <Layers size={24} />
             </div>
             <div>
-               <p className="text-[10px] font-black uppercase tracking-widest text-[#121212]/30">Clases Activas</p>
-               <h3 className="text-2xl font-serif font-black">{categories.length}</h3>
+               <p className="text-[10px] font-black uppercase tracking-widest text-[#121212]/30">Activas</p>
+               <h3 className="text-2xl font-black">{categories.length}</h3>
             </div>
          </div>
-         <div className="bg-white p-6 rounded-[2rem] border border-[#121212]/5 shadow-sm flex items-center gap-6">
-            <div className="w-14 h-14 bg-[#FDFBF7] rounded-2xl flex items-center justify-center text-[#121212]/20 shadow-inner">
+         <div className="bg-white p-6 rounded-[2rem] border-2 border-[#121212]/5 shadow-sm flex items-center gap-6">
+            <div className="w-14 h-14 bg-stone-100 rounded-2xl flex items-center justify-center text-stone-400 shadow-inner">
                <CheckCircle2 size={24} />
             </div>
             <div>
                <p className="text-[10px] font-black uppercase tracking-widest text-[#121212]/30">Estandarización</p>
-               <h3 className="text-2xl font-serif font-black">100%</h3>
+               <h3 className="text-2xl font-black">100%</h3>
             </div>
          </div>
-         <div className="bg-white p-6 rounded-[2rem] border border-[#121212]/5 shadow-sm flex items-center gap-6">
-            <div className="w-14 h-14 bg-[#FDFBF7] rounded-2xl flex items-center justify-center text-[#121212]/20 shadow-inner">
+         <div className="bg-white p-6 rounded-[2rem] border-2 border-[#121212]/5 shadow-sm flex items-center gap-6">
+            <div className="w-14 h-14 bg-stone-100 rounded-2xl flex items-center justify-center text-stone-400 shadow-inner">
                <Filter size={24} />
             </div>
             <div>
                <p className="text-[10px] font-black uppercase tracking-widest text-[#121212]/30">Segmentos</p>
-               <h3 className="text-2xl font-serif font-black">Múltiples</h3>
+               <h3 className="text-2xl font-black">Múltiples</h3>
             </div>
          </div>
       </div>
@@ -137,110 +144,110 @@ export default function CategoriesV4() {
          {loading ? (
             [1,2,3,4].map(i => <div key={i} className="h-48 bg-[#121212]/5 rounded-[2.5rem] animate-pulse" />)
          ) : filtered.map(cat => (
-           <div key={cat.id} className="group bg-white border border-[#121212]/5 rounded-[2.5rem] p-8 hover:border-verde/30 hover:shadow-2xl hover:shadow-verde/5 transition-all duration-500 relative overflow-hidden flex flex-col">
+           <div key={cat.id} className="group bg-white border-2 border-[#121212]/5 rounded-[2.5rem] p-8 hover:border-[#FF9100]/30 hover:shadow-2xl transition-all duration-300 relative overflow-hidden flex flex-col">
               <div className="relative z-10 flex justify-between items-start mb-6">
-                 <div className="w-12 h-12 bg-verde/10 text-verde rounded-2xl flex items-center justify-center border border-verde/5 group-hover:bg-verde group-hover:text-white transition-all duration-500">
+                 <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center border border-emerald-100 group-hover:bg-emerald-600 group-hover:text-white transition-all">
                     <Tag size={20} />
                  </div>
                  <div className="flex gap-2">
-                    <button onClick={() => { setFormData(cat); setIsEditing(cat.id); setShowManager(true); }} className="p-2 opacity-20 group-hover:opacity-100 hover:text-verde transition-all">
+                    <button onClick={() => { setFormData(cat); setIsEditing(cat.id); setShowManager(true); }} className="p-2 text-stone-300 hover:text-[#FF9100] transition-all" title="Editar">
                        <Edit3 size={16} />
                     </button>
-                    <button onClick={() => handleDelete(cat.id)} className="p-2 opacity-20 group-hover:opacity-100 hover:text-rose-500 transition-all">
+                    <button onClick={() => handleDelete(cat.id)} className="p-2 text-stone-300 hover:text-rose-500 transition-all" title="Eliminar">
                        <Trash2 size={16} />
                     </button>
                  </div>
               </div>
-              <h3 className="text-xl font-serif font-black text-[#121212] tracking-tight">{cat.nombre}</h3>
-              <p className="text-[10px] text-[#121212]/40 font-medium leading-relaxed italic mt-2 line-clamp-2">
-                 {cat.descripcion || "Sin descripción establecida para esta categoría."}
+              <h3 className="text-xl font-black text-[#121212] tracking-tight">{cat.nombre}</h3>
+              <p className="text-[10px] text-[#121212]/40 font-bold leading-relaxed mt-2 line-clamp-2 italic">
+                 {cat.descripcion || "Sin descripción establecida."}
               </p>
            </div>
          ))}
       </div>
 
-      {/* ACTION WINDOW: SPLIT VIEW (PDF REQUIREMENT) */}
+      {/* MODAL / SPLIT VIEW */}
       {showManager && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 glass-overlay animate-in fade-in duration-300">
-           <div className="split-window animate-in zoom-in-95 duration-500 border-2 border-verde/20">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-300">
+           <div className="bg-white w-full max-w-6xl h-[85vh] rounded-[3rem] shadow-2xl flex relative overflow-hidden border-4 border-white">
               
-              {/* Left Side: Adding/Editing Form */}
-              <div className="split-left bg-white">
+              {/* Left Side */}
+              <div className="w-[40%] bg-stone-50 p-12 flex flex-col border-r-2 border-stone-100">
                  <div className="mb-10">
-                    <h3 className="text-2xl font-serif font-black text-[#121212]">{isEditing ? 'Editar Clase' : 'Nueva Clase'}</h3>
-                    <p className="text-[9px] font-black uppercase tracking-widest text-verde mt-1">Formulario de Clasificación</p>
+                    <h3 className="text-2xl font-black text-[#121212]">{isEditing ? 'Editar Categoría' : 'Nueva Categoría'}</h3>
+                    <p className="text-[9px] font-black uppercase tracking-widest text-emerald-600 mt-1">Gestión de Catálogo</p>
                  </div>
 
                  <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="space-y-4">
                        <div className="space-y-1.5">
-                          <label className="text-[9px] font-black uppercase tracking-widest text-[#121212]/30 ml-1">Nombre de la Categoría</label>
+                          <label className="text-[9px] font-black uppercase tracking-widest text-stone-400 ml-1">Nombre</label>
                           <input 
                             required
                             type="text"
-                            placeholder="Ej: Fragancias Premium"
-                            className="w-full bg-[#FDFBF7] border border-[#121212]/10 rounded-2xl p-4 text-xs font-bold focus:ring-4 focus:ring-verde/10 focus:border-verde outline-none transition-all"
+                            placeholder="Ej: Fragancias"
+                            className="w-full bg-white border-2 border-stone-100 rounded-2xl p-4 text-xs font-bold focus:border-[#FF9100] outline-none transition-all shadow-sm"
                             value={formData.nombre}
                             onChange={(e) => setFormData({...formData, nombre: e.target.value})}
                           />
                        </div>
                        <div className="space-y-1.5">
-                          <label className="text-[9px] font-black uppercase tracking-widest text-[#121212]/30 ml-1">Descripción descriptiva</label>
+                          <label className="text-[9px] font-black uppercase tracking-widest text-stone-400 ml-1">Descripción</label>
                           <textarea 
-                            placeholder="Breve explicación de los productos..."
-                            className="w-full bg-[#FDFBF7] border border-[#121212]/10 rounded-2xl p-4 text-xs font-bold focus:ring-4 focus:ring-verde/10 focus:border-verde outline-none transition-all h-32 resize-none"
+                            placeholder="Detalles..."
+                            className="w-full bg-white border-2 border-stone-100 rounded-2xl p-4 text-xs font-bold focus:border-[#FF9100] outline-none transition-all h-32 resize-none shadow-sm"
                             value={formData.descripcion}
                             onChange={(e) => setFormData({...formData, descripcion: e.target.value})}
                           />
                        </div>
                     </div>
 
-                    <button type="submit" className="w-full py-5 bg-verde text-white rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] hover:brightness-110 transition-all shadow-xl shadow-verde/20">
-                       {isEditing ? 'Actualizar Clase' : 'Sincronizar Categoría'}
+                    <button type="submit" className="w-full py-5 bg-[#FF9100] text-white rounded-2xl font-black uppercase tracking-widest text-[10px] hover:brightness-110 transition-all shadow-lg">
+                       {isEditing ? 'Actualizar' : 'Guardar'}
                     </button>
                     {isEditing && (
-                      <button type="button" onClick={() => { setIsEditing(null); setFormData({ nombre: "", descripcion: "", color: "bg-verde" }); }} className="w-full py-4 text-[#121212]/40 font-black uppercase text-[9px] tracking-widest hover:text-[#121212] transition-all">
+                      <button type="button" onClick={() => { setIsEditing(null); setFormData({ nombre: "", descripcion: "", color: "bg-verde" }); }} className="w-full py-4 text-stone-400 font-black uppercase text-[9px] tracking-widest hover:text-stone-600 transition-all">
                         Cancelar
                       </button>
                     )}
                  </form>
               </div>
 
-              {/* Right Side: Full Table */}
-              <div className="split-right bg-[#FDFBF7]/50 relative">
-                 <div className="flex justify-between items-center mb-10 sticky top-0 bg-[#FDFBF7]/90 backdrop-blur-md pb-4 z-10">
-                    <div className="relative group flex-1 mr-4">
-                       <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#121212]/20 group-focus-within:text-verde transition-colors" />
+              {/* Right Side */}
+              <div className="w-[60%] p-12 bg-white relative flex flex-col">
+                 <div className="flex justify-between items-center mb-10 sticky top-0 bg-white pb-4 z-10">
+                    <div className="relative flex-1 mr-4">
+                       <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-300" />
                        <input 
                          type="text" 
-                         placeholder="Filtro rápido..." 
-                         className="w-full bg-white border border-[#121212]/5 rounded-2xl py-3 pl-12 pr-4 text-[10px] font-bold focus:outline-none focus:ring-2 focus:ring-verde/20 transition-all shadow-sm"
+                         placeholder="Buscar..." 
+                         className="w-full bg-stone-50 border-2 border-stone-100 rounded-2xl py-3 pl-12 pr-4 text-[10px] font-bold focus:outline-none focus:border-[#FF9100] transition-all"
                          value={searchTerm}
                          onChange={(e) => setSearchTerm(e.target.value)}
                        />
                     </div>
-                    <button onClick={() => setShowManager(false)} className="p-3 bg-white border border-[#121212]/5 rounded-2xl text-[#121212]/20 hover:text-[#121212] transition-all shadow-sm">
+                    <button onClick={() => setShowManager(false)} className="p-3 bg-stone-50 border-2 border-stone-100 rounded-2xl text-stone-300 hover:text-[#121212] transition-all">
                        <X size={20} />
                     </button>
                  </div>
 
-                 <div className="space-y-4">
+                 <div className="flex-1 overflow-auto space-y-4">
                     {filtered.map(c => (
-                       <div key={c.id} className="bg-white p-5 rounded-3xl border border-[#121212]/5 flex items-center justify-between group hover:border-verde/20 transition-all shadow-sm">
+                       <div key={c.id} className="bg-white p-5 rounded-3xl border-2 border-stone-50 flex items-center justify-between group hover:border-[#FF9100]/20 transition-all shadow-sm">
                           <div className="flex items-center gap-4">
-                             <div className="w-10 h-10 bg-verde/10 text-verde rounded-xl flex items-center justify-center">
+                             <div className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-600">
                                 <Tag size={20} />
                              </div>
                              <div>
-                                <p className="text-sm font-serif font-black text-[#121212]">{c.nombre}</p>
+                                <p className="text-sm font-black text-[#121212]">{c.nombre}</p>
                                 <p className="text-[8px] font-black uppercase tracking-widest text-[#121212]/30 italic">{c.id.slice(-6).toUpperCase()}</p>
                              </div>
                           </div>
                           <div className="flex gap-2">
-                             <button onClick={() => { setFormData(c); setIsEditing(c.id); }} className="p-2 text-[#121212]/10 hover:text-verde transition-colors">
+                             <button onClick={() => { setFormData(c); setIsEditing(c.id); }} className="p-2 text-stone-200 hover:text-emerald-600 transition-colors">
                                 <Edit3 size={16} />
                              </button>
-                             <button onClick={() => handleDelete(c.id)} className="p-2 text-[#121212]/10 hover:text-rose-500 transition-colors">
+                             <button onClick={() => handleDelete(c.id)} className="p-2 text-stone-200 hover:text-rose-500 transition-colors">
                                 <Trash2 size={16} />
                              </button>
                           </div>

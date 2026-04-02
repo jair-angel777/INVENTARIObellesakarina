@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import {
   Truck,
   Plus,
@@ -11,7 +12,8 @@ import {
   Edit3,
   X,
   Loader2,
-  CheckCircle2
+  CheckCircle2,
+  ArrowLeft
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { fetchWithAuth } from "@/lib/api";
@@ -89,14 +91,18 @@ export default function SuppliersV4() {
       
       {/* Header (PDF "Acción Celeste") */}
       <header className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-2">
-        <div className="space-y-1">
-          <div className="flex items-center gap-3">
-             <h2 className="text-3xl font-serif font-black text-[#121212]">Directorio de Proveedores</h2>
-             <div className="px-3 py-1 bg-celeste/10 text-celeste text-[10px] font-black uppercase tracking-widest rounded-full border border-celeste/20">
-                Módulo Celeste
-             </div>
+        <div className="flex items-center gap-6">
+          <Link 
+            href="/dashboard" 
+            className="w-12 h-12 bg-white border-4 border-[#FF9100] rounded-2xl flex items-center justify-center text-[#FF9100] hover:bg-[#FF9100] hover:text-white transition-all shadow-md active:scale-95"
+            title="Regresar al Dashboard"
+          >
+            <ArrowLeft size={24} strokeWidth={3} />
+          </Link>
+          <div className="space-y-1">
+            <h2 className="text-3xl font-black text-[#121212]">Proveedores</h2>
+            <p className="text-[#121212]/50 text-[10px] font-black uppercase tracking-widest">Gestión de Abastecimiento</p>
           </div>
-          <p className="text-[#121212]/50 text-sm font-medium">Bellesas Karinas — Gestión Integral de Abastecimiento</p>
         </div>
 
         <button 
@@ -121,7 +127,7 @@ export default function SuppliersV4() {
               </div>
               <div>
                  <p className="text-[9px] font-black uppercase tracking-widest text-[#121212]/30">{s.label}</p>
-                 <h4 className="text-xl font-serif font-black">{s.val}</h4>
+                 <h4 className="text-xl font-black">{s.val}</h4>
               </div>
            </div>
          ))}
@@ -132,29 +138,30 @@ export default function SuppliersV4() {
          {loading ? (
            <div className="col-span-full py-20 flex justify-center"><Loader2 className="animate-spin text-celeste" size={40} /></div>
          ) : filteredSuppliers.map(s => (
-           <div key={s.id} className="bg-white rounded-[2.5rem] p-8 border border-[#121212]/5 hover:border-celeste/30 hover:shadow-2xl hover:shadow-celeste/5 transition-all duration-500 group">
+           <div key={s.id} className="bg-white rounded-[2.5rem] p-8 border-2 border-[#121212]/5 hover:border-[#FF9100]/30 hover:shadow-2xl transition-all duration-300 group">
               <div className="flex justify-between items-start mb-6">
-                 <div className="w-14 h-14 bg-celeste/10 text-celeste rounded-2xl flex items-center justify-center group-hover:bg-celeste group-hover:text-white transition-all duration-500">
+                 <div className="w-14 h-14 bg-stone-50 text-stone-300 rounded-2xl flex items-center justify-center transition-all group-hover:bg-[#FF9100]/10 group-hover:text-[#FF9100]">
                     <Truck size={24} />
                  </div>
                  <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all">
-                    <button onClick={() => { setFormData(s); setIsEditing(s.id); setShowManager(true); }} className="p-2 bg-[#FDFBF7] text-[#121212]/40 hover:text-celeste rounded-xl transition-all">
+                    <button onClick={() => { setFormData(s); setIsEditing(s.id); setShowManager(true); }} className="p-2 text-stone-300 hover:text-[#FF9100] transition-all" title="Editar">
                        <Edit3 size={16} />
                     </button>
-                    <button onClick={() => handleDelete(s.id)} className="p-2 bg-[#FDFBF7] text-[#121212]/40 hover:text-rose-500 rounded-xl transition-all">
+                    <button onClick={() => handleDelete(s.id)} className="p-2 text-stone-300 hover:text-rose-500 transition-all" title="Eliminar">
                        <Trash2 size={16} />
                     </button>
                  </div>
               </div>
-              <h3 className="text-xl font-serif font-black text-[#121212] mb-1">{s.nombre}</h3>
-              <p className="text-[10px] font-black uppercase tracking-widest text-[#121212]/20 mb-6">{s.categoria || "SUMINISTROS"}</p>
+
+              <h3 className="text-xl font-black text-[#121212] mb-1">{s.nombre}</h3>
+              <p className="text-[10px] font-black uppercase tracking-widest text-[#121212]/20 mb-6 italic">{s.categoria || "SUMINISTROS"}</p>
               
               <div className="space-y-3">
                  <div className="flex items-center gap-3 text-xs font-bold text-[#121212]/60">
-                    <Mail size={14} className="text-celeste" /> {s.email || "No registrado"}
+                    <Mail size={14} className="text-[#FF9100]" /> {s.email || "No registrado"}
                  </div>
                  <div className="flex items-center gap-3 text-xs font-bold text-[#121212]/60">
-                    <Phone size={14} className="text-celeste" /> {s.telefono || "Sin teléfono"}
+                    <Phone size={14} className="text-[#FF9100]" /> {s.telefono || "Sin teléfono"}
                  </div>
               </div>
            </div>
@@ -233,7 +240,7 @@ export default function SuppliersV4() {
                                 <Truck size={20} />
                              </div>
                              <div>
-                                <p className="text-sm font-serif font-black text-[#121212]">{s.nombre}</p>
+                                <p className="text-sm font-black text-[#121212] leading-tight">{s.nombre}</p>
                                 <p className="text-[8px] font-black uppercase tracking-widest text-[#121212]/30">{s.email || 'SIN CORREO'}</p>
                              </div>
                           </div>

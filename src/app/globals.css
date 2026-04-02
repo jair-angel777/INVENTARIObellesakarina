@@ -4,12 +4,10 @@
 :root {
   --background: #FDFBF7;
   --foreground: #121212;
-  --primary: #2C3E50; /* Azul Oscuro - Pedidos */
-  --accent: #D4AF37; /* Champagne Gold - Branding */
+  --primary: #FF9100; /* Naranja - Principal */
   --celeste: #00D2FF; /* Proveedores */
   --verde: #00C853; /* Categorías */
   --naranja: #FF9100; /* Filtros y Stock Bajo */
-  --luxury-cream: #FDFBF7;
 }
 
 body {
@@ -19,20 +17,13 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-h1, h2, h3, h4, .font-serif {
-  font-family: 'Playfair Display', serif;
-}
-
 @theme {
   --color-primary: var(--primary);
-  --color-accent: var(--accent);
   --color-celeste: var(--celeste);
   --color-verde: var(--verde);
   --color-naranja: var(--naranja);
-  --color-luxury-cream: var(--luxury-cream);
-  --color-luxury-dark: #121212;
   
-  --font-serif: 'Playfair Display', serif;
+  --font-serif: 'Inter', sans-serif;
   --font-sans: 'Inter', sans-serif;
   --font-outfit: 'Outfit', sans-serif;
 }

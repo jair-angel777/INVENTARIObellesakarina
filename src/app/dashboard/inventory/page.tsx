@@ -38,6 +38,8 @@ export default function InventoryPage() {
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [showLeftSidebar, setShowLeftSidebar] = useState(true);
+  const [showRightSidebar, setShowRightSidebar] = useState(true);
   
   // Modals state
   const [showModal, setShowModal] = useState<string | null>(null);
@@ -154,33 +156,56 @@ export default function InventoryPage() {
   };
 
   return (
-    <div className="fixed inset-0 z-[60] bg-[#FFB800] flex flex-col font-sans text-stone-900 overflow-hidden">
+    <div className="min-h-screen bg-[#FDFBF7] flex flex-col font-sans text-[#121212] overflow-hidden relative">
+      {/* Premium Background Textures */}
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#D4AF37]/5 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2" />
       
       {/* HEADER */}
-      <header className="h-20 bg-[#FFB800] flex items-center justify-between px-8 shrink-0">
-        <div className="bg-[#4A76C0] px-6 py-2 rounded-lg shadow-xl border border-white/20">
-          <h1 className="text-2xl font-serif font-black text-white tracking-tighter uppercase italic leading-none">
-            Bellesas Karinas
-          </h1>
+      <header className="h-20 bg-[#FF9100] flex items-center justify-between px-8 shrink-0 relative z-10 shadow-lg">
+        <div className="flex items-center gap-6">
+          <Link 
+            href="/dashboard" 
+            className="w-10 h-10 bg-white/20 hover:bg-white/40 rounded-xl flex items-center justify-center text-white transition-all shadow-sm active:scale-95 border border-white/30"
+          >
+            <ArrowLeft size={20} />
+          </Link>
+          <div className="flex flex-col">
+            <h1 className="text-2xl font-black text-white tracking-tighter uppercase leading-none">
+              Control de Inventario
+            </h1>
+          </div>
         </div>
 
-        <div className="flex items-center gap-4">
-          <div className="bg-[#4A76C0] px-6 py-2 rounded-lg text-white text-[10px] font-black uppercase tracking-widest shadow-lg">
-            ALMACEN - control de stock y productos
+        <div className="flex items-center gap-6">
+          <div className="flex items-center gap-2 bg-white/10 p-1 rounded-xl border border-white/20">
+             <button 
+               onClick={() => setShowLeftSidebar(!showLeftSidebar)}
+               className={cn("px-4 py-2 rounded-lg text-[10px] font-black uppercase transition-all", showLeftSidebar ? "bg-white text-[#FF9100]" : "text-white hover:bg-white/10")}
+               title={showLeftSidebar ? "Ocultar panel izquierdo" : "Mostrar panel izquierdo"}
+             >
+                Panel Izq.
+             </button>
+             <div className="w-px h-4 bg-white/20" />
+             <button 
+               onClick={() => setShowRightSidebar(!showRightSidebar)}
+               className={cn("px-4 py-2 rounded-lg text-[10px] font-black uppercase transition-all", showRightSidebar ? "bg-white text-[#FF9100]" : "text-white hover:bg-white/10")}
+               title={showRightSidebar ? "Ocultar panel derecho" : "Mostrar panel derecho"}
+             >
+                Panel Der.
+             </button>
           </div>
-          <div className="bg-[#4A76C0]/60 px-6 py-2 rounded-lg text-white text-[10px] font-black uppercase tracking-widest shadow-lg">
-            Vista Usuario
+          <div className="hidden sm:flex items-center gap-3 px-4 py-2 bg-white/20 rounded-xl border border-white/20">
+             <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
+             <span className="text-[10px] font-black uppercase tracking-widest text-white">Sincronizado</span>
           </div>
-          <Link href="/dashboard" className="bg-transparent border-4 border-[#4A76C0] p-3 rounded-xl text-[#4A76C0] hover:bg-[#4A76C0] hover:text-white transition-all shadow-lg">
-             <ArrowLeft size={24} strokeWidth={3} />
-          </Link>
         </div>
       </header>
 
       <div className="flex flex-1 overflow-hidden relative">
         
         {/* LEFT SIDEBAR */}
-        <aside className="w-64 bg-[#76C176] p-6 flex flex-col gap-6 shrink-0 border-r-4 border-black/5 overflow-y-auto">
+        {showLeftSidebar && (
+          <aside className="w-64 bg-[#76C176] p-6 flex flex-col gap-6 shrink-0 border-r-4 border-black/5 overflow-y-auto animate-in slide-in-from-left duration-300">
            <div className="bg-white p-4 rounded-2xl shadow-2xl border border-black/5">
               <p className="text-[10px] font-black uppercase tracking-tighter text-stone-400">VISUALISANDO:</p>
               <p className="text-xs font-black text-[#4A76C0] mt-1">
@@ -221,37 +246,38 @@ export default function InventoryPage() {
               <Plus size={48} strokeWidth={4} className="group-hover:rotate-90 transition-transform duration-500" />
            </button>
         </aside>
+        )}
 
         {/* MAIN CONTENT */}
-        <main className="flex-1 bg-[#F39C12] p-8 flex flex-col gap-8 overflow-y-auto">
+        <main className="flex-1 bg-[#FDFBF7] p-8 flex flex-col gap-8 overflow-y-auto relative z-10 transition-all duration-300">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 shrink-0">
                {[
-                 { label: "Total de productos", val: stats.total },
-                 { label: "Total stock bajo", val: stats.lowStock },
-                 { label: "Valor inventario", val: `S/ ${stats.value.toLocaleString()}` }
+                 { label: "Total de productos", val: stats.total, color: "bg-[#FF9100]" },
+                 { label: "Total stock bajo", val: stats.lowStock, color: "bg-rose-500" },
+                 { label: "Valor inventario", val: `S/ ${stats.value.toLocaleString()}`, color: "bg-[#4A76C0]" }
                ].map((stat, i) => (
-                 <div key={i} className="bg-[#4A76C0] p-8 rounded-[2.5rem] text-white text-center flex flex-col items-center justify-center min-h-[160px] shadow-2xl border border-white/10">
+                 <div key={i} className={cn("p-8 rounded-[2.5rem] text-white text-center flex flex-col items-center justify-center min-h-[160px] shadow-lg border-b-8", stat.color, stat.color === 'bg-[#FF9100]' ? 'border-orange-600' : stat.color === 'bg-rose-500' ? 'border-rose-700' : 'border-blue-700')}>
                     <p className="text-[10px] font-black uppercase tracking-widest opacity-80 mb-4">{stat.label}</p>
-                    <h4 className="text-3xl font-serif font-black italic tracking-tighter">{stat.val}</h4>
+                    <h4 className="text-3xl font-black italic tracking-tighter">{stat.val}</h4>
                  </div>
                ))}
             </div>
 
-            <div className="bg-white rounded-[3rem] shadow-2xl flex-1 flex flex-col min-h-[500px] overflow-hidden border-8 border-[#4A76C0]/10">
+            <div className="bg-white rounded-[3rem] shadow-2xl flex-1 flex flex-col min-h-[500px] overflow-hidden border-8 border-[#FF9100]/10">
                <div className="px-10 py-8 border-b-2 border-stone-100 flex justify-between items-center bg-stone-50/30">
                   <div className="relative w-96 group">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-300" size={20} />
                     <input type="text" placeholder="Consultar inventario..." className="w-full pl-12 pr-6 py-4 rounded-2xl bg-[#F8F9FA] border border-stone-200 text-xs font-bold focus:border-[#4A76C0] outline-none shadow-inner" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
                   </div>
-                  <div className="bg-[#4A76C0] px-8 py-3 rounded-xl">
-                    <span className="text-lg font-serif font-black italic text-white tracking-widest leading-none">TABLA</span>
+                  <div className="bg-[#FF9100] px-8 py-3 rounded-xl shadow-md border border-orange-600">
+                    <span className="text-lg font-black italic text-white tracking-widest leading-none">TABLA</span>
                   </div>
                </div>
 
                <div className="overflow-auto flex-1 px-4">
                   <table className="w-full text-left border-separate border-spacing-y-3">
                     <thead className="sticky top-0 z-20">
-                      <tr className="bg-[#4A76C0] text-white text-[10px] font-black uppercase tracking-widest">
+                      <tr className="bg-[#FF9100] text-white text-[10px] font-black uppercase tracking-widest shadow-md">
                         <th className="px-10 py-5 rounded-l-2xl">Producto</th>
                         <th className="px-8 py-5">Categoría</th>
                         <th className="px-8 py-5 text-center">Stock</th>
@@ -265,10 +291,10 @@ export default function InventoryPage() {
                       ) : filteredProducts.map((p) => {
                         const isLowStock = p.stock <= 1;
                         return (
-                          <tr key={p.id} className="group bg-stone-50/50 hover:bg-[#FDFBF7] transition-all relative">
+                          <tr key={p.id} className="group bg-white/50 hover:bg-white hover:shadow-md transition-all relative">
                             <td className="px-10 py-6 rounded-l-2xl border-l border-y border-stone-100">
                               <div className="flex items-center gap-3">
-                                <span className="text-lg font-serif font-black text-[#4A76C0] tracking-tighter">{p.nombre}</span>
+                                <span className="text-lg font-black text-[#FF9100] tracking-tighter">{p.nombre}</span>
                                 {isLowStock && <AlertTriangle size={16} className="text-rose-500 animate-bounce" fill="currentColor" />}
                               </div>
                             </td>
@@ -276,7 +302,7 @@ export default function InventoryPage() {
                                <span className="text-[10px] font-black uppercase px-3 py-1 bg-stone-200 text-stone-500 rounded-md">{p.categoria || "S/C"}</span>
                             </td>
                             <td className="px-8 py-6 text-center border-y border-stone-100">
-                              <span className={cn("text-2xl font-serif font-black", isLowStock ? "text-rose-500" : "text-[#121212]/80")}>{p.stock}</span>
+                              <span className={cn("text-2xl font-black", isLowStock ? "text-rose-500" : "text-[#121212]/80")}>{p.stock}</span>
                             </td>
                             <td className="px-8 py-6 border-y border-stone-100">
                               <div className={cn("inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest", isLowStock ? "bg-rose-100 text-rose-600" : "bg-emerald-100 text-emerald-600")}>
@@ -286,8 +312,8 @@ export default function InventoryPage() {
                             <td className="px-10 py-6 rounded-r-2xl border-r border-y border-stone-100 text-right">
                                <button 
                                  onClick={() => handleQuickOrder(p)}
-                                 className="px-6 py-3 bg-[#121212] text-white text-[9px] font-black uppercase rounded-xl opacity-0 group-hover:opacity-100 shadow-xl transition-all hover:bg-[#4A76C0]" 
-                                 title="Pedir"
+                                 className="px-6 py-3 bg-[#FF9100] text-white text-[9px] font-black uppercase rounded-xl opacity-0 group-hover:opacity-100 shadow-lg transition-all hover:bg-orange-600" 
+                                 title="Pedir más unidades"
                                >
                                   <Truck size={16} />
                                </button>
@@ -302,27 +328,34 @@ export default function InventoryPage() {
         </main>
 
         {/* RIGHT SIDEBAR */}
-        <aside className="w-24 bg-[#76C176] p-4 flex flex-col items-center gap-6 shrink-0 border-l-4 border-black/5 overflow-y-auto">
-           <div className="bg-white px-2 py-4 rounded-xl text-center w-full shadow-2xl border border-black/5">
-              <p className="text-[8px] font-black uppercase leading-tight text-stone-400">ACCIONES <br/> USUARIO</p>
+        {showRightSidebar && (
+          <aside className="w-24 bg-[#76C176] p-4 flex flex-col items-center gap-6 shrink-0 border-l-4 border-black/5 overflow-y-auto animate-in slide-in-from-right duration-300">
+           <div className="bg-white px-2 py-4 rounded-xl text-center w-full shadow-lg border border-black/5">
+              <p className="text-[8px] font-black uppercase leading-tight text-stone-400 font-sans">ACCIONES</p>
            </div>
            
            <div className="flex flex-col gap-5 items-center">
               {[
-                { id: 'providers', color: 'bg-[#B0E0E6]', icon: <Truck size={24} /> },
-                { id: 'categories', color: 'bg-[#90EE90]', icon: <Layers size={24} /> },
-                { id: 'filter-stock', color: 'bg-[#F4A460]', icon: <AlertTriangle size={24} /> },
-                { id: 'filter-general', color: 'bg-[#FF8C00]', icon: <Search size={24} /> },
-                { id: 'order-warehouse', color: 'bg-[#D2691E]', icon: <ShoppingCart size={24} /> },
-                { id: 'order-specific', color: 'bg-[#191970]', icon: <FileText size={24} /> },
-                { id: 'movements', color: 'bg-[#B22222]', icon: <ArrowLeftRight size={24} /> }
+                { id: 'providers', color: 'bg-[#B0E0E6]', icon: <Truck size={24} />, title: 'Gestionar Proveedores' },
+                { id: 'categories', color: 'bg-[#90EE90]', icon: <Layers size={24} />, title: 'Gestionar Categorías' },
+                { id: 'filter-stock', color: 'bg-[#F4A460]', icon: <AlertTriangle size={24} />, title: 'Ver Alertas de Stock' },
+                { id: 'filter-general', color: 'bg-[#FF8C00]', icon: <Search size={24} />, title: 'Búsqueda Avanzada' },
+                { id: 'order-warehouse', color: 'bg-[#D2691E]', icon: <ShoppingCart size={24} />, title: 'Pedido a Almacén Central' },
+                { id: 'order-specific', color: 'bg-[#191970]', icon: <FileText size={24} />, title: 'Generar Informe Detallado' },
+                { id: 'movements', color: 'bg-[#B22222]', icon: <ArrowLeftRight size={24} />, title: 'Historial de Movimientos' }
               ].map((btn) => (
-                <button key={btn.id} onClick={() => setShowModal(btn.id)} className={cn("w-14 h-14 rounded-full border-4 border-white shadow-2xl hover:scale-110 active:scale-90 transition-all text-white flex items-center justify-center", btn.color)}>
+                <button 
+                  key={btn.id} 
+                  onClick={() => setShowModal(btn.id)} 
+                  className={cn("w-14 h-14 rounded-full border-4 border-white shadow-lg hover:scale-110 active:scale-90 transition-all text-white flex items-center justify-center", btn.color)}
+                  title={btn.title}
+                >
                   {btn.icon}
                 </button>
               ))}
            </div>
-        </aside>
+          </aside>
+        )}
 
       </div>
 
