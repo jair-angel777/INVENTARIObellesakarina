@@ -18,7 +18,8 @@ import {
   Edit,
   X,
   FileText,
-  Building
+  Building,
+  User
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { fetchWithAuth } from "@/lib/api";
@@ -401,7 +402,7 @@ export default function InventoryPage() {
            <div className="flex flex-col gap-5 items-center">
               {[
                 { id: 'add-product', color: 'bg-emerald-500', icon: <Package size={24} />, title: 'Agregar Producto', action: () => setShowModal('add-product') },
-                { id: 'providers', color: 'bg-[#B0E0E6]', icon: <User size={24}/>, title: 'Crear Proveedor', action: () => setShowModal('providers'), isIcon: User },
+                { id: 'providers', color: 'bg-[#B0E0E6]', icon: <User size={24}/>, title: 'Crear Proveedor', action: () => setShowModal('providers') },
                 { id: 'categories', color: 'bg-[#90EE90]', icon: <Layers size={24} />, title: 'Crear Categoría', action: () => setShowModal('categories') },
                 { id: 'filter-stock', color: showLowStockOnly ? 'bg-orange-600' : 'bg-orange-300', icon: <AlertTriangle size={24} />, title: 'Visualizar Stock Bajo', action: () => setShowLowStockOnly(!showLowStockOnly) },
                 { id: 'advanced-search', color: 'bg-[#FF8C00]', icon: <Search size={24} />, title: 'Búsqueda Avanzada', action: () => setShowModal('advanced-search') },
@@ -410,7 +411,7 @@ export default function InventoryPage() {
                 { id: 'movements', color: 'bg-[#B22222]', icon: <ArrowLeftRight size={24} />, title: 'Historial de Movimientos', action: () => setShowModal('movements') }
               ].map((btn) => (
                 <button key={btn.id} onClick={btn.action} className={cn("w-14 h-14 rounded-full border-4 border-white shadow-lg hover:scale-110 active:scale-90 transition-all text-white flex items-center justify-center", btn.color)} title={btn.title}>
-                  {btn.icon || <btn.isIcon size={24}/>}
+                  {btn.icon}
                 </button>
               ))}
            </div>
