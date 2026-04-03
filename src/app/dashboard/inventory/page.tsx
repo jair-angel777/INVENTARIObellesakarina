@@ -229,6 +229,23 @@ export default function InventoryPage() {
     }
   };
 
+  const handleDeleteLocation = async (e: React.MouseEvent, id: string, nombre: string) => {
+    e.stopPropagation(); // Prevenir que se active el toggleLocation
+    const password = prompt(`ADVERTENCIA: Vas a eliminar permanentemente ALMACÉN/TIENDA "${nombre}".\n\nIngresa la contraseña de autorización:`);
+    if (password === 'gerente123') {
+       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://backen-inventario.vercel.app/api";
+       const res = await fetchWithAuth(`${apiUrl}/locations/${id}`, { method: 'DELETE' });
+       if (res.ok) {
+          alert("Sede eliminada satisfactoriamente.");
+          loadData();
+       } else {
+          alert("Error al eliminar la sede.");
+       }
+    } else if (password !== null) {
+       alert("Contraseña incorrecta. Operación cancelada.");
+    }
+  };
+
   const toggleLocation = (id: string) => {
     setActiveLocations(prev => prev.includes(id) ? prev.filter(l => l !== id) : [...prev, id]);
   };
@@ -298,11 +315,14 @@ export default function InventoryPage() {
                   </button>
                 </div>
                 {locations.filter(l => l.tipo === 'ALMACEN').map(loc => (
-                  <button key={loc.id} onClick={() => toggleLocation(loc.id)} className={cn("w-full flex items-center gap-3 p-3 rounded-xl transition-all border", activeLocations.includes(loc.id) ? "bg-[#FF9100] text-white border-[#FF9100] shadow-md" : "bg-[#FDFBF7] text-stone-600 border-stone-200")}>
+                  <button key={loc.id} onClick={() => toggleLocation(loc.id)} className={cn("w-full flex items-center gap-3 p-3 rounded-xl transition-all border group relative", activeLocations.includes(loc.id) ? "bg-[#FF9100] text-white border-[#FF9100] shadow-md" : "bg-[#FDFBF7] text-stone-600 border-stone-200")}>
                     <div className={cn("p-1.5 rounded-lg", activeLocations.includes(loc.id) ? "bg-white/20 text-white" : "bg-white text-stone-400")}>
                       {activeLocations.includes(loc.id) ? <Eye size={16} /> : <EyeOff size={16} />}
                     </div>
-                    <span className="text-xs font-black uppercase tracking-tighter truncate">{loc.nombre}</span>
+                    <span className="text-xs font-black uppercase tracking-tighter truncate flex-1 text-left">{loc.nombre}</span>
+                    <div onClick={(e) => handleDeleteLocation(e, loc.id, loc.nombre)} className={cn("p-1.5 hover:bg-red-500 hover:text-white rounded-lg transition-all opacity-0 group-hover:opacity-100 cursor-pointer absolute right-2 top-1/2 -translate-y-1/2", activeLocations.includes(loc.id) ? "text-white/80" : "text-stone-400")} title="Eliminar Almacén">
+                       <Trash2 size={14} />
+                    </div>
                   </button>
                 ))}
               </div>
@@ -315,11 +335,14 @@ export default function InventoryPage() {
                    </button>
                 </div>
                 {locations.filter(l => l.tipo === 'TIENDA').map(loc => (
-                  <button key={loc.id} onClick={() => toggleLocation(loc.id)} className={cn("w-full flex items-center gap-3 p-3 rounded-xl transition-all border", activeLocations.includes(loc.id) ? "bg-[#FF9100] text-white border-[#FF9100] shadow-md" : "bg-[#FDFBF7] text-stone-600 border-stone-200")}>
+                  <button key={loc.id} onClick={() => toggleLocation(loc.id)} className={cn("w-full flex items-center gap-3 p-3 rounded-xl transition-all border group relative", activeLocations.includes(loc.id) ? "bg-[#FF9100] text-white border-[#FF9100] shadow-md" : "bg-[#FDFBF7] text-stone-600 border-stone-200")}>
                     <div className={cn("p-1.5 rounded-lg", activeLocations.includes(loc.id) ? "bg-white/20 text-white" : "bg-white text-stone-400")}>
                       {activeLocations.includes(loc.id) ? <Eye size={16} /> : <EyeOff size={16} />}
                     </div>
-                    <span className="text-xs font-black uppercase tracking-tighter truncate">{loc.nombre}</span>
+                    <span className="text-xs font-black uppercase tracking-tighter truncate flex-1 text-left">{loc.nombre}</span>
+                    <div onClick={(e) => handleDeleteLocation(e, loc.id, loc.nombre)} className={cn("p-1.5 hover:bg-red-500 hover:text-white rounded-lg transition-all opacity-0 group-hover:opacity-100 cursor-pointer absolute right-2 top-1/2 -translate-y-1/2", activeLocations.includes(loc.id) ? "text-white/80" : "text-stone-400")} title="Eliminar Tienda">
+                       <Trash2 size={14} />
+                    </div>
                   </button>
                 ))}
               </div>
