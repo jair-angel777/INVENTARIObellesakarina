@@ -19,12 +19,14 @@ import {
   X,
   FileText,
   Building,
-  User
+  User,
+  Image as ImageIcon
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { fetchWithAuth } from "@/lib/api";
 import { generateBoleta } from "@/lib/pdf";
 import Link from "next/link";
+import Script from "next/script";
 
 export default function InventoryPage() {
   const [locations, setLocations] = useState<any[]>([]);
@@ -56,6 +58,27 @@ export default function InventoryPage() {
   });
 
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
+
+  const handleUploadClick = () => {
+    // @ts-ignore
+    if (typeof window !== "undefined" && window.cloudinary) {
+        // @ts-ignore
+        const widget = window.cloudinary.createUploadWidget(
+            {
+                cloudName: "dimv8kos8",
+                uploadPreset: "preajuste de bellas",
+                sources: ["local", "url", "camera"],
+                language: "es",
+            },
+            (error: any, result: any) => {
+                if (!error && result && result.event === "success") {
+                    setProductForm(prev => ({ ...prev, imagen: result.info.secure_url }));
+                }
+            }
+        );
+        widget.open();
+    }
+  };
 
   useEffect(() => {
     loadData();
@@ -228,6 +251,7 @@ export default function InventoryPage() {
 
   return (
     <div className="min-h-screen bg-[#FDFBF7] flex flex-col font-sans text-stone-900 overflow-hidden relative">
+      <Script src="https://upload-widget.cloudinary.com/global/all.js" strategy="afterInteractive" />
       
       {/* HEADER */}
       <header className="h-20 bg-[#FF9100] flex items-center justify-between px-8 shrink-0 relative z-10 shadow-lg">
@@ -465,7 +489,12 @@ export default function InventoryPage() {
                              <input required value={productForm.stock_minimo} onChange={e=>setProductForm({...productForm, stock_minimo: e.target.value})} className="w-1/2 p-4 rounded-xl bg-[#FDFBF7] border border-stone-200 outline-none focus:border-[#FF9100] font-bold shadow-inner" placeholder="Stock Mínimo (Alerta)" type="number" />
                           </div>
 
-                          <input value={productForm.imagen} onChange={e=>setProductForm({...productForm, imagen: e.target.value})} className="w-full p-4 rounded-xl bg-[#FDFBF7] border border-stone-200 outline-none focus:border-[#FF9100] font-bold shadow-inner text-xs" placeholder="URL Imagen (ej. enlace cloudinary.com)" type="url" />
+                          <div className="flex gap-2 items-center">
+                             <input value={productForm.imagen} onChange={e=>setProductForm({...productForm, imagen: e.target.value})} className="flex-1 p-4 rounded-xl bg-[#FDFBF7] border border-stone-200 outline-none focus:border-[#FF9100] font-bold shadow-inner text-xs" placeholder="URL de la imagen devuelta por Cloudinary..." type="url" />
+                             <button type="button" onClick={handleUploadClick} className="px-6 py-4 bg-stone-800 text-white font-black text-[10px] uppercase tracking-widest hover:bg-black rounded-xl transition-all h-full whitespace-nowrap shadow-sm">
+                               Subir Imgn
+                             </button>
+                          </div>
 
                           <button type="submit" className="w-full py-5 bg-[#FF9100] text-white rounded-2xl font-black uppercase tracking-widest text-xs mt-4 hover:bg-orange-600 shadow-md">Crear Producto</button>
                        </form>
