@@ -39,6 +39,7 @@ export default function InventoryPage() {
   
   const [showLeftSidebar, setShowLeftSidebar] = useState(true);
   const [showRightSidebar, setShowRightSidebar] = useState(true);
+  const [showTablesPanel, setShowTablesPanel] = useState(false);
   
   const [searchTerm, setSearchTerm] = useState("");
   const [showLowStockOnly, setShowLowStockOnly] = useState(false);
@@ -46,7 +47,7 @@ export default function InventoryPage() {
   const [showModal, setShowModal] = useState<string | null>(null);
 
   // Forms states
-  const [providerForm, setProviderForm] = useState({ nombre: '', email: '', telefono: '', direccion: '', categoria: '' });
+  const [providerForm, setProviderForm] = useState({ nombre: '', empresa: '', email: '', telefono: '', direccion: '', categoria: '' });
   const [categoryForm, setCategoryForm] = useState({ nombre: '', descripcion: '', color: 'bg-[#FF9100]', icono: 'Package' });
   const [locationForm, setLocationForm] = useState({ nombre: '', tipo: 'ALMACEN' });
   const [productForm, setProductForm] = useState({ 
@@ -54,7 +55,8 @@ export default function InventoryPage() {
   });
   const [movementForm, setMovementForm] = useState({
      tipo: 'TRASLADO_ALMACEN', // O PEDIDO_PROVEEDOR
-     producto_id: '', cantidad: '', origen_id: '', destino_id: '', notas: ''
+     producto_id: '', cantidad: '', origen_id: '', destino_id: '', notas: '',
+     costo_unitario: '', subtotal: 0, solicitado_nombre: 'Usuario Gerente', proveedor_id: ''
   });
 
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
@@ -158,7 +160,7 @@ export default function InventoryPage() {
       body: JSON.stringify(providerForm)
     });
     if (res.ok) {
-      setProviderForm({ nombre: '', email: '', telefono: '', direccion: '', categoria: '' });
+      setProviderForm({ nombre: '', empresa: '', email: '', telefono: '', direccion: '', categoria: '' });
       setShowModal(null);
       loadAuxiliaryData();
     }
@@ -223,9 +225,17 @@ export default function InventoryPage() {
       })
     });
     if (res.ok) {
-      setMovementForm({ tipo: 'TRASLADO_ALMACEN', producto_id: '', cantidad: '', origen_id: '', destino_id: '', notas: '' });
+      const data = await res.json();
+      setMovementForm({ tipo: 'TRASLADO_ALMACEN', producto_id: '', cantidad: '', origen_id: '', destino_id: '', notas: '', costo_unitario: '', subtotal: 0, solicitado_nombre: 'Usuario Gerente', proveedor_id: '' });
       setShowModal(null);
       loadAuxiliaryData();
+      
+      // Si es pedido a proveedor, sugerir descarga de PDF
+      if (movementForm.tipo === 'PEDIDO_PROVEEDOR') {
+         if (confirm("Orden generada con éxito. ¿Deseas descargar la Boleta de Pedido en PDF ahora mismo?")) {
+            generateBoleta(data);
+         }
+      }
     }
   };
 
@@ -441,27 +451,86 @@ export default function InventoryPage() {
 
         {/* RIGHT SIDEBAR ACTIONS */}
         {showRightSidebar && (
-          <aside className="w-24 bg-white p-4 flex flex-col items-center gap-6 shrink-0 border-l-2 border-stone-100 overflow-y-auto">
-           <div className="bg-[#FDFBF7] px-2 py-4 rounded-xl text-center w-full border border-stone-100">
-              <p className="text-[8px] font-black uppercase leading-tight text-stone-400 font-sans">ACCIONES</p>
-           </div>
-           
-           <div className="flex flex-col gap-5 items-center">
-              {[
-                { id: 'add-product', color: 'bg-emerald-500', icon: <Package size={24} />, title: 'Agregar Producto', action: () => setShowModal('add-product') },
-                { id: 'providers', color: 'bg-[#B0E0E6]', icon: <User size={24}/>, title: 'Crear Proveedor', action: () => setShowModal('providers') },
-                { id: 'categories', color: 'bg-[#90EE90]', icon: <Layers size={24} />, title: 'Crear Categoría', action: () => setShowModal('categories') },
-                { id: 'filter-stock', color: showLowStockOnly ? 'bg-orange-600' : 'bg-orange-300', icon: <AlertTriangle size={24} />, title: 'Visualizar Stock Bajo', action: () => setShowLowStockOnly(!showLowStockOnly) },
-                { id: 'advanced-search', color: 'bg-[#FF8C00]', icon: <Search size={24} />, title: 'Búsqueda Avanzada', action: () => setShowModal('advanced-search') },
-                { id: 'order-warehouse', color: 'bg-[#D2691E]', icon: <Building size={24} />, title: 'Pedido Interno Almacén', action: () => setShowModal('order-warehouse') },
-                { id: 'order-provider', color: 'bg-stone-500', icon: <Truck size={24}/>, title: 'Pedido a Proveedor Externo', action: () => setShowModal('order-provider') },
-                { id: 'movements', color: 'bg-[#B22222]', icon: <ArrowLeftRight size={24} />, title: 'Historial de Movimientos', action: () => setShowModal('movements') }
-              ].map((btn) => (
-                <button key={btn.id} onClick={btn.action} className={cn("w-14 h-14 rounded-full border-4 border-white shadow-lg hover:scale-110 active:scale-90 transition-all text-white flex items-center justify-center", btn.color)} title={btn.title}>
-                  {btn.icon}
-                </button>
-              ))}
-           </div>
+          <aside className="bg-white flex shrink-0 border-l-2 border-stone-100 relative">
+            {/* Tablas Panel (Slide out) */}
+            <div className={cn(
+              "bg-[#FDFBF7] border-r border-stone-100 overflow-hidden transition-all duration-500 ease-in-out flex flex-col",
+              showTablesPanel ? "w-64 opacity-100" : "w-0 opacity-0"
+            )}>
+              <div className="p-6 flex flex-col gap-6 w-64">
+                 <div className="flex flex-col">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-[#FF9100]">Gestión de</p>
+                    <h3 className="text-2xl font-black italic tracking-tighter text-stone-800">TABLAS</h3>
+                 </div>
+                 
+                 <div className="grid grid-cols-1 gap-4">
+                    <button onClick={() => setShowModal('providers')} className="group p-4 bg-white rounded-2xl border-2 border-stone-100 hover:border-[#FF9100] transition-all flex items-center gap-4 shadow-sm">
+                       <div className="w-12 h-12 rounded-xl bg-[#B0E0E6]/20 text-[#B0E0E6] flex items-center justify-center group-hover:bg-[#B0E0E6] group-hover:text-white transition-all">
+                          <User size={24} />
+                       </div>
+                       <div className="flex flex-col items-start leading-none">
+                          <span className="text-[10px] font-black uppercase text-stone-400">Ver</span>
+                          <span className="text-sm font-black text-stone-700">Proveedores</span>
+                       </div>
+                    </button>
+
+                    <button onClick={() => setShowModal('categories')} className="group p-4 bg-white rounded-2xl border-2 border-stone-100 hover:border-[#FF9100] transition-all flex items-center gap-4 shadow-sm">
+                       <div className="w-12 h-12 rounded-xl bg-[#90EE90]/20 text-[#90EE90] flex items-center justify-center group-hover:bg-[#90EE90] group-hover:text-white transition-all">
+                          <Layers size={24} />
+                       </div>
+                       <div className="flex flex-col items-start leading-none">
+                          <span className="text-[10px] font-black uppercase text-stone-400">Ver</span>
+                          <span className="text-sm font-black text-stone-700">Categorías</span>
+                       </div>
+                    </button>
+                    
+                    <button onClick={() => setShowModal('add-location')} className="group p-4 bg-white rounded-2xl border-2 border-stone-100 hover:border-[#FF9100] transition-all flex items-center gap-4 shadow-sm">
+                       <div className="w-12 h-12 rounded-xl bg-[#FF9100]/10 text-[#FF9100] flex items-center justify-center group-hover:bg-[#FF9100] group-hover:text-white transition-all">
+                          <Building size={24} />
+                       </div>
+                       <div className="flex flex-col items-start leading-none">
+                          <span className="text-[10px] font-black uppercase text-stone-400">Ver</span>
+                          <span className="text-sm font-black text-stone-700">Ubicaciones</span>
+                       </div>
+                    </button>
+                 </div>
+
+                 <p className="mt-auto text-[8px] font-bold text-stone-400 italic">※ Selecciona una tabla para editar sus registros o agregar nuevos maestros.</p>
+              </div>
+            </div>
+
+            {/* Main Action Strip */}
+            <div className="w-24 p-4 flex flex-col items-center gap-6 overflow-y-auto z-10 bg-white">
+              <button 
+                onClick={() => setShowTablesPanel(!showTablesPanel)}
+                className={cn(
+                  "px-2 py-4 rounded-xl text-center w-full border-2 transition-all flex flex-col items-center gap-1",
+                  showTablesPanel 
+                    ? "bg-[#FF9100] border-[#FF9100] text-white shadow-xl shadow-orange-100 -rotate-3" 
+                    : "bg-[#FDFBF7] border-stone-100 text-stone-400 hover:border-stone-300"
+                )}
+              >
+                {showTablesPanel ? <X size={16} strokeWidth={3} /> : <Layers size={16} />}
+                <p className={cn("text-[9px] font-black uppercase leading-tight font-sans", showTablesPanel ? "text-white" : "text-stone-400")}>
+                  {showTablesPanel ? "Cerrar" : "Tablas"}
+                </p>
+              </button>
+              
+              <div className="flex flex-col gap-5 items-center">
+                  {[
+                    { id: 'add-product', color: 'bg-emerald-500', icon: <Package size={24} />, title: 'Agregar Producto', action: () => setShowModal('add-product') },
+                    { id: 'filter-stock', color: showLowStockOnly ? 'bg-orange-600' : 'bg-orange-300', icon: <AlertTriangle size={24} />, title: 'Visualizar Stock Bajo', action: () => setShowLowStockOnly(!showLowStockOnly) },
+                    { id: 'advanced-search', color: 'bg-[#FF8C00]', icon: <Search size={24} />, title: 'Búsqueda Avanzada', action: () => setShowModal('advanced-search') },
+                    { id: 'order-warehouse', color: 'bg-[#D2691E]', icon: <Building size={24} />, title: 'Pedido Interno Almacén', action: () => setShowModal('order-warehouse') },
+                    { id: 'order-provider', color: 'bg-stone-500', icon: <Truck size={24}/>, title: 'Pedido a Proveedor Externo', action: () => setShowModal('order-provider') },
+                    { id: 'movements', color: 'bg-[#B22222]', icon: <ArrowLeftRight size={24} />, title: 'Historial de Movimientos', action: () => setShowModal('movements') }
+                  ].map((btn) => (
+                    <button key={btn.id} onClick={btn.action} className={cn("w-14 h-14 rounded-full border-4 border-white shadow-lg hover:scale-110 active:scale-90 transition-all text-white flex items-center justify-center", btn.color)} title={btn.title}>
+                      {btn.icon}
+                    </button>
+                  ))}
+              </div>
+            </div>
           </aside>
         )}
       </div>
@@ -526,7 +595,14 @@ export default function InventoryPage() {
                     {/* NUEVO PROVEEDOR FORM - 1 Columna */}
                     {showModal === 'providers' && (
                        <form onSubmit={handleCreateProvider} className="space-y-4">
-                         <input required value={providerForm.nombre} onChange={e => setProviderForm({...providerForm, nombre: e.target.value})} className="w-full p-4 rounded-xl bg-[#FDFBF7] border border-stone-200 outline-none focus:border-[#FF9100] font-bold shadow-inner" placeholder="Razón Social / Nombre" />
+                         <div className="space-y-2">
+                           <label className="text-[10px] font-black uppercase text-stone-400 ml-2">Nombre del Representante / Contacto</label>
+                           <input required value={providerForm.nombre} onChange={e => setProviderForm({...providerForm, nombre: e.target.value})} className="w-full p-4 rounded-xl bg-[#FDFBF7] border border-stone-200 outline-none focus:border-[#FF9100] font-bold shadow-inner" placeholder="Ej: Juan Pérez" />
+                         </div>
+                         <div className="space-y-2">
+                           <label className="text-[10px] font-black uppercase text-stone-400 ml-2">Nombre de la Empresa / Razón Social</label>
+                           <input required value={providerForm.empresa} onChange={e => setProviderForm({...providerForm, empresa: e.target.value})} className="w-full p-4 rounded-xl bg-[#FDFBF7] border border-stone-200 outline-none focus:border-[#FF9100] font-bold shadow-inner" placeholder="Ej: Distribuidora Karina S.A.C." />
+                         </div>
                          <input value={providerForm.email} onChange={e => setProviderForm({...providerForm, email: e.target.value})} className="w-full p-4 rounded-xl bg-[#FDFBF7] border border-stone-200 outline-none focus:border-[#FF9100] font-bold shadow-inner" placeholder="Email Contacto" />
                          <input value={providerForm.telefono} onChange={e => setProviderForm({...providerForm, telefono: e.target.value})} className="w-full p-4 rounded-xl bg-[#FDFBF7] border border-stone-200 outline-none focus:border-[#FF9100] font-bold shadow-inner" placeholder="Teléfono" />
                          <button type="submit" className="w-full py-5 bg-[#FF9100] text-white rounded-2xl font-black uppercase tracking-widest text-xs mt-4 hover:bg-orange-600 shadow-md">Crear Proveedor</button>
@@ -563,33 +639,65 @@ export default function InventoryPage() {
                              {products.map(p => <option key={p.id} value={p.id}>{p.nombre} (Stock Total: {p.stock})</option>)}
                          </select>
                          <input required value={movementForm.cantidad} onChange={e=>setMovementForm({...movementForm, cantidad: e.target.value})} type="number" className="w-full p-4 rounded-xl bg-[#FDFBF7] border border-stone-200 font-bold" placeholder="Cantidad Necesitada" />
-                         <select required value={movementForm.origen_id} onChange={e=>setMovementForm({...movementForm, origen_id: e.target.value})} className="w-full p-4 rounded-xl bg-[#FDFBF7] border border-stone-200 font-bold text-stone-600">
-                             <option value="">Almacén/Tienda de Origen...</option>
-                             {locations.map(l => <option key={l.id} value={l.id}>{l.nombre}</option>)}
-                         </select>
-                         <select required value={movementForm.destino_id} onChange={e=>setMovementForm({...movementForm, destino_id: e.target.value})} className="w-full p-4 rounded-xl bg-[#FDFBF7] border border-stone-200 font-bold text-stone-600">
-                             <option value="">Tienda/Almacén de Destino...</option>
-                             {locations.map(l => <option key={l.id} value={l.id}>{l.nombre}</option>)}
-                         </select>
+                         <select required value={movementForm.origen_id} onChange={e=>setMovementForm({...movementForm, origen_id: e.target.value})} className="w-full p-4 rounded-xl bg-[#FDFBF7] border border-stone-200 font-bold text-stone-600 outline-none focus:border-[#FF9100]">
+                              <option value="">Selecciona Almacén de ORIGEN...</option>
+                              {locations.filter(l => l.tipo === 'ALMACEN').map(l => <option key={l.id} value={l.id}>{l.nombre}</option>)}
+                          </select>
+                          <select required value={movementForm.destino_id} onChange={e=>setMovementForm({...movementForm, destino_id: e.target.value})} className="w-full p-4 rounded-xl bg-[#FDFBF7] border border-stone-200 font-bold text-stone-600 outline-none focus:border-[#FF9100]">
+                              <option value="">Selecciona Tienda de DESTINO...</option>
+                              {locations.filter(l => l.tipo === 'TIENDA').map(l => <option key={l.id} value={l.id}>{l.nombre}</option>)}
+                          </select>
                          <button type="submit" className="w-full py-5 bg-[#FF9100] text-white rounded-2xl font-black uppercase tracking-widest text-xs mt-4 hover:bg-orange-600 shadow-md">Generar Orden Interna</button>
                        </form>
                     )}
 
-                    {/* PEDIDO A PROVEEDOR EXTERNO - 1 Columna */}
+                    {/* PEDIDO A PROVEEDOR EXTERNO - Rediseño Profesional */}
                     {showModal === 'order-provider' && (
                        <form onSubmit={(e)=>{ setMovementForm(m=>({...m, tipo:'PEDIDO_PROVEEDOR'})); handleCreateMovement(e); }} className="space-y-4">
-                         <p className="text-sm font-bold text-stone-500 mb-2">Generar orden de compra hacia un Proveedor Externo para reabastecer stock.</p>
-                         <select required value={movementForm.producto_id} onChange={e=>setMovementForm({...movementForm, producto_id: e.target.value})} className="w-full p-4 rounded-xl bg-[#FDFBF7] border border-stone-200 font-bold text-stone-600">
+                         <div className="bg-orange-50 p-6 rounded-[2rem] border border-orange-100 mb-4">
+                            <p className="text-[10px] font-black text-orange-600 uppercase tracking-widest mb-1">Cálculo de Inversión</p>
+                            <div className="flex justify-between items-end">
+                               <h4 className="text-3xl font-black text-orange-700 tracking-tighter">
+                                  S/ {(parseFloat(movementForm.costo_unitario) * parseInt(movementForm.cantidad) || 0).toLocaleString()}
+                               </h4>
+                               <span className="text-[10px] font-bold text-orange-400">Subtotal Estimado</span>
+                            </div>
+                         </div>
+
+                         <select required value={movementForm.proveedor_id} onChange={e=>setMovementForm({...movementForm, proveedor_id: e.target.value})} className="w-full p-4 rounded-xl bg-[#FDFBF7] border border-stone-200 font-bold text-stone-600 outline-none focus:border-[#FF9100]">
+                             <option value="">¿A qué Proveedor le compras?</option>
+                             {providers.map(prov => <option key={prov.id} value={prov.id}>{prov.empresa || prov.nombre}</option>)}
+                         </select>
+
+                         <select required value={movementForm.producto_id} onChange={e=>setMovementForm({...movementForm, producto_id: e.target.value})} className="w-full p-4 rounded-xl bg-[#FDFBF7] border border-stone-200 font-bold text-stone-600 outline-none focus:border-[#FF9100]">
                              <option value="">Producto a Reabastecer...</option>
                              {products.map(p => <option key={p.id} value={p.id}>{p.nombre}</option>)}
                          </select>
-                         <input required value={movementForm.cantidad} onChange={e=>setMovementForm({...movementForm, cantidad: e.target.value})} type="number" className="w-full p-4 rounded-xl bg-[#FDFBF7] border border-stone-200 font-bold" placeholder="Cantidad a Comprar" />
-                         <select required value={movementForm.destino_id} onChange={e=>setMovementForm({...movementForm, destino_id: e.target.value})} className="w-full p-4 rounded-xl bg-[#FDFBF7] border border-stone-200 font-bold text-stone-600">
+
+                         <div className="flex gap-4">
+                            <div className="w-1/2 space-y-1">
+                               <label className="text-[9px] font-black uppercase text-stone-400 ml-2">Cantidad</label>
+                               <input required value={movementForm.cantidad} onChange={e=>setMovementForm({...movementForm, cantidad: e.target.value})} type="number" className="w-full p-4 rounded-xl bg-[#FDFBF7] border border-stone-200 font-bold outline-none focus:border-[#FF9100]" placeholder="0" />
+                            </div>
+                            <div className="w-1/2 space-y-1">
+                               <label className="text-[9px] font-black uppercase text-stone-400 ml-2">Costo Unitario S/</label>
+                               <input required value={movementForm.costo_unitario} onChange={e=>setMovementForm({...movementForm, costo_unitario: e.target.value})} type="number" step="0.01" className="w-full p-4 rounded-xl bg-[#FDFBF7] border border-stone-200 font-bold outline-none focus:border-[#FF9100]" placeholder="0.00" />
+                            </div>
+                         </div>
+
+                         <select required value={movementForm.destino_id} onChange={e=>setMovementForm({...movementForm, destino_id: e.target.value})} className="w-full p-4 rounded-xl bg-[#FDFBF7] border border-stone-200 font-bold text-stone-600 outline-none focus:border-[#FF9100]">
                              <option value="">Almacén/Tienda de Recepción...</option>
                              {locations.map(l => <option key={l.id} value={l.id}>{l.nombre}</option>)}
                          </select>
-                         <input value={movementForm.notas} onChange={e=>setMovementForm({...movementForm, notas: e.target.value})} className="w-full p-4 rounded-xl bg-[#FDFBF7] border border-stone-200 font-bold" placeholder="Notas Adicionales (Opcional)" />
-                         <button type="submit" className="w-full py-5 bg-stone-800 text-white rounded-2xl font-black uppercase tracking-widest text-xs mt-4 hover:bg-black shadow-md">Lanzar Orden al Proveedor</button>
+                         
+                         <div className="space-y-1">
+                            <label className="text-[9px] font-black uppercase text-stone-400 ml-2">Firma / Autorizado por:</label>
+                            <input required value={movementForm.solicitado_nombre} onChange={e=>setMovementForm({...movementForm, solicitado_nombre: e.target.value})} className="w-full p-4 rounded-xl bg-[#FDFBF7] border border-stone-200 font-bold outline-none focus:border-[#FF9100]" placeholder="Nombre del Gerente" />
+                         </div>
+
+                         <button type="submit" className="w-full py-5 bg-stone-800 text-white rounded-2xl font-black uppercase tracking-widest text-xs mt-4 hover:bg-black shadow-lg transition-all active:scale-[0.98]">
+                            Lanzar Orden y Generar Boleta
+                         </button>
                        </form>
                     )}
 
