@@ -20,6 +20,7 @@ import {
   FileText,
   Building,
   User,
+  Table,
   Image as ImageIcon
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -451,74 +452,90 @@ export default function InventoryPage() {
 
         {/* RIGHT SIDEBAR ACTIONS */}
         {showRightSidebar && (
-          <aside className="bg-white flex shrink-0 border-l-2 border-stone-100 relative">
-            {/* Tablas Panel (Slide out) */}
+          <aside className="bg-white flex shrink-0 border-l-2 border-stone-100 relative shadow-[-10px_0_30px_rgba(0,0,0,0.01)]">
+            {/* Tablas Panel (Data Viewer Slide out) */}
             <div className={cn(
               "bg-[#FDFBF7] border-r border-stone-100 overflow-hidden transition-all duration-500 ease-in-out flex flex-col",
-              showTablesPanel ? "w-64 opacity-100" : "w-0 opacity-0"
+              showTablesPanel ? "w-[440px] opacity-100 shadow-xl" : "w-0 opacity-0"
             )}>
-              <div className="p-6 flex flex-col gap-6 w-64">
-                 <div className="flex flex-col">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-[#FF9100]">Gestión de</p>
-                    <h3 className="text-2xl font-black italic tracking-tighter text-stone-800">TABLAS</h3>
+              <div className="p-8 flex flex-col gap-8 w-[440px] h-full overflow-y-auto overflow-x-hidden">
+                 <div className="flex flex-col gap-1 border-b-2 border-[#B0E0E6]/20 pb-4">
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#B0E0E6]">Gestión Avanzada</p>
+                    <h3 className="text-3xl font-black italic tracking-tighter text-stone-800 uppercase">Consultas de Datos</h3>
                  </div>
                  
-                 <div className="grid grid-cols-1 gap-4">
-                    <button onClick={() => setShowModal('providers')} className="group p-4 bg-white rounded-2xl border-2 border-stone-100 hover:border-[#FF9100] transition-all flex items-center gap-4 shadow-sm">
-                       <div className="w-12 h-12 rounded-xl bg-[#B0E0E6]/20 text-[#B0E0E6] flex items-center justify-center group-hover:bg-[#B0E0E6] group-hover:text-white transition-all">
-                          <User size={24} />
-                       </div>
-                       <div className="flex flex-col items-start leading-none">
-                          <span className="text-[10px] font-black uppercase text-stone-400">Ver</span>
-                          <span className="text-sm font-black text-stone-700">Proveedores</span>
-                       </div>
-                    </button>
-
-                    <button onClick={() => setShowModal('categories')} className="group p-4 bg-white rounded-2xl border-2 border-stone-100 hover:border-[#FF9100] transition-all flex items-center gap-4 shadow-sm">
-                       <div className="w-12 h-12 rounded-xl bg-[#90EE90]/20 text-[#90EE90] flex items-center justify-center group-hover:bg-[#90EE90] group-hover:text-white transition-all">
-                          <Layers size={24} />
-                       </div>
-                       <div className="flex flex-col items-start leading-none">
-                          <span className="text-[10px] font-black uppercase text-stone-400">Ver</span>
-                          <span className="text-sm font-black text-stone-700">Categorías</span>
-                       </div>
-                    </button>
-                    
-                    <button onClick={() => setShowModal('add-location')} className="group p-4 bg-white rounded-2xl border-2 border-stone-100 hover:border-[#FF9100] transition-all flex items-center gap-4 shadow-sm">
-                       <div className="w-12 h-12 rounded-xl bg-[#FF9100]/10 text-[#FF9100] flex items-center justify-center group-hover:bg-[#FF9100] group-hover:text-white transition-all">
-                          <Building size={24} />
-                       </div>
-                       <div className="flex flex-col items-start leading-none">
-                          <span className="text-[10px] font-black uppercase text-stone-400">Ver</span>
-                          <span className="text-sm font-black text-stone-700">Ubicaciones</span>
-                       </div>
-                    </button>
+                 {/* Mini Tabla Proveedores */}
+                 <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                       <h4 className="text-xs font-black text-stone-400 uppercase tracking-widest flex items-center gap-2">
+                          <User size={14} className="text-[#B0E0E6]" /> Proveedores
+                       </h4>
+                       <button onClick={() => setShowModal('providers')} className="text-[9px] font-black uppercase text-[#B0E0E6] hover:underline underline-offset-4">
+                          Ver/Nuevo
+                       </button>
+                    </div>
+                    <div className="bg-white rounded-2xl border-2 border-stone-100 p-2 overflow-hidden overflow-x-auto shadow-sm">
+                       <table className="w-full text-left">
+                          <thead className="bg-[#FDFBF7] text-[8px] font-black uppercase text-stone-400">
+                             <tr>
+                                <th className="p-3">Empresa</th>
+                                <th className="p-3">Contacto</th>
+                                <th className="p-3 text-right">Tlf</th>
+                             </tr>
+                          </thead>
+                          <tbody className="text-[10px] font-bold text-stone-600">
+                             {providers.slice(0, 5).map(p => (
+                                <tr key={p.id} className="border-b border-stone-50 last:border-0 hover:bg-[#FDFBF7] transition-all">
+                                   <td className="p-3 uppercase truncate max-w-[100px]">{p.empresa || "---"}</td>
+                                   <td className="p-3 truncate max-w-[80px]">{p.nombre}</td>
+                                   <td className="p-3 text-right tabular-nums">{p.telefono || "S/T"}</td>
+                                </tr>
+                             ))}
+                          </tbody>
+                       </table>
+                    </div>
                  </div>
 
-                 <p className="mt-auto text-[8px] font-bold text-stone-400 italic">※ Selecciona una tabla para editar sus registros o agregar nuevos maestros.</p>
+                 {/* Mini Tabla Categorías */}
+                 <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                       <h4 className="text-xs font-black text-stone-400 uppercase tracking-widest flex items-center gap-2">
+                          <Layers size={14} className="text-[#90EE90]" /> Categorías
+                       </h4>
+                       <button onClick={() => setShowModal('categories')} className="text-[9px] font-black uppercase text-[#90EE90] hover:underline underline-offset-4">
+                          Ver/Nuevo
+                       </button>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                       {categories.map(c => (
+                          <div key={c.id} className="bg-white p-4 rounded-xl border border-stone-100 shadow-sm flex flex-col gap-1 border-l-4 border-l-[#90EE90] hover:scale-105 transition-transform cursor-default">
+                             <p className="text-[9px] font-black uppercase text-stone-800 leading-none">{c.nombre}</p>
+                             <p className="text-[8px] font-bold text-stone-400 italic">ID: {c.id.slice(-4)}</p>
+                          </div>
+                       ))}
+                    </div>
+                 </div>
+
+                 <div className="mt-auto bg-stone-900 p-6 rounded-3xl text-white shadow-xl">
+                    <p className="text-[10px] font-bold opacity-60 uppercase mb-2">Ayuda Rápida</p>
+                    <p className="text-xs font-medium leading-relaxed italic border-l-2 border-[#B0E0E6] pl-4">
+                       Este panel te permite consultar datos sin salir del inventario principal. Utiliza los botones superiores de cada sección para añadir nuevos registros maestros.
+                    </p>
+                 </div>
               </div>
             </div>
 
             {/* Main Action Strip */}
             <div className="w-24 p-4 flex flex-col items-center gap-6 overflow-y-auto z-10 bg-white">
-              <button 
-                onClick={() => setShowTablesPanel(!showTablesPanel)}
-                className={cn(
-                  "px-2 py-4 rounded-xl text-center w-full border-2 transition-all flex flex-col items-center gap-1",
-                  showTablesPanel 
-                    ? "bg-[#FF9100] border-[#FF9100] text-white shadow-xl shadow-orange-100 -rotate-3" 
-                    : "bg-[#FDFBF7] border-stone-100 text-stone-400 hover:border-stone-300"
-                )}
-              >
-                {showTablesPanel ? <X size={16} strokeWidth={3} /> : <Layers size={16} />}
-                <p className={cn("text-[9px] font-black uppercase leading-tight font-sans", showTablesPanel ? "text-white" : "text-stone-400")}>
-                  {showTablesPanel ? "Cerrar" : "Tablas"}
-                </p>
-              </button>
+              {/* RESTORED ACCIONES HEADER */}
+              <div className="bg-[#FDFBF7] px-2 py-4 rounded-xl text-center w-full border border-stone-100">
+                <p className="text-[8px] font-black uppercase leading-tight text-stone-400 font-sans">ACCIONES</p>
+              </div>
               
               <div className="flex flex-col gap-5 items-center">
                   {[
                     { id: 'add-product', color: 'bg-emerald-500', icon: <Package size={24} />, title: 'Agregar Producto', action: () => setShowModal('add-product') },
+                    { id: 'tablas', color: showTablesPanel ? 'bg-[#B0E0E6]' : 'bg-[#B0E0E6]/50', icon: <Table size={24} />, title: 'Gestión de Tablas de Datos', action: () => setShowTablesPanel(!showTablesPanel) },
                     { id: 'filter-stock', color: showLowStockOnly ? 'bg-orange-600' : 'bg-orange-300', icon: <AlertTriangle size={24} />, title: 'Visualizar Stock Bajo', action: () => setShowLowStockOnly(!showLowStockOnly) },
                     { id: 'advanced-search', color: 'bg-[#FF8C00]', icon: <Search size={24} />, title: 'Búsqueda Avanzada', action: () => setShowModal('advanced-search') },
                     { id: 'order-warehouse', color: 'bg-[#D2691E]', icon: <Building size={24} />, title: 'Pedido Interno Almacén', action: () => setShowModal('order-warehouse') },
