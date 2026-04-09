@@ -46,6 +46,8 @@ export default function InventoryPage() {
   const [showLowStockOnly, setShowLowStockOnly] = useState(false);
 
   const [showModal, setShowModal] = useState<string | null>(null);
+  const [isComparisonActive, setIsComparisonActive] = useState(false);
+  const [comparisonMode, setComparisonMode] = useState<'SIDE_BY_SIDE' | 'COMPARE'>('SIDE_BY_SIDE');
 
   // Forms states
   const [providerForm, setProviderForm] = useState({ nombre: '', empresa: '', email: '', telefono: '', direccion: '', categoria: '' });
@@ -69,7 +71,7 @@ export default function InventoryPage() {
         const widget = window.cloudinary.createUploadWidget(
             {
                 cloudName: "dimv8kos8",
-                uploadPreset: "preajuste de bellas",
+                uploadPreset: "bellesas_preset",
                 sources: ["local", "url", "camera"],
                 language: "es",
             },
@@ -184,8 +186,12 @@ export default function InventoryPage() {
   const handleCreateProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://backen-inventario.vercel.app/api";
-    const res = await fetchWithAuth(`${apiUrl}/products`, {
-      method: "POST", headers: { "Content-Type": "application/json" },
+    
+    const method = selectedProduct ? "PATCH" : "POST";
+    const url = selectedProduct ? `${apiUrl}/products/${selectedProduct.id}` : `${apiUrl}/products`;
+
+    const res = await fetchWithAuth(url, {
+      method, headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         nombre: productForm.nombre,
         precio: parseFloat(productForm.precio),
@@ -194,16 +200,43 @@ export default function InventoryPage() {
         proveedor_id: productForm.proveedor_id,
         stock_minimo: parseInt(productForm.stock_minimo) || 5,
         stock: parseInt(productForm.stock_inicial) || 0,
+        ubicacion_id: productForm.ubicacion_id,
         imagen: productForm.imagen
       })
     });
     if (res.ok) {
-      if (productForm.ubicacion_id && productForm.stock_inicial) {
-        // En una implementación más robusta, el backend crearía la entrada en stock_ubicacion
-      }
       setProductForm({ nombre: '', precio: '', costo: '', categoria_id: '', proveedor_id: '', ubicacion_id: '', stock_inicial: '', stock_minimo: '5', imagen: '' });
+      setSelectedProduct(null);
       setShowModal(null);
       loadData();
+    }
+  };
+
+  const handleEditProduct = (p: any) => {
+    setSelectedProduct(p);
+    setProductForm({
+      nombre: p.nombre,
+      precio: p.precio.toString(),
+      costo: (p.costo || 0).toString(),
+      categoria_id: p.categoria || '',
+      proveedor_id: p.proveedor_id || '',
+      ubicacion_id: '', // La edición no cambia el stock inicial
+      stock_inicial: p.stock.toString(),
+      stock_minimo: (p.stock_minimo || 5).toString(),
+      imagen: p.imagen || ''
+    });
+    setShowModal('add-product');
+  };
+
+  const handleDeleteProduct = async (id: string, nombre: string) => {
+    if (confirm(`¿Estás seguro de que deseas eliminar el producto "${nombre}"?`)) {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://backen-inventario.vercel.app/api";
+      const res = await fetchWithAuth(`${apiUrl}/products/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        loadData();
+      } else {
+        alert("Error al eliminar el producto.");
+      }
     }
   };
 
@@ -258,7 +291,19 @@ export default function InventoryPage() {
   };
 
   const toggleLocation = (id: string) => {
-    setActiveLocations(prev => prev.includes(id) ? prev.filter(l => l !== id) : [...prev, id]);
+    setActiveLocations(prev => {
+      if (prev.includes(id)) return prev.filter(l => l !== id);
+      if (prev.length >= 2) {
+        alert("Solo puedes seleccionar un máximo de 2 tablas para comparar.");
+        return prev;
+      }
+      return [...prev, id];
+    });
+  };
+
+  const getCategoryName = (id: string) => {
+    const category = categories.find(c => c.id === id);
+    return category ? category.nombre : (id || "S/C");
   };
 
   const filteredProducts = products.filter(p => {
@@ -382,72 +427,159 @@ export default function InventoryPage() {
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[#FF9100]" size={20} />
                     <input type="text" placeholder="Consultar inventario..." className="w-full pl-12 pr-6 py-4 rounded-2xl bg-white border-2 border-stone-100 text-xs font-bold focus:border-[#FF9100] shadow-sm outline-none transition-all" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
                   </div>
-                  <div className="bg-[#FF9100] px-8 py-3 rounded-xl border-b-4 border-orange-600">
-                    <span className="text-lg font-black italic text-white tracking-widest">PRODUCTOS</span>
+                  <div className="flex items-center gap-4">
+                    {activeLocations.length === 2 && (
+                      <div className="flex bg-stone-100 p-1 rounded-xl border border-stone-200">
+                        <button onClick={() => setIsComparisonActive(false)} className={cn("px-4 py-2 rounded-lg text-[10px] font-black uppercase transition-all", !isComparisonActive ? "bg-white text-stone-800 shadow-sm" : "text-stone-400 hover:text-stone-600")}>Side-by-Side</button>
+                        <button onClick={() => setIsComparisonActive(true)} className={cn("px-4 py-2 rounded-lg text-[10px] font-black uppercase transition-all", isComparisonActive ? "bg-[#FF9100] text-white shadow-sm" : "text-stone-400 hover:text-stone-600")}>Comparar</button>
+                      </div>
+                    )}
+                    <div className="bg-[#FF9100] px-8 py-3 rounded-xl border-b-4 border-orange-600">
+                      <span className="text-lg font-black italic text-white tracking-widest uppercase">
+                        {activeLocations.length === 2 ? "Comparación" : "Inventario Global"}
+                      </span>
+                    </div>
                   </div>
                </div>
 
-               <div className="overflow-auto flex-1 px-4">
-                  <table className="w-full text-left border-separate border-spacing-y-3">
-                    <thead className="sticky top-0 z-20">
-                      <tr className="bg-[#FDFBF7] text-stone-500 text-[10px] font-black uppercase tracking-widest">
-                        <th className="px-10 py-5 rounded-l-2xl border-y border-l border-stone-100">Producto</th>
-                        <th className="px-8 py-5 border-y border-stone-100">Categoría</th>
-                        <th className="px-8 py-5 text-center border-y border-stone-100">Stock</th>
-                        <th className="px-8 py-5 border-y border-stone-100">Estado</th>
-                        <th className="px-10 py-5 rounded-r-2xl border-y border-r border-stone-100 text-right">Acción</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {loading ? (
-                         <tr><td colSpan={5} className="py-20 text-center font-bold text-lg text-stone-300">Cargando inventario...</td></tr>
-                      ) : filteredProducts.map((p) => {
-                        const isLowStock = p.stock <= (p.stock_minimo || 5);
-                        return (
-                          <tr key={p.id} className="group bg-white hover:bg-[#FDFBF7] transition-all relative">
-                            <td className="px-10 py-6 rounded-l-2xl border-b border-stone-100">
-                              <div className="flex items-center gap-4">
-                                {p.imagen && <img src={p.imagen} alt={p.nombre} className="w-10 h-10 rounded-lg object-cover shadow-sm bg-stone-100" />}
-                                <div className="flex flex-col">
-                                  <div className="flex items-center gap-2">
-                                     <span className={cn("text-lg font-black tracking-tighter", isLowStock ? "text-[#FF9100]" : "text-stone-800")}>{p.nombre}</span>
-                                     {isLowStock && <AlertTriangle size={14} className="text-[#FF9100] animate-bounce" fill="currentColor" />}
-                                  </div>
-                                  {p.proveedor_id && <span className="text-[9px] font-black uppercase text-stone-400">Proveedor ID: {p.proveedor_id.slice(-4)}</span>}
-                                </div>
-                              </div>
-                            </td>
-                            <td className="px-8 py-6 border-b border-stone-100">
-                               <span className="text-[10px] font-black uppercase px-3 py-1 bg-white border border-stone-200 text-stone-500 rounded-md">{p.categoria || "S/C"}</span>
-                            </td>
-                            <td className="px-8 py-6 text-center border-b border-stone-100">
-                              <span className={cn("text-2xl font-black", isLowStock ? "text-[#FF9100]" : "text-stone-800")}>{p.stock}</span>
-                            </td>
-                            <td className="px-8 py-6 border-b border-stone-100">
-                              <div className={cn("inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest", isLowStock ? "bg-orange-100 text-orange-600" : "bg-stone-100 text-stone-500")}>
-                                {isLowStock ? "Bajo" : "OK"}
-                              </div>
-                            </td>
-                            <td className="px-10 py-6 rounded-r-2xl border-b border-stone-100 text-right">
-                               <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                  <button className="p-2.5 bg-white border border-stone-200 text-stone-400 hover:text-[#FF9100] hover:border-[#FF9100] rounded-xl transition-all shadow-sm">
-                                    <Edit size={16} strokeWidth={2.5} />
-                                  </button>
-                                  <button className="p-2.5 bg-white border border-stone-200 text-stone-400 hover:text-red-500 hover:border-red-500 rounded-xl transition-all shadow-sm">
-                                    <Trash2 size={16} strokeWidth={2.5} />
-                                  </button>
-                                  <button onClick={() => handleQuickOrder(p)} className="px-4 py-2.5 bg-[#FF9100] text-white flex items-center gap-1.5 text-[9px] font-black uppercase rounded-xl transition-all hover:bg-orange-600">
-                                     <ShoppingCart size={16} strokeWidth={2.5} /><span>Pedir</span>
-                                  </button>
+               <div className="overflow-auto flex-1 p-6">
+                  {activeLocations.length === 2 ? (
+                    <div className="grid grid-cols-2 gap-8 h-full">
+                       {activeLocations.map((locId, idx) => {
+                          const location = locations.find(l => l.id === locId);
+                          const locProducts = products.map(p => ({
+                            ...p,
+                            locStock: p.stock_por_ubicacion.find((s: any) => s.ubicacion_id === locId)?.stock || 0
+                          })).filter(p => p.nombre.toLowerCase().includes(searchTerm.toLowerCase()));
+
+                          const otherLocId = activeLocations[idx === 0 ? 1 : 0];
+                          
+                          // Algorithm: Identify common/unique for highlights
+                          const finalProducts = [...locProducts].sort((a, b) => {
+                             if (!isComparisonActive) return 0;
+                             const aInBoth = a.stock_por_ubicacion.find((s: any) => s.ubicacion_id === otherLocId);
+                             const bInBoth = b.stock_por_ubicacion.find((s: any) => s.ubicacion_id === otherLocId);
+                             if (aInBoth && !bInBoth) return -1;
+                             if (!aInBoth && bInBoth) return 1;
+                             return 0;
+                          });
+
+                          return (
+                            <div key={locId} className="flex flex-col gap-4">
+                               <div className="bg-stone-50 p-4 rounded-2xl border border-stone-100 flex justify-between items-center">
+                                  <span className="text-[10px] font-black uppercase tracking-widest text-[#FF9100]">{location?.nombre}</span>
+                                  <span className="text-[10px] font-bold text-stone-400">{finalProducts.filter(p => p.locStock > 0).length} Productos en stock</span>
                                </div>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
+                               <div className="flex-1 overflow-auto">
+                                  <table className="w-full text-left border-separate border-spacing-y-2">
+                                    <tbody>
+                                      {finalProducts.map(p => {
+                                        const otherStock = p.stock_por_ubicacion.find((s: any) => s.ubicacion_id === otherLocId)?.stock;
+                                        const existsInOther = otherStock !== undefined;
+                                        
+                                        let borderColor = "border-stone-100";
+                                        if (isComparisonActive) {
+                                          if (!existsInOther) borderColor = "border-black border-2";
+                                          else if (p.locStock > 0 && otherStock > 0) borderColor = "border-green-500 border-2 shadow-[0_0_10px_rgba(34,197,94,0.1)]";
+                                          else borderColor = "border-red-500 border-2 shadow-[0_0_10px_rgba(239,68,68,0.1)]";
+                                        }
+
+                                        return (
+                                          <tr key={p.id} className={cn("bg-white rounded-xl transition-all border", borderColor)}>
+                                            <td className="p-4 rounded-l-xl">
+                                              <div className="flex items-center gap-3">
+                                                <div className="w-10 h-10 rounded-lg bg-stone-50 border border-stone-100 flex items-center justify-center overflow-hidden shrink-0">
+                                                  {p.imagen ? <img src={p.imagen} className="w-full h-full object-cover" /> : <ImageIcon size={20} className="text-stone-300" />}
+                                                </div>
+                                                <div className="flex flex-col min-w-0">
+                                                  <span className="text-[11px] font-black uppercase truncate leading-tight">{p.nombre}</span>
+                                                  <span className="text-[8px] font-bold text-[#FF9100] uppercase">{getCategoryName(p.categoria)}</span>
+                                                </div>
+                                              </div>
+                                            </td>
+                                            <td className="p-4 text-center">
+                                              <span className="text-lg font-black">{p.locStock}</span>
+                                            </td>
+                                            <td className="p-4 text-right rounded-r-xl">
+                                              <div className="flex justify-end gap-1">
+                                                <button onClick={() => handleEditProduct(p)} className="p-1.5 text-stone-300 hover:text-[#FF9100] transition-colors"><Edit size={14} /></button>
+                                                <button onClick={() => handleDeleteProduct(p.id, p.nombre)} className="p-1.5 text-stone-300 hover:text-red-500 transition-colors"><Trash2 size={14} /></button>
+                                              </div>
+                                            </td>
+                                          </tr>
+                                        )
+                                      })}
+                                    </tbody>
+                                  </table>
+                               </div>
+                            </div>
+                          )
+                       })}
+                    </div>
+                  ) : (
+                    <table className="w-full text-left border-separate border-spacing-y-3">
+                      <thead className="sticky top-0 z-20">
+                        <tr className="bg-[#FDFBF7] text-stone-500 text-[10px] font-black uppercase tracking-widest">
+                          <th className="px-10 py-5 rounded-l-2xl border-y border-l border-stone-100">Producto</th>
+                          <th className="px-8 py-5 border-y border-stone-100">Categoría</th>
+                          <th className="px-8 py-5 text-center border-y border-stone-100">Stock</th>
+                          <th className="px-8 py-5 border-y border-stone-100">Estado</th>
+                          <th className="px-10 py-5 rounded-r-2xl border-y border-r border-stone-100 text-right">Acción</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {loading ? (
+                           <tr><td colSpan={5} className="py-20 text-center font-bold text-lg text-stone-300">Cargando inventario...</td></tr>
+                        ) : filteredProducts.map((p) => {
+                          const isLowStock = p.stock <= (p.stock_minimo || 5);
+                          return (
+                            <tr key={p.id} className="group bg-white hover:bg-[#FDFBF7] transition-all relative">
+                              <td className="px-10 py-6 rounded-l-2xl border-b border-stone-100">
+                                <div className="flex items-center gap-4">
+                                  <div className="w-12 h-12 rounded-xl bg-stone-50 border border-stone-100 flex items-center justify-center overflow-hidden shrink-0">
+                                    {p.imagen ? <img src={p.imagen} alt={p.nombre} className="w-full h-full object-cover" /> : <ImageIcon size={24} className="text-stone-300" />}
+                                  </div>
+                                  <div className="flex flex-col">
+                                    <div className="flex items-center gap-2">
+                                       <span className={cn("text-lg font-black tracking-tighter", isLowStock ? "text-[#FF9100]" : "text-stone-800")}>{p.nombre}</span>
+                                       {isLowStock && <AlertTriangle size={14} className="text-[#FF9100] animate-bounce" fill="currentColor" />}
+                                    </div>
+                                    {p.proveedor_id && <span className="text-[9px] font-black uppercase text-stone-400">ID: {p.id.slice(-6)}</span>}
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="px-8 py-6 border-b border-stone-100">
+                                 <span className="text-[10px] font-black uppercase px-3 py-1 bg-white border border-stone-200 text-stone-500 rounded-md">{getCategoryName(p.categoria)}</span>
+                              </td>
+                              <td className="px-8 py-6 text-center border-b border-stone-100">
+                                <span className={cn("text-2xl font-black", isLowStock ? "text-[#FF9100]" : "text-stone-800")}>{p.stock}</span>
+                              </td>
+                              <td className="px-8 py-6 border-b border-stone-100">
+                                <div className={cn("inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest", isLowStock ? "bg-orange-100 text-orange-600" : "bg-stone-100 text-stone-500")}>
+                                  {isLowStock ? "Bajo" : "OK"}
+                                </div>
+                              </td>
+                              <td className="px-10 py-6 rounded-r-2xl border-b border-stone-100 text-right">
+                                 <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button onClick={() => handleEditProduct(p)} className="p-2.5 bg-white border border-stone-200 text-stone-400 hover:text-[#FF9100] hover:border-[#FF9100] rounded-xl transition-all shadow-sm">
+                                      <Edit size={16} strokeWidth={2.5} />
+                                    </button>
+                                    <button onClick={() => handleDeleteProduct(p.id, p.nombre)} className="p-2.5 bg-white border border-stone-200 text-stone-400 hover:text-red-500 hover:border-red-500 rounded-xl transition-all shadow-sm">
+                                      <Trash2 size={16} strokeWidth={2.5} />
+                                    </button>
+                                    <button onClick={() => handleQuickOrder(p)} className="px-4 py-2.5 bg-[#FF9100] text-white flex items-center gap-1.5 text-[9px] font-black uppercase rounded-xl transition-all hover:bg-orange-600">
+                                       <ShoppingCart size={16} strokeWidth={2.5} /><span>Pedir</span>
+                                    </button>
+                                 </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  )}
                </div>
-            </div>
+          </div>
         </main>
 
         {/* RIGHT SIDEBAR ACTIONS */}
@@ -534,10 +666,11 @@ export default function InventoryPage() {
               
               <div className="flex flex-col gap-5 items-center">
                   {[
-                    { id: 'add-product', color: 'bg-emerald-500', icon: <Package size={24} />, title: 'Agregar Producto', action: () => setShowModal('add-product') },
+                    { id: 'add-product', color: 'bg-emerald-500', icon: <Package size={24} />, title: 'Agregar Producto', action: () => { setSelectedProduct(null); setProductForm({ nombre: '', precio: '', costo: '', categoria_id: '', proveedor_id: '', ubicacion_id: '', stock_inicial: '', stock_minimo: '5', imagen: '' }); setShowModal('add-product'); } },
                     { id: 'tablas', color: showTablesPanel ? 'bg-[#B0E0E6]' : 'bg-[#B0E0E6]/50', icon: <Table size={24} />, title: 'Gestión de Tablas de Datos', action: () => setShowTablesPanel(!showTablesPanel) },
+                    { id: 'compare', color: isComparisonActive ? 'bg-[#FF9100]' : 'bg-stone-300', icon: <ArrowLeftRight size={24} />, title: 'Activar Comparación', action: () => activeLocations.length === 2 ? setIsComparisonActive(!isComparisonActive) : alert("Selecciona 2 tablas para comparar") },
                     { id: 'filter-stock', color: showLowStockOnly ? 'bg-orange-600' : 'bg-orange-300', icon: <AlertTriangle size={24} />, title: 'Visualizar Stock Bajo', action: () => setShowLowStockOnly(!showLowStockOnly) },
-                    { id: 'advanced-search', color: 'bg-[#FF8C00]', icon: <Search size={24} />, title: 'Búsqueda Avanzada', action: () => setShowModal('advanced-search') },
+                    { id: 'sync', color: 'bg-blue-500', icon: <ArrowLeftRight size={24} />, title: 'Sincronizar Stock (Phantom)', action: async () => { if(confirm("¿Sincronizar stock total?")){ const res = await fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL || "https://backen-inventario.vercel.app/api"}/products/sync`, {method: 'POST'}); if(res.ok) alert("Sincronizado"); loadData(); } } },
                     { id: 'order-warehouse', color: 'bg-[#D2691E]', icon: <Building size={24} />, title: 'Pedido Interno Almacén', action: () => setShowModal('order-warehouse') },
                     { id: 'order-provider', color: 'bg-stone-500', icon: <Truck size={24}/>, title: 'Pedido a Proveedor Externo', action: () => setShowModal('order-provider') },
                     { id: 'movements', color: 'bg-[#B22222]', icon: <ArrowLeftRight size={24} />, title: 'Historial de Movimientos', action: () => setShowModal('movements') }
@@ -565,7 +698,7 @@ export default function InventoryPage() {
                  {/* LEFT/MAIN FORM */}
                  <div className={cn("bg-white border-stone-100 flex flex-col", isSingleCol ? "w-full p-12" : "w-[40%] bg-[#FDFBF7] p-16 border-r-2")}>
                     <h3 className="text-3xl font-black text-[#FF9100] uppercase tracking-tighter mb-8">
-                      {showModal.split("-").join(" ")}
+                      {selectedProduct ? "Editar Producto" : showModal.split("-").join(" ")}
                     </h3>
                     
                     {/* ADD PRODUCT FORM - 1 Columna */}
@@ -588,14 +721,20 @@ export default function InventoryPage() {
                              {categories.map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
                           </select>
 
-                          <select required value={productForm.ubicacion_id} onChange={e=>setProductForm({...productForm, ubicacion_id: e.target.value})} className="w-full p-4 rounded-xl bg-[#FDFBF7] border border-stone-200 outline-none focus:border-[#FF9100] font-bold shadow-inner text-stone-600">
-                             <option value="">Registrar Sede/Ubicación de Primer Ingreso...</option>
-                             {locations.map(l => <option key={l.id} value={l.id}>{l.nombre}</option>)}
-                          </select>
-                          
+                          {!selectedProduct && (
+                            <>
+                              <select required value={productForm.ubicacion_id} onChange={e=>setProductForm({...productForm, ubicacion_id: e.target.value})} className="w-full p-4 rounded-xl bg-[#FDFBF7] border border-stone-200 outline-none focus:border-[#FF9100] font-bold shadow-inner text-stone-600">
+                                <option value="">Registrar Sede/Ubicación de Primer Ingreso...</option>
+                                {locations.map(l => <option key={l.id} value={l.id}>{l.nombre}</option>)}
+                              </select>
+                              
+                              <div className="flex gap-4">
+                                <input required value={productForm.stock_inicial} onChange={e=>setProductForm({...productForm, stock_inicial: e.target.value})} className="w-full p-4 rounded-xl bg-[#FDFBF7] border border-stone-200 outline-none focus:border-[#FF9100] font-bold shadow-inner" placeholder="Stock Inicial" type="number" />
+                              </div>
+                            </>
+                          )}
                           <div className="flex gap-4">
-                             <input required value={productForm.stock_inicial} onChange={e=>setProductForm({...productForm, stock_inicial: e.target.value})} className="w-1/2 p-4 rounded-xl bg-[#FDFBF7] border border-stone-200 outline-none focus:border-[#FF9100] font-bold shadow-inner" placeholder="Stock Inicial" type="number" />
-                             <input required value={productForm.stock_minimo} onChange={e=>setProductForm({...productForm, stock_minimo: e.target.value})} className="w-1/2 p-4 rounded-xl bg-[#FDFBF7] border border-stone-200 outline-none focus:border-[#FF9100] font-bold shadow-inner" placeholder="Stock Mínimo (Alerta)" type="number" />
+                             <input required value={productForm.stock_minimo} onChange={e=>setProductForm({...productForm, stock_minimo: e.target.value})} className="w-full p-4 rounded-xl bg-[#FDFBF7] border border-stone-200 outline-none focus:border-[#FF9100] font-bold shadow-inner" placeholder="Stock Mínimo (Alerta)" type="number" />
                           </div>
 
                           <div className="flex gap-2 items-center">
@@ -605,7 +744,9 @@ export default function InventoryPage() {
                              </button>
                           </div>
 
-                          <button type="submit" className="w-full py-5 bg-[#FF9100] text-white rounded-2xl font-black uppercase tracking-widest text-xs mt-4 hover:bg-orange-600 shadow-md">Crear Producto</button>
+                          <button type="submit" className="w-full py-5 bg-[#FF9100] text-white rounded-2xl font-black uppercase tracking-widest text-xs mt-4 hover:bg-orange-600 shadow-md">
+                            {selectedProduct ? "Guardar Cambios" : "Crear Producto"}
+                          </button>
                        </form>
                     )}
 
