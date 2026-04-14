@@ -62,6 +62,10 @@ export default function InventoryPage() {
      costo_unitario: '', subtotal: 0, solicitado_nombre: 'Usuario Gerente', proveedor_id: ''
   });
 
+  const [saleProductForm, setSaleProductForm] = useState({
+    producto_id: '', cantidad: '', destino_id: ''
+  });
+
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
 
   const handleUploadClick = () => {
@@ -273,6 +277,40 @@ export default function InventoryPage() {
     }
   };
 
+  const handleCreateSaleMovement = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://backen-inventario.vercel.app/api";
+    
+    const selectedProd = products.find(p => p.id === saleProductForm.producto_id);
+    const nombre_producto = selectedProd ? selectedProd.nombre : "Producto Genérico";
+
+    // Buscar el primer almacén disponible como origen
+    const sourceWarehouse = locations.find(l => l.tipo === 'ALMACEN');
+    if (!sourceWarehouse) return alert("Error: No se encontró un Almacén de origen configurado.");
+
+    const res = await fetchWithAuth(`${apiUrl}/movements`, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        tipo: 'TRASLADO_ALMACEN',
+        producto_id: saleProductForm.producto_id,
+        nombre_producto,
+        cantidad: parseInt(saleProductForm.cantidad),
+        origen_id: sourceWarehouse.id,
+        destino_id: saleProductForm.destino_id,
+        usuario_pedido_id: "65243168aaca5e53e77f98b1",
+        solicitado_nombre: "Usuario Gerente",
+        estado: 'PENDIENTE' // Sale como pendiente para que se confirme en tienda
+      })
+    });
+
+    if (res.ok) {
+      setSaleProductForm({ producto_id: '', cantidad: '', destino_id: '' });
+      setShowModal(null);
+      loadAuxiliaryData();
+      alert("Traslado a tienda registrado. El stock se actualizará cuando se confirme la recepción en la tabla de registros.");
+    }
+  };
+
   const handleDeleteLocation = async (e: React.MouseEvent, id: string, nombre: string) => {
     e.stopPropagation(); // Prevenir que se active el toggleLocation
     const password = prompt(`ADVERTENCIA: Vas a eliminar permanentemente ALMACÉN/TIENDA "${nombre}".\n\nIngresa la contraseña de autorización:`);
@@ -319,7 +357,7 @@ export default function InventoryPage() {
   };
 
   // Listado de modales centrados puros para registro
-  const singleColumnModals = ['add-product', 'providers', 'categories', 'advanced-search', 'add-location', 'order-warehouse', 'order-provider', 'order-specific'];
+  const singleColumnModals = ['add-product', 'providers', 'categories', 'advanced-search', 'add-location', 'order-warehouse', 'order-provider', 'order-specific', 'products-to-sale'];
   const isSingleCol = showModal && singleColumnModals.includes(showModal);
 
   return (
@@ -435,8 +473,9 @@ export default function InventoryPage() {
                       </div>
                     )}
                     <div className="bg-[#FF9100] px-8 py-3 rounded-xl border-b-4 border-orange-600">
-                      <span className="text-lg font-black italic text-white tracking-widest uppercase">
-                        {activeLocations.length === 2 ? "Comparación" : "Inventario Global"}
+                      <span className="text-lg font-black italic text-white tracking-widest uppercase text-center flex flex-col">
+                        <span>RESUMEN DE STOCK</span>
+                        <span className="text-[10px] font-bold tracking-[0.3em] opacity-80">(ALMACÉN + TIENDAS)</span>
                       </span>
                     </div>
                   </div>
@@ -522,8 +561,9 @@ export default function InventoryPage() {
                         <tr className="bg-[#FDFBF7] text-stone-500 text-[10px] font-black uppercase tracking-widest">
                           <th className="px-10 py-5 rounded-l-2xl border-y border-l border-stone-100">Producto</th>
                           <th className="px-8 py-5 border-y border-stone-100">Categoría</th>
-                          <th className="px-8 py-5 text-center border-y border-stone-100">Stock</th>
-                          <th className="px-8 py-5 border-y border-stone-100">Estado</th>
+                          <th className="px-5 py-5 text-center border-y border-stone-100 bg-emerald-50/30 text-emerald-600">Almacén</th>
+                          <th className="px-5 py-5 text-center border-y border-stone-100 bg-rose-50/30 text-rose-500">Tienda</th>
+                          <th className="px-8 py-5 text-center border-y border-stone-100 font-bold text-stone-800 scale-110">Total</th>
                           <th className="px-10 py-5 rounded-r-2xl border-y border-r border-stone-100 text-right">Acción</th>
                         </tr>
                       </thead>
@@ -552,12 +592,13 @@ export default function InventoryPage() {
                                  <span className="text-[10px] font-black uppercase px-3 py-1 bg-white border border-stone-200 text-stone-500 rounded-md">{getCategoryName(p.categoria)}</span>
                               </td>
                               <td className="px-8 py-6 text-center border-b border-stone-100">
-                                <span className={cn("text-2xl font-black", isLowStock ? "text-[#FF9100]" : "text-stone-800")}>{p.stock}</span>
+                                <span className="text-xl font-bold text-emerald-600">{p.stock_almacen || 0}</span>
                               </td>
-                              <td className="px-8 py-6 border-b border-stone-100">
-                                <div className={cn("inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest", isLowStock ? "bg-orange-100 text-orange-600" : "bg-stone-100 text-stone-500")}>
-                                  {isLowStock ? "Bajo" : "OK"}
-                                </div>
+                              <td className="px-8 py-6 text-center border-b border-stone-100">
+                                <span className="text-xl font-bold text-rose-400">{p.stock_tienda || 0}</span>
+                              </td>
+                              <td className="px-8 py-6 text-center border-b border-stone-100 bg-[#FDFBF7]">
+                                <span className={cn("text-2xl font-black", isLowStock ? "text-[#FF9100]" : "text-stone-800")}>{p.stock}</span>
                               </td>
                               <td className="px-10 py-6 rounded-r-2xl border-b border-stone-100 text-right">
                                  <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -666,11 +707,11 @@ export default function InventoryPage() {
               
               <div className="flex flex-col gap-5 items-center">
                   {[
-                    { id: 'add-product', color: 'bg-emerald-500', icon: <Package size={24} />, title: 'Agregar Producto', action: () => { setSelectedProduct(null); setProductForm({ nombre: '', precio: '', costo: '', categoria_id: '', proveedor_id: '', ubicacion_id: '', stock_inicial: '', stock_minimo: '5', imagen: '' }); setShowModal('add-product'); } },
+                    { id: 'add-product', color: 'bg-emerald-500', icon: <Plus size={24} />, title: 'Agregar al Almacén', action: () => { setSelectedProduct(null); setProductForm({ nombre: '', precio: '', costo: '', categoria_id: '', proveedor_id: '', ubicacion_id: '', stock_inicial: '', stock_minimo: '5', imagen: '' }); setShowModal('add-product'); } },
+                    { id: 'products-to-sale', color: 'bg-rose-500', icon: <ShoppingCart size={24} />, title: 'Productos a la Venta', action: () => setShowModal('products-to-sale') },
                     { id: 'tablas', color: showTablesPanel ? 'bg-[#B0E0E6]' : 'bg-[#B0E0E6]/50', icon: <Table size={24} />, title: 'Gestión de Tablas de Datos', action: () => setShowTablesPanel(!showTablesPanel) },
                     { id: 'compare', color: isComparisonActive ? 'bg-[#FF9100]' : 'bg-stone-300', icon: <ArrowLeftRight size={24} />, title: 'Activar Comparación', action: () => activeLocations.length === 2 ? setIsComparisonActive(!isComparisonActive) : alert("Selecciona 2 tablas para comparar") },
                     { id: 'filter-stock', color: showLowStockOnly ? 'bg-orange-600' : 'bg-orange-300', icon: <AlertTriangle size={24} />, title: 'Visualizar Stock Bajo', action: () => setShowLowStockOnly(!showLowStockOnly) },
-                    { id: 'sync', color: 'bg-blue-500', icon: <ArrowLeftRight size={24} />, title: 'Sincronizar Stock (Phantom)', action: async () => { if(confirm("¿Sincronizar stock total?")){ const res = await fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL || "https://backen-inventario.vercel.app/api"}/products/sync`, {method: 'POST'}); if(res.ok) alert("Sincronizado"); loadData(); } } },
                     { id: 'order-warehouse', color: 'bg-[#D2691E]', icon: <Building size={24} />, title: 'Pedido Interno Almacén', action: () => setShowModal('order-warehouse') },
                     { id: 'order-provider', color: 'bg-stone-500', icon: <Truck size={24}/>, title: 'Pedido a Proveedor Externo', action: () => setShowModal('order-provider') },
                     { id: 'movements', color: 'bg-[#B22222]', icon: <ArrowLeftRight size={24} />, title: 'Historial de Movimientos', action: () => setShowModal('movements') }
@@ -874,6 +915,39 @@ export default function InventoryPage() {
                           <p className="text-sm text-stone-500 font-bold">Monitoriza las solicitudes internas y externas aquí.</p>
                        </div>
                     )}
+                    {/* PRODUCTOS A LA VENTA (ACCESSO RÁPIDO) */}
+                    {showModal === 'products-to-sale' && (
+                       <form onSubmit={handleCreateSaleMovement} className="space-y-4">
+                          <p className="text-sm font-bold text-stone-500 mb-2 italic">Selecciona un producto del Almacén para ponerlo disponible en una Tienda.</p>
+                          
+                          <div className="space-y-1">
+                             <label className="text-[9px] font-black uppercase text-stone-400 ml-2">¿Qué producto moverás?</label>
+                             <select required value={saleProductForm.producto_id} onChange={e=>setSaleProductForm({...saleProductForm, producto_id: e.target.value})} className="w-full p-4 rounded-xl bg-[#FDFBF7] border border-stone-200 font-bold text-stone-600 outline-none focus:border-[#FF9100]">
+                                 <option value="">Selecciona el Producto...</option>
+                                 {products.map(p => <option key={p.id} value={p.id}>{p.nombre} (Libre: {p.stock_almacen})</option>)}
+                             </select>
+                          </div>
+
+                          <div className="flex gap-4">
+                             <div className="flex-1 space-y-1">
+                                <label className="text-[9px] font-black uppercase text-stone-400 ml-2">Cantidad a Venta</label>
+                                <input required value={saleProductForm.cantidad} onChange={e=>setSaleProductForm({...saleProductForm, cantidad: e.target.value})} type="number" className="w-full p-4 rounded-xl bg-[#FDFBF7] border border-stone-200 font-bold outline-none focus:border-[#FF9100]" placeholder="0" />
+                             </div>
+                             <div className="flex-1 space-y-1">
+                                <label className="text-[9px] font-black uppercase text-stone-400 ml-2">Tienda de Destino</label>
+                                <select required value={saleProductForm.destino_id} onChange={e=>setSaleProductForm({...saleProductForm, destino_id: e.target.value})} className="w-full p-4 rounded-xl bg-[#FDFBF7] border border-stone-200 font-bold text-stone-600 outline-none focus:border-[#FF9100]">
+                                    <option value="">¿A qué Tienda?</option>
+                                    {locations.filter(l => l.tipo === 'TIENDA').map(l => <option key={l.id} value={l.id}>{l.nombre}</option>)}
+                                </select>
+                             </div>
+                          </div>
+
+                          <button type="submit" className="w-full py-5 bg-rose-500 text-white rounded-2xl font-black uppercase tracking-widest text-xs mt-6 hover:bg-rose-600 shadow-md transition-all active:scale-[0.98]">
+                             Cargar a Tienda
+                          </button>
+                       </form>
+                    )}
+
                  </div>
 
                  {/* BANDJEJA DE ENTRADAS - SOLO SE MUESTRA SI NO ES SINGLE COL */}
