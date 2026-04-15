@@ -34,28 +34,28 @@ export default function MainDashboard() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#FDFBF7] flex flex-col items-center justify-center p-8 lg:p-24 relative overflow-hidden font-sans">
+    <div className="min-h-screen bg-[#FDFBF7] flex flex-col items-center justify-center p-4 sm:p-8 lg:p-24 relative overflow-hidden font-sans">
       
       {/* Header Container */}
-      <header className="w-full max-w-5xl flex justify-between items-center mb-16 relative z-10">
-        <div className="flex flex-col">
-           <h1 className="text-5xl font-black text-[#121212] tracking-tighter uppercase leading-none">
+      <header className="w-full max-w-5xl flex flex-col sm:flex-row justify-between items-center mb-12 sm:mb-16 relative z-10 gap-6 sm:gap-0">
+        <div className="flex flex-col items-center sm:items-start text-center sm:text-left">
+           <h1 className="text-4xl sm:text-5xl font-black text-[#121212] tracking-tighter uppercase leading-none">
              Bellesas <span className="text-[#FF9100]">Karinas</span>
            </h1>
-           <p className="text-[10px] tracking-[0.4em] font-black uppercase text-[#121212]/40 mt-3 ml-1">Sistema de Gestión de Inventario</p>
+           <p className="text-[9px] sm:text-[10px] tracking-[0.3em] sm:tracking-[0.4em] font-black uppercase text-[#121212]/40 mt-3 ml-1">Sistema de Gestión de Inventario</p>
         </div>
         
         <Link 
           href="/" 
-          className="bg-white border-4 border-[#FF9100] p-4 rounded-2xl text-[#FF9100] hover:bg-[#FF9100] hover:text-white transition-all shadow-lg active:scale-95"
+          className="bg-white border-2 sm:border-4 border-[#FF9100] p-3 sm:p-4 rounded-xl sm:rounded-2xl text-[#FF9100] hover:bg-[#FF9100] hover:text-white transition-all shadow-lg active:scale-95"
           title="Regresar"
         >
-          <ArrowLeft size={28} strokeWidth={3} />
+          <ArrowLeft size={24} sm:size={28} strokeWidth={3} />
         </Link>
       </header>
 
       {/* Main Grid Section */}
-      <main className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-3 gap-8 relative z-10">
+      <main className="w-full max-w-5xl grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 relative z-10">
         {sections.map((section, idx) => (
           <Link
             key={idx}

@@ -38,9 +38,18 @@ export default function InventoryPage() {
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   
-  const [showLeftSidebar, setShowLeftSidebar] = useState(true);
-  const [showRightSidebar, setShowRightSidebar] = useState(true);
+  const [showLeftSidebar, setShowLeftSidebar] = useState(false); // Hide by default on mobile
+  const [showRightSidebar, setShowRightSidebar] = useState(false); // Hide by default on mobile
   const [showTablesPanel, setShowTablesPanel] = useState(false);
+  
+  // Use a hook or effect to detect screen size and set sidebars
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const isLarge = window.innerWidth >= 1024;
+      setShowLeftSidebar(isLarge);
+      setShowRightSidebar(isLarge);
+    }
+  }, []);
   
   const [searchTerm, setSearchTerm] = useState("");
   const [showLowStockOnly, setShowLowStockOnly] = useState(false);
@@ -371,20 +380,19 @@ export default function InventoryPage() {
             <ArrowLeft size={20} />
           </Link>
           <div className="flex flex-col">
-            <h1 className="text-2xl font-black text-white tracking-tighter uppercase leading-none">
-              Control de Inventario
+            <h1 className="text-xl sm:text-2xl font-black text-white tracking-tighter uppercase leading-none">
+              Control <span className="hidden sm:inline">de Inventario</span>
             </h1>
           </div>
         </div>
 
-        <div className="flex items-center gap-6">
           <div className="flex items-center gap-2 bg-white/10 p-1 rounded-xl border border-white/20">
-             <button onClick={() => setShowLeftSidebar(!showLeftSidebar)} className={cn("px-4 py-2 rounded-lg text-[10px] font-black uppercase transition-all", showLeftSidebar ? "bg-white text-[#FF9100]" : "text-white hover:bg-white/10")}>
-                Panel Izq.
+             <button onClick={() => setShowLeftSidebar(!showLeftSidebar)} className={cn("px-2 sm:px-4 py-2 rounded-lg text-[9px] sm:text-[10px] font-black uppercase transition-all", showLeftSidebar ? "bg-white text-[#FF9100]" : "text-white hover:bg-white/10")}>
+                {showLeftSidebar ? "Ocultar Filtros" : "Filtros"}
              </button>
              <div className="w-px h-4 bg-white/20" />
-             <button onClick={() => setShowRightSidebar(!showRightSidebar)} className={cn("px-4 py-2 rounded-lg text-[10px] font-black uppercase transition-all", showRightSidebar ? "bg-white text-[#FF9100]" : "text-white hover:bg-white/10")}>
-                Panel Der.
+             <button onClick={() => setShowRightSidebar(!showRightSidebar)} className={cn("px-2 sm:px-4 py-2 rounded-lg text-[9px] sm:text-[10px] font-black uppercase transition-all", showRightSidebar ? "bg-white text-[#FF9100]" : "text-white hover:bg-white/10")}>
+                {showRightSidebar ? "Cerrar Panel" : "Acciones"}
              </button>
           </div>
         </div>
@@ -393,8 +401,14 @@ export default function InventoryPage() {
       <div className="flex flex-1 overflow-hidden relative">
         
         {/* LEFT SIDEBAR */}
-        {showLeftSidebar && (
-          <aside className="w-68 bg-white p-6 flex flex-col gap-8 shrink-0 border-r-2 border-stone-100 overflow-y-auto duration-300 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
+        <aside className={cn(
+          "fixed inset-y-0 left-0 z-40 w-72 bg-white p-6 flex flex-col gap-8 shrink-0 border-r-2 border-stone-100 overflow-y-auto duration-300 shadow-xl transition-transform lg:relative lg:translate-x-0 lg:shadow-[4px_0_24px_rgba(0,0,0,0.02)]",
+          showLeftSidebar ? "translate-x-0" : "-translate-x-full"
+        )}>
+           <div className="flex justify-between items-center lg:hidden mb-4">
+              <p className="text-xs font-black uppercase text-[#FF9100]">Filtros de Sede</p>
+              <button onClick={() => setShowLeftSidebar(false)} className="p-2 bg-stone-100 rounded-lg text-stone-400"><X size={18}/></button>
+           </div>
            <div className="bg-[#FDFBF7] p-5 rounded-2xl border-l-[6px] border-[#FF9100] shadow-sm">
               <p className="text-[10px] font-black uppercase tracking-widest text-stone-400">Visualizando:</p>
               <p className="text-sm font-black text-[#FF9100] mt-1 leading-tight">{getVisualizingText()}</p>
@@ -445,45 +459,45 @@ export default function InventoryPage() {
         )}
 
         {/* MAIN CONTENT */}
-        <main className="flex-1 p-8 flex flex-col gap-8 overflow-y-auto relative z-10 transition-all duration-300">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 shrink-0">
+        <main className="flex-1 p-4 sm:p-8 flex flex-col gap-6 sm:gap-8 overflow-y-auto relative z-10 transition-all duration-300">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 shrink-0">
                {[
                  { label: "Total productos", val: products.length },
                  { label: "Alertas de stock", val: products.filter(p => p.stock <= (p.stock_minimo || 5)).length },
                  { label: "Valor inventario", val: `S/ ${products.reduce((acc, p) => acc + (p.precio * p.stock), 0).toLocaleString()}` }
                ].map((stat, i) => (
-                 <div key={i} className="bg-white p-8 rounded-[2.5rem] flex flex-col items-center justify-center min-h-[140px] shadow-sm border-b-8 border-stone-200 border-b-[#FF9100]">
+                 <div key={i} className={cn("bg-white p-6 sm:p-8 rounded-[2rem] flex flex-col items-center justify-center min-h-[120px] sm:min-h-[140px] shadow-sm border-b-8 border-stone-200 border-b-[#FF9100]", i === 2 && "sm:col-span-2 lg:col-span-1")}>
                     <p className="text-[10px] font-black uppercase tracking-widest text-[#FF9100] mb-2">{stat.label}</p>
-                    <h4 className="text-4xl font-black italic tracking-tighter text-stone-800">{stat.val}</h4>
+                    <h4 className="text-3xl sm:text-4xl font-black italic tracking-tighter text-stone-800">{stat.val}</h4>
                  </div>
                ))}
             </div>
 
-            <div className="bg-white rounded-[3rem] shadow-sm flex-1 flex flex-col min-h-[500px] overflow-hidden border border-stone-100">
-               <div className="px-10 py-8 border-b border-stone-100 flex justify-between items-center bg-[#FDFBF7]/50">
-                  <div className="relative w-96">
+            <div className="bg-white rounded-[2rem] sm:rounded-[3rem] shadow-sm flex-1 flex flex-col min-h-[500px] overflow-hidden border border-stone-100">
+               <div className="px-6 py-6 sm:px-10 sm:py-8 border-b border-stone-100 flex flex-col xl:flex-row justify-between items-center bg-[#FDFBF7]/50 gap-6">
+                  <div className="relative w-full xl:w-96">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[#FF9100]" size={20} />
                     <input type="text" placeholder="Consultar inventario..." className="w-full pl-12 pr-6 py-4 rounded-2xl bg-white border-2 border-stone-100 text-xs font-bold focus:border-[#FF9100] shadow-sm outline-none transition-all" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
                   </div>
-                  <div className="flex items-center gap-4">
+                  <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
                     {activeLocations.length === 2 && (
-                      <div className="flex bg-stone-100 p-1 rounded-xl border border-stone-200">
-                        <button onClick={() => setIsComparisonActive(false)} className={cn("px-4 py-2 rounded-lg text-[10px] font-black uppercase transition-all", !isComparisonActive ? "bg-white text-stone-800 shadow-sm" : "text-stone-400 hover:text-stone-600")}>Side-by-Side</button>
-                        <button onClick={() => setIsComparisonActive(true)} className={cn("px-4 py-2 rounded-lg text-[10px] font-black uppercase transition-all", isComparisonActive ? "bg-[#FF9100] text-white shadow-sm" : "text-stone-400 hover:text-stone-600")}>Comparar</button>
+                      <div className="flex bg-stone-100 p-1 rounded-xl border border-stone-200 w-full sm:w-auto">
+                        <button onClick={() => setIsComparisonActive(false)} className={cn("flex-1 px-4 py-2 rounded-lg text-[10px] font-black uppercase transition-all", !isComparisonActive ? "bg-white text-stone-800 shadow-sm" : "text-stone-400 hover:text-stone-600")}>Side-by-Side</button>
+                        <button onClick={() => setIsComparisonActive(true)} className={cn("flex-1 px-4 py-2 rounded-lg text-[10px] font-black uppercase transition-all", isComparisonActive ? "bg-[#FF9100] text-white shadow-sm" : "text-stone-400 hover:text-stone-600")}>Comparar</button>
                       </div>
                     )}
-                    <div className="bg-[#FF9100] px-8 py-3 rounded-xl border-b-4 border-orange-600">
-                      <span className="text-lg font-black italic text-white tracking-widest uppercase text-center flex flex-col">
+                    <div className="bg-[#FF9100] px-6 sm:px-8 py-3 rounded-xl border-b-4 border-orange-600 w-full sm:w-auto text-center">
+                      <span className="text-sm sm:text-lg font-black italic text-white tracking-widest uppercase flex flex-col">
                         <span>RESUMEN DE STOCK</span>
-                        <span className="text-[10px] font-bold tracking-[0.3em] opacity-80">(ALMACÉN + TIENDAS)</span>
+                        <span className="text-[8px] sm:text-[10px] font-bold tracking-[0.3em] opacity-80">(ALMACÉN + TIENDAS)</span>
                       </span>
                     </div>
                   </div>
                </div>
 
-               <div className="overflow-auto flex-1 p-6">
+               <div className="overflow-auto flex-1 p-4 sm:p-6">
                   {activeLocations.length === 2 ? (
-                    <div className="grid grid-cols-2 gap-8 h-full">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 h-full">
                        {activeLocations.map((locId, idx) => {
                           const location = locations.find(l => l.id === locId);
                           const locProducts = products.map(p => ({
@@ -556,188 +570,249 @@ export default function InventoryPage() {
                        })}
                     </div>
                   ) : (
-                    <table className="w-full text-left border-separate border-spacing-y-3">
-                      <thead className="sticky top-0 z-20">
-                        <tr className="bg-[#FDFBF7] text-stone-500 text-[10px] font-black uppercase tracking-widest">
-                          <th className="px-10 py-5 rounded-l-2xl border-y border-l border-stone-100">Producto</th>
-                          <th className="px-8 py-5 border-y border-stone-100">Categoría</th>
-                          <th className="px-5 py-5 text-center border-y border-stone-100 bg-emerald-50/30 text-emerald-600">Almacén</th>
-                          <th className="px-5 py-5 text-center border-y border-stone-100 bg-rose-50/30 text-rose-500">Tienda</th>
-                          <th className="px-8 py-5 text-center border-y border-stone-100 font-bold text-stone-800 scale-110">Total</th>
-                          <th className="px-10 py-5 rounded-r-2xl border-y border-r border-stone-100 text-right">Acción</th>
-                        </tr>
-                      </thead>
-                      <tbody>
+                    <div className="flex flex-col flex-1">
+                      {/* Desktop Table */}
+                      <div className="hidden md:block">
+                        <table className="w-full text-left border-separate border-spacing-y-3">
+                          <thead className="sticky top-0 z-20">
+                            <tr className="bg-[#FDFBF7] text-stone-500 text-[10px] font-black uppercase tracking-widest">
+                              <th className="px-10 py-5 rounded-l-2xl border-y border-l border-stone-100">Producto</th>
+                              <th className="px-8 py-5 border-y border-stone-100">Categoría</th>
+                              <th className="px-5 py-5 text-center border-y border-stone-100 bg-emerald-50/30 text-emerald-600">Almacén</th>
+                              <th className="px-5 py-5 text-center border-y border-stone-100 bg-rose-50/30 text-rose-500">Tienda</th>
+                              <th className="px-8 py-5 text-center border-y border-stone-100 font-bold text-stone-800 scale-110">Total</th>
+                              <th className="px-10 py-5 rounded-r-2xl border-y border-r border-stone-100 text-right">Acción</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {loading ? (
+                               <tr><td colSpan={6} className="py-20 text-center font-bold text-lg text-stone-300">Cargando inventario...</td></tr>
+                            ) : filteredProducts.map((p) => {
+                              const isLowStock = p.stock <= (p.stock_minimo || 5);
+                              return (
+                                <tr key={p.id} className="group bg-white hover:bg-[#FDFBF7] transition-all relative">
+                                  <td className="px-10 py-6 rounded-l-2xl border-b border-stone-100">
+                                    <div className="flex items-center gap-4">
+                                      <div className="w-12 h-12 rounded-xl bg-stone-50 border border-stone-100 flex items-center justify-center overflow-hidden shrink-0">
+                                        {p.imagen ? <img src={p.imagen} alt={p.nombre} className="w-full h-full object-cover" /> : <ImageIcon size={24} className="text-stone-300" />}
+                                      </div>
+                                      <div className="flex flex-col">
+                                        <div className="flex items-center gap-2">
+                                           <span className={cn("text-lg font-black tracking-tighter", isLowStock ? "text-[#FF9100]" : "text-stone-800")}>{p.nombre}</span>
+                                           {isLowStock && <AlertTriangle size={14} className="text-[#FF9100] animate-bounce" fill="currentColor" />}
+                                        </div>
+                                        {p.proveedor_id && <span className="text-[9px] font-black uppercase text-stone-400">ID: {p.id.slice(-6)}</span>}
+                                      </div>
+                                    </div>
+                                  </td>
+                                  <td className="px-8 py-6 border-b border-stone-100">
+                                     <span className="text-[10px] font-black uppercase px-3 py-1 bg-white border border-stone-200 text-stone-500 rounded-md">{getCategoryName(p.categoria)}</span>
+                                  </td>
+                                  <td className="px-8 py-6 text-center border-b border-stone-100">
+                                    <span className="text-xl font-bold text-emerald-600">{p.stock_almacen || 0}</span>
+                                  </td>
+                                  <td className="px-8 py-6 text-center border-b border-stone-100">
+                                    <span className="text-xl font-bold text-rose-400">{p.stock_tienda || 0}</span>
+                                  </td>
+                                  <td className="px-8 py-6 text-center border-b border-stone-100 bg-[#FDFBF7]">
+                                    <span className={cn("text-2xl font-black", isLowStock ? "text-[#FF9100]" : "text-stone-800")}>{p.stock}</span>
+                                  </td>
+                                  <td className="px-10 py-6 rounded-r-2xl border-b border-stone-100 text-right">
+                                     <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <button onClick={() => handleEditProduct(p)} className="p-2.5 bg-white border border-stone-200 text-stone-400 hover:text-[#FF9100] hover:border-[#FF9100] rounded-xl transition-all shadow-sm">
+                                          <Edit size={16} strokeWidth={2.5} />
+                                        </button>
+                                        <button onClick={() => handleDeleteProduct(p.id, p.nombre)} className="p-2.5 bg-white border border-stone-200 text-stone-400 hover:text-red-500 hover:border-red-500 rounded-xl transition-all shadow-sm">
+                                          <Trash2 size={16} strokeWidth={2.5} />
+                                        </button>
+                                        <button onClick={() => handleQuickOrder(p)} className="px-4 py-2.5 bg-[#FF9100] text-white flex items-center gap-1.5 text-[9px] font-black uppercase rounded-xl transition-all hover:bg-orange-600">
+                                           <ShoppingCart size={16} strokeWidth={2.5} /><span>Pedir</span>
+                                        </button>
+                                     </div>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+
+                      {/* Mobile Card List */}
+                      <div className="md:hidden flex flex-col gap-4">
                         {loading ? (
-                           <tr><td colSpan={5} className="py-20 text-center font-bold text-lg text-stone-300">Cargando inventario...</td></tr>
+                           <p className="py-20 text-center font-bold text-stone-300">Cargando...</p>
                         ) : filteredProducts.map((p) => {
                           const isLowStock = p.stock <= (p.stock_minimo || 5);
                           return (
-                            <tr key={p.id} className="group bg-white hover:bg-[#FDFBF7] transition-all relative">
-                              <td className="px-10 py-6 rounded-l-2xl border-b border-stone-100">
-                                <div className="flex items-center gap-4">
-                                  <div className="w-12 h-12 rounded-xl bg-stone-50 border border-stone-100 flex items-center justify-center overflow-hidden shrink-0">
-                                    {p.imagen ? <img src={p.imagen} alt={p.nombre} className="w-full h-full object-cover" /> : <ImageIcon size={24} className="text-stone-300" />}
+                            <div key={p.id} className="bg-white p-5 rounded-2xl shadow-sm border border-stone-100 flex flex-col gap-4">
+                              <div className="flex items-center gap-4">
+                                <div className="w-14 h-14 rounded-xl bg-stone-50 border border-stone-100 flex items-center justify-center overflow-hidden shrink-0">
+                                  {p.imagen ? <img src={p.imagen} alt={p.nombre} className="w-full h-full object-cover" /> : <ImageIcon size={24} className="text-stone-300" />}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2">
+                                     <h4 className={cn("text-base font-black tracking-tight truncate", isLowStock ? "text-[#FF9100]" : "text-stone-800")}>{p.nombre}</h4>
+                                     {isLowStock && <AlertTriangle size={14} className="text-[#FF9100] animate-bounce" fill="currentColor" />}
                                   </div>
-                                  <div className="flex flex-col">
-                                    <div className="flex items-center gap-2">
-                                       <span className={cn("text-lg font-black tracking-tighter", isLowStock ? "text-[#FF9100]" : "text-stone-800")}>{p.nombre}</span>
-                                       {isLowStock && <AlertTriangle size={14} className="text-[#FF9100] animate-bounce" fill="currentColor" />}
-                                    </div>
-                                    {p.proveedor_id && <span className="text-[9px] font-black uppercase text-stone-400">ID: {p.id.slice(-6)}</span>}
+                                  <div className="flex items-center gap-2 mt-1">
+                                    <span className="text-[9px] font-black uppercase bg-stone-50 px-2 py-0.5 rounded border border-stone-100 text-stone-400">{getCategoryName(p.categoria)}</span>
+                                    <span className="text-[8px] font-bold text-stone-400 uppercase italic">ID: {p.id.slice(-6)}</span>
                                   </div>
                                 </div>
-                              </td>
-                              <td className="px-8 py-6 border-b border-stone-100">
-                                 <span className="text-[10px] font-black uppercase px-3 py-1 bg-white border border-stone-200 text-stone-500 rounded-md">{getCategoryName(p.categoria)}</span>
-                              </td>
-                              <td className="px-8 py-6 text-center border-b border-stone-100">
-                                <span className="text-xl font-bold text-emerald-600">{p.stock_almacen || 0}</span>
-                              </td>
-                              <td className="px-8 py-6 text-center border-b border-stone-100">
-                                <span className="text-xl font-bold text-rose-400">{p.stock_tienda || 0}</span>
-                              </td>
-                              <td className="px-8 py-6 text-center border-b border-stone-100 bg-[#FDFBF7]">
-                                <span className={cn("text-2xl font-black", isLowStock ? "text-[#FF9100]" : "text-stone-800")}>{p.stock}</span>
-                              </td>
-                              <td className="px-10 py-6 rounded-r-2xl border-b border-stone-100 text-right">
-                                 <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <button onClick={() => handleEditProduct(p)} className="p-2.5 bg-white border border-stone-200 text-stone-400 hover:text-[#FF9100] hover:border-[#FF9100] rounded-xl transition-all shadow-sm">
-                                      <Edit size={16} strokeWidth={2.5} />
-                                    </button>
-                                    <button onClick={() => handleDeleteProduct(p.id, p.nombre)} className="p-2.5 bg-white border border-stone-200 text-stone-400 hover:text-red-500 hover:border-red-500 rounded-xl transition-all shadow-sm">
-                                      <Trash2 size={16} strokeWidth={2.5} />
-                                    </button>
-                                    <button onClick={() => handleQuickOrder(p)} className="px-4 py-2.5 bg-[#FF9100] text-white flex items-center gap-1.5 text-[9px] font-black uppercase rounded-xl transition-all hover:bg-orange-600">
-                                       <ShoppingCart size={16} strokeWidth={2.5} /><span>Pedir</span>
-                                    </button>
-                                 </div>
-                              </td>
-                            </tr>
+                              </div>
+                              
+                              <div className="grid grid-cols-3 gap-2">
+                                <div className="bg-emerald-50/50 p-2 rounded-xl text-center">
+                                  <p className="text-[8px] font-black text-emerald-600 uppercase mb-0.5">Almacén</p>
+                                  <span className="text-lg font-black text-emerald-700">{p.stock_almacen || 0}</span>
+                                </div>
+                                <div className="bg-rose-50/50 p-2 rounded-xl text-center">
+                                  <p className="text-[8px] font-black text-rose-500 uppercase mb-0.5">Tienda</p>
+                                  <span className="text-lg font-black text-rose-600">{p.stock_tienda || 0}</span>
+                                </div>
+                                <div className="bg-[#FF9100]/10 p-2 rounded-xl text-center border border-[#FF9100]/20">
+                                  <p className="text-[8px] font-black text-[#FF9100] uppercase mb-0.5">Total</p>
+                                  <span className="text-xl font-black text-[#FF9100]">{p.stock}</span>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-2 pt-2 border-t border-stone-50">
+                                <button onClick={() => handleEditProduct(p)} className="flex-1 py-3 bg-stone-50 text-stone-400 font-black text-[10px] uppercase rounded-xl flex items-center justify-center gap-2 border border-stone-100">
+                                  <Edit size={14} /> Editar
+                                </button>
+                                <button onClick={() => handleDeleteProduct(p.id, p.nombre)} className="p-3 bg-rose-50 text-rose-400 rounded-xl border border-rose-100">
+                                  <Trash2 size={16} />
+                                </button>
+                                <button onClick={() => handleQuickOrder(p)} className="flex-[1.5] py-3 bg-[#FF9100] text-white font-black text-[10px] uppercase rounded-xl flex items-center justify-center gap-2 shadow-sm">
+                                  <ShoppingCart size={14} /> Pedir stock
+                                </button>
+                              </div>
+                            </div>
                           );
                         })}
-                      </tbody>
-                    </table>
+                      </div>
+                    </div>
                   )}
                </div>
           </div>
         </main>
 
         {/* RIGHT SIDEBAR ACTIONS */}
-        {showRightSidebar && (
-          <aside className="bg-white flex shrink-0 border-l-2 border-stone-100 relative shadow-[-10px_0_30px_rgba(0,0,0,0.01)]">
-            {/* Tablas Panel (Data Viewer Slide out) */}
-            <div className={cn(
-              "bg-[#FDFBF7] border-r border-stone-100 overflow-hidden transition-all duration-500 ease-in-out flex flex-col",
-              showTablesPanel ? "w-[440px] opacity-100 shadow-xl" : "w-0 opacity-0"
-            )}>
-              <div className="p-8 flex flex-col gap-8 w-[440px] h-full overflow-y-auto overflow-x-hidden">
-                 <div className="flex flex-col gap-1 border-b-2 border-[#B0E0E6]/20 pb-4">
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#B0E0E6]">Gestión Avanzada</p>
-                    <h3 className="text-3xl font-black italic tracking-tighter text-stone-800 uppercase">Consultas de Datos</h3>
-                 </div>
-                 
-                 {/* Mini Tabla Proveedores */}
-                 <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                       <h4 className="text-xs font-black text-stone-400 uppercase tracking-widest flex items-center gap-2">
-                          <User size={14} className="text-[#B0E0E6]" /> Proveedores
-                       </h4>
-                       <button onClick={() => setShowModal('providers')} className="text-[9px] font-black uppercase text-[#B0E0E6] hover:underline underline-offset-4">
-                          Ver/Nuevo
-                       </button>
-                    </div>
-                    <div className="bg-white rounded-2xl border-2 border-stone-100 p-2 overflow-hidden overflow-x-auto shadow-sm">
-                       <table className="w-full text-left">
-                          <thead className="bg-[#FDFBF7] text-[8px] font-black uppercase text-stone-400">
-                             <tr>
-                                <th className="p-3">Empresa</th>
-                                <th className="p-3">Contacto</th>
-                                <th className="p-3 text-right">Tlf</th>
-                             </tr>
-                          </thead>
-                          <tbody className="text-[10px] font-bold text-stone-600">
-                             {providers.slice(0, 5).map(p => (
-                                <tr key={p.id} className="border-b border-stone-50 last:border-0 hover:bg-[#FDFBF7] transition-all">
-                                   <td className="p-3 uppercase truncate max-w-[100px]">{p.empresa || "---"}</td>
-                                   <td className="p-3 truncate max-w-[80px]">{p.nombre}</td>
-                                   <td className="p-3 text-right tabular-nums">{p.telefono || "S/T"}</td>
-                                </tr>
-                             ))}
-                          </tbody>
-                       </table>
-                    </div>
-                 </div>
+        <aside className={cn(
+          "fixed inset-y-0 right-0 z-40 flex shrink-0 items-stretch font-sans transition-transform duration-300 lg:relative lg:translate-x-0",
+          showRightSidebar ? "translate-x-0" : "translate-x-full"
+        )}>
+          {/* Tablas Panel (Data Viewer Slide out) - Relative to drawer on mobile */}
+          <div className={cn(
+            "bg-[#FDFBF7] border-r border-stone-100 overflow-hidden transition-all duration-500 ease-in-out flex flex-col h-full",
+            showTablesPanel ? "w-[300px] sm:w-[440px] opacity-100 shadow-xl" : "w-0 opacity-0"
+          )}>
+            <div className="p-6 sm:p-8 flex flex-col gap-6 sm:gap-8 w-[300px] sm:w-[440px] h-full overflow-y-auto overflow-x-hidden">
+               <div className="flex flex-col gap-1 border-b-2 border-[#B0E0E6]/20 pb-4">
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#B0E0E6]">Gestión Avanzada</p>
+                  <h3 className="text-2xl sm:text-3xl font-black italic tracking-tighter text-stone-800 uppercase">Consultas</h3>
+               </div>
+               
+               {/* Mini Tabla Proveedores */}
+               <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                     <h4 className="text-xs font-black text-stone-400 uppercase tracking-widest flex items-center gap-2">
+                        <User size={14} className="text-[#B0E0E6]" /> Proveedores
+                     </h4>
+                     <button onClick={() => setShowModal('providers')} className="text-[9px] font-black uppercase text-[#B0E0E6] hover:underline underline-offset-4">
+                        Ver/Nuevo
+                     </button>
+                  </div>
+                  <div className="bg-white rounded-2xl border-2 border-stone-100 p-2 overflow-hidden overflow-x-auto shadow-sm">
+                     <table className="w-full text-left">
+                        <thead className="bg-[#FDFBF7] text-[8px] font-black uppercase text-stone-400">
+                           <tr>
+                              <th className="p-3">Empresa</th>
+                              <th className="p-3">Contacto</th>
+                              <th className="p-3 text-right">Tlf</th>
+                           </tr>
+                        </thead>
+                        <tbody className="text-[10px] font-bold text-stone-600">
+                           {providers.slice(0, 5).map(p => (
+                              <tr key={p.id} className="border-b border-stone-50 last:border-0 hover:bg-[#FDFBF7] transition-all">
+                                 <td className="p-3 uppercase truncate max-w-[80px] sm:max-w-[100px]">{p.empresa || "---"}</td>
+                                 <td className="p-3 truncate max-w-[60px] sm:max-w-[80px]">{p.nombre}</td>
+                                 <td className="p-3 text-right tabular-nums">{p.telefono || "S/T"}</td>
+                              </tr>
+                           ))}
+                        </tbody>
+                     </table>
+                  </div>
+               </div>
 
-                 {/* Mini Tabla Categorías */}
-                 <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                       <h4 className="text-xs font-black text-stone-400 uppercase tracking-widest flex items-center gap-2">
-                          <Layers size={14} className="text-[#90EE90]" /> Categorías
-                       </h4>
-                       <button onClick={() => setShowModal('categories')} className="text-[9px] font-black uppercase text-[#90EE90] hover:underline underline-offset-4">
-                          Ver/Nuevo
-                       </button>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                       {categories.map(c => (
-                          <div key={c.id} className="bg-white p-4 rounded-xl border border-stone-100 shadow-sm flex flex-col gap-1 border-l-4 border-l-[#90EE90] hover:scale-105 transition-transform cursor-default">
-                             <p className="text-[9px] font-black uppercase text-stone-800 leading-none">{c.nombre}</p>
-                             <p className="text-[8px] font-bold text-stone-400 italic">ID: {c.id.slice(-4)}</p>
-                          </div>
-                       ))}
-                    </div>
-                 </div>
+               {/* Mini Tabla Categorías */}
+               <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                     <h4 className="text-xs font-black text-stone-400 uppercase tracking-widest flex items-center gap-2">
+                        <Layers size={14} className="text-[#90EE90]" /> Categorías
+                     </h4>
+                     <button onClick={() => setShowModal('categories')} className="text-[9px] font-black uppercase text-[#90EE90] hover:underline underline-offset-4">
+                        Ver/Nuevo
+                     </button>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                     {categories.map(c => (
+                        <div key={c.id} className="bg-white p-3 sm:p-4 rounded-xl border border-stone-100 shadow-sm flex flex-col gap-1 border-l-4 border-l-[#90EE90] hover:scale-105 transition-transform cursor-default">
+                           <p className="text-[9px] font-black uppercase text-stone-800 leading-none">{c.nombre}</p>
+                           <p className="text-[8px] font-bold text-stone-400 italic">ID: {c.id.slice(-4)}</p>
+                        </div>
+                     ))}
+                  </div>
+               </div>
 
-                 <div className="mt-auto bg-stone-900 p-6 rounded-3xl text-white shadow-xl">
-                    <p className="text-[10px] font-bold opacity-60 uppercase mb-2">Ayuda Rápida</p>
-                    <p className="text-xs font-medium leading-relaxed italic border-l-2 border-[#B0E0E6] pl-4">
-                       Este panel te permite consultar datos sin salir del inventario principal. Utiliza los botones superiores de cada sección para añadir nuevos registros maestros.
-                    </p>
-                 </div>
-              </div>
+               <div className="mt-auto bg-stone-900 p-6 rounded-3xl text-white shadow-xl">
+                  <p className="text-[10px] font-bold opacity-60 uppercase mb-2">Ayuda Rápida</p>
+                  <p className="text-[11px] font-medium leading-relaxed italic border-l-2 border-[#B0E0E6] pl-4">
+                     Consulta datos maestros sin salir del inventario. Usa los botones superiores para añadir.
+                  </p>
+               </div>
             </div>
+          </div>
 
-            {/* Main Action Strip */}
-            <div className="w-24 p-4 flex flex-col items-center gap-6 overflow-y-auto z-10 bg-white">
-              {/* RESTORED ACCIONES HEADER */}
-              <div className="bg-[#FDFBF7] px-2 py-4 rounded-xl text-center w-full border border-stone-100">
-                <p className="text-[8px] font-black uppercase leading-tight text-stone-400 font-sans">ACCIONES</p>
-              </div>
-              
-              <div className="flex flex-col gap-5 items-center">
-                  {[
-                    { id: 'add-product', color: 'bg-emerald-500', icon: <Plus size={24} />, title: 'Agregar al Almacén', action: () => { setSelectedProduct(null); setProductForm({ nombre: '', precio: '', costo: '', categoria_id: '', proveedor_id: '', ubicacion_id: '', stock_inicial: '', stock_minimo: '5', imagen: '' }); setShowModal('add-product'); } },
-                    { id: 'products-to-sale', color: 'bg-rose-500', icon: <ShoppingCart size={24} />, title: 'Productos a la Venta', action: () => setShowModal('products-to-sale') },
-                    { id: 'tablas', color: showTablesPanel ? 'bg-[#B0E0E6]' : 'bg-[#B0E0E6]/50', icon: <Table size={24} />, title: 'Gestión de Tablas de Datos', action: () => setShowTablesPanel(!showTablesPanel) },
-                    { id: 'compare', color: isComparisonActive ? 'bg-[#FF9100]' : 'bg-stone-300', icon: <ArrowLeftRight size={24} />, title: 'Activar Comparación', action: () => activeLocations.length === 2 ? setIsComparisonActive(!isComparisonActive) : alert("Selecciona 2 tablas para comparar") },
-                    { id: 'filter-stock', color: showLowStockOnly ? 'bg-orange-600' : 'bg-orange-300', icon: <AlertTriangle size={24} />, title: 'Visualizar Stock Bajo', action: () => setShowLowStockOnly(!showLowStockOnly) },
-                    { id: 'order-warehouse', color: 'bg-[#D2691E]', icon: <Building size={24} />, title: 'Pedido Interno Almacén', action: () => setShowModal('order-warehouse') },
-                    { id: 'order-provider', color: 'bg-stone-500', icon: <Truck size={24}/>, title: 'Pedido a Proveedor Externo', action: () => setShowModal('order-provider') },
-                    { id: 'movements', color: 'bg-[#B22222]', icon: <ArrowLeftRight size={24} />, title: 'Historial de Movimientos', action: () => setShowModal('movements') }
-                  ].map((btn) => (
-                    <button key={btn.id} onClick={btn.action} className={cn("w-14 h-14 rounded-full border-4 border-white shadow-lg hover:scale-110 active:scale-90 transition-all text-white flex items-center justify-center", btn.color)} title={btn.title}>
-                      {btn.icon}
-                    </button>
-                  ))}
-              </div>
+          {/* Main Action Strip */}
+          <div className="w-20 sm:w-24 p-4 flex flex-col items-center gap-6 overflow-y-auto bg-white border-l h-full">
+            <button onClick={() => setShowRightSidebar(false)} className="lg:hidden p-2 text-stone-400"><X size={20}/></button>
+            <div className="bg-[#FDFBF7] px-2 py-4 rounded-xl text-center w-full border border-stone-100">
+              <p className="text-[8px] font-black uppercase leading-tight text-stone-400 font-sans">ACCIONES</p>
             </div>
-          </aside>
-        )}
+            
+            <div className="flex flex-col gap-5 items-center">
+                {[
+                  { id: 'add-product', color: 'bg-emerald-500', icon: <Plus size={24} />, title: 'Agregar al Almacén', action: () => { setSelectedProduct(null); setProductForm({ nombre: '', precio: '', costo: '', categoria_id: '', proveedor_id: '', ubicacion_id: '', stock_inicial: '', stock_minimo: '5', imagen: '' }); setShowModal('add-product'); } },
+                  { id: 'products-to-sale', color: 'bg-rose-500', icon: <ShoppingCart size={24} />, title: 'Productos a la Venta', action: () => setShowModal('products-to-sale') },
+                  { id: 'tablas', color: showTablesPanel ? 'bg-[#B0E0E6]' : 'bg-[#B0E0E6]/50', icon: <Table size={24} />, title: 'Gestión de Tablas de Datos', action: () => setShowTablesPanel(!showTablesPanel) },
+                  { id: 'compare', color: isComparisonActive ? 'bg-[#FF9100]' : 'bg-stone-300', icon: <ArrowLeftRight size={24} />, title: 'Activar Comparación', action: () => activeLocations.length === 2 ? setIsComparisonActive(!isComparisonActive) : alert("Selecciona 2 tablas para comparar") },
+                  { id: 'filter-stock', color: showLowStockOnly ? 'bg-orange-600' : 'bg-orange-300', icon: <AlertTriangle size={24} />, title: 'Visualizar Stock Bajo', action: () => setShowLowStockOnly(!showLowStockOnly) },
+                  { id: 'order-warehouse', color: 'bg-[#D2691E]', icon: <Building size={24} />, title: 'Pedido Interno Almacén', action: () => setShowModal('order-warehouse') },
+                  { id: 'order-provider', color: 'bg-stone-500', icon: <Truck size={24}/>, title: 'Pedido a Proveedor Externo', action: () => setShowModal('order-provider') },
+                  { id: 'movements', color: 'bg-[#B22222]', icon: <ArrowLeftRight size={24} />, title: 'Historial de Movimientos', action: () => setShowModal('movements') }
+                ].map((btn) => (
+                  <button key={btn.id} onClick={btn.action} className={cn("w-12 h-12 sm:w-14 sm:h-14 rounded-full border-2 sm:border-4 border-white shadow-lg hover:scale-110 active:scale-90 transition-all text-white flex items-center justify-center", btn.color)} title={btn.title}>
+                    {btn.icon}
+                  </button>
+                ))}
+            </div>
+          </div>
+        </aside>
       </div>
 
       {/* MODALS */}
       {showModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-8 bg-stone-900/60 backdrop-blur-md animate-in fade-in duration-300">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-8 bg-stone-900/60 backdrop-blur-md animate-in fade-in duration-300">
            {/* Dinámico: O panel central único (Single-Col) o panel doble */}
-           <div className={cn("bg-white rounded-[3rem] shadow-2xl flex relative overflow-hidden animate-in zoom-in-95 duration-300", isSingleCol ? "w-full max-w-xl h-auto" : "w-full max-w-6xl h-[85vh]")}>
+           <div className={cn("bg-white rounded-3xl sm:rounded-[3rem] shadow-2xl flex relative overflow-hidden animate-in zoom-in-95 duration-300 w-full", isSingleCol ? "max-w-xl h-auto max-h-[90vh]" : "max-w-6xl h-full sm:h-[85vh]")}>
               <button onClick={() => setShowModal(null)} className="absolute top-6 right-6 w-10 h-10 bg-stone-100 text-stone-500 flex items-center justify-center rounded-2xl hover:bg-[#FF9100] hover:text-white transition-all z-[110]">
                 <X size={20} strokeWidth={3} />
               </button>
               
-              <div className="flex w-full flex-col md:flex-row">
+              <div className="flex w-full flex-col lg:flex-row overflow-y-auto">
                  {/* LEFT/MAIN FORM */}
-                 <div className={cn("bg-white border-stone-100 flex flex-col", isSingleCol ? "w-full p-12" : "w-[40%] bg-[#FDFBF7] p-16 border-r-2")}>
+                 <div className={cn("bg-white border-stone-100 flex flex-col shrink-0", isSingleCol ? "w-full p-6 sm:p-12" : "w-full lg:w-[40%] bg-[#FDFBF7] p-8 sm:p-16 border-b-2 lg:border-b-0 lg:border-r-2")}>
                     <h3 className="text-3xl font-black text-[#FF9100] uppercase tracking-tighter mb-8">
                       {selectedProduct ? "Editar Producto" : showModal.split("-").join(" ")}
                     </h3>
@@ -952,9 +1027,9 @@ export default function InventoryPage() {
 
                  {/* BANDJEJA DE ENTRADAS - SOLO SE MUESTRA SI NO ES SINGLE COL */}
                  {!isSingleCol && (
-                   <div className="w-[60%] p-16 bg-white overflow-hidden flex flex-col">
-                      <h4 className="text-2xl font-black text-stone-800 mb-8 uppercase tracking-widest">Registros de Actividad</h4>
-                      <div className="flex-1 overflow-auto rounded-[2rem] border border-stone-100 p-4 bg-[#FDFBF7]">
+                   <div className="w-full lg:w-[60%] p-8 sm:p-16 bg-white overflow-hidden flex flex-col">
+                      <h4 className="text-xl sm:text-2xl font-black text-stone-800 mb-6 sm:mb-8 uppercase tracking-widest">Actividad</h4>
+                      <div className="flex-1 overflow-auto rounded-[2rem] border border-stone-100 p-3 sm:p-4 bg-[#FDFBF7]">
                          <table className="w-full text-left border-separate border-spacing-y-2">
                            <thead className="text-[10px] font-black uppercase tracking-widest text-stone-400">
                              <tr>

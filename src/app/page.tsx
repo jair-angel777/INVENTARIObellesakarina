@@ -6,6 +6,7 @@ import { Search, ShoppingBag, User, Menu, ArrowRight, ShieldCheck, Star, Zap, Ch
 
 export default function LandingPage() {
   const [scrolled, setScrolled] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -25,6 +26,59 @@ export default function LandingPage() {
       </div>
 
       {/* Main Navigation */}
+      {/* Mobile Menu Drawer */}
+      <div className={cn(
+        "fixed inset-0 z-50 lg:hidden transition-all duration-500",
+        isMenuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+      )}>
+        <div 
+          className="absolute inset-0 bg-stone-900/60 backdrop-blur-sm"
+          onClick={() => setIsMenuOpen(false)}
+        />
+        <div className={cn(
+          "absolute top-0 left-0 w-[80%] h-full bg-white shadow-2xl transition-transform duration-500 flex flex-col p-8",
+          isMenuOpen ? "translate-x-0" : "-translate-x-full"
+        )}>
+          <div className="flex justify-between items-center mb-12">
+            <div className="flex flex-col">
+              <h2 className="text-2xl font-serif font-black tracking-tighter uppercase leading-none text-stone-900">
+                Bellesas
+              </h2>
+              <span className="text-[8px] tracking-[0.3em] font-bold uppercase text-stone-500 mt-1">Karina Paris</span>
+            </div>
+            <button 
+              onClick={() => setIsMenuOpen(false)}
+              className="p-2 bg-stone-100 rounded-full text-stone-500"
+            >
+              <X size={20} />
+            </button>
+          </div>
+          
+          <nav className="flex flex-col gap-6">
+            <Link href="/catalogo" onClick={() => setIsMenuOpen(false)} className="text-lg font-bold tracking-widest text-stone-900 hover:text-rose-600 transition-colors uppercase">
+              Catálogo
+            </Link>
+            <Link href="#marcas" onClick={() => setIsMenuOpen(false)} className="text-lg font-bold tracking-widest text-stone-900 hover:text-rose-600 transition-colors uppercase">
+              Marcas
+            </Link>
+            <Link href="#nosotros" onClick={() => setIsMenuOpen(false)} className="text-lg font-bold tracking-widest text-stone-900 hover:text-rose-600 transition-colors uppercase">
+              Nosotros
+            </Link>
+          </nav>
+          
+          <div className="mt-auto pt-8 border-t border-stone-100 flex flex-col gap-4">
+             <Link href="/login" onClick={() => setIsMenuOpen(false)} className="flex items-center gap-4 text-stone-900 font-bold uppercase tracking-widest text-xs">
+                <div className="bg-stone-100 p-2 rounded-full"><User size={20} /></div>
+                Acceso Clientes
+             </Link>
+             <Link href="/admin/login" onClick={() => setIsMenuOpen(false)} className="flex items-center gap-4 text-rose-600 font-bold uppercase tracking-widest text-xs">
+                <div className="bg-rose-50 p-2 rounded-full"><ShieldCheck size={20} /></div>
+                Acceso Staff
+             </Link>
+          </div>
+        </div>
+      </div>
+
       <header 
         className={`sticky top-0 w-full z-40 transition-all duration-300 ${
           scrolled ? "bg-white/80 backdrop-blur-lg shadow-sm py-3" : "bg-transparent py-5"
@@ -34,7 +88,11 @@ export default function LandingPage() {
           <div className="flex justify-between items-center">
             {/* Mobile Menu Icon */}
             <div className="flex items-center gap-4 lg:hidden z-10">
-              <button aria-label="Menu" className="text-stone-900 hover:text-rose-600 transition-colors">
+              <button 
+                aria-label="Menu" 
+                className="text-stone-900 hover:text-rose-600 transition-colors"
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+              >
                 <Menu strokeWidth={1.5} size={28} />
               </button>
             </div>
