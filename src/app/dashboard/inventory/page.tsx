@@ -391,11 +391,10 @@ export default function InventoryPage() {
                 {showLeftSidebar ? "Ocultar Filtros" : "Filtros"}
              </button>
              <div className="w-px h-4 bg-white/20" />
-             <button onClick={() => setShowRightSidebar(!showRightSidebar)} className={cn("px-2 sm:px-4 py-2 rounded-lg text-[9px] sm:text-[10px] font-black uppercase transition-all", showRightSidebar ? "bg-white text-[#FF9100]" : "text-white hover:bg-white/10")}>
+              <button onClick={() => setShowRightSidebar(!showRightSidebar)} className={cn("px-2 sm:px-4 py-2 rounded-lg text-[9px] sm:text-[10px] font-black uppercase transition-all", showRightSidebar ? "bg-white text-[#FF9100]" : "text-white hover:bg-white/10")}>
                 {showRightSidebar ? "Cerrar Panel" : "Acciones"}
-             </button>
+              </button>
           </div>
-        </div>
       </header>
 
       <div className="flex flex-1 overflow-hidden relative">
@@ -456,7 +455,6 @@ export default function InventoryPage() {
               </div>
            </div>
          </aside>
-        )}
 
         {/* MAIN CONTENT */}
         <main className="flex-1 p-4 sm:p-8 flex flex-col gap-6 sm:gap-8 overflow-y-auto relative z-10 transition-all duration-300">
@@ -1076,15 +1074,15 @@ export default function InventoryPage() {
                                  </td>
                                </tr>
                              )})}
-                           </tbody>
-                         </table>
-                      </div>
-                   </div>
-                 )}
+                            </tbody>
+                          </table>
+                       </div>
+                    </div>
+                  )}
 
-              </div>
-           </div>
-        </div>
+               </div>
+            </div>
+         </div>
       )}
     </div>
   );

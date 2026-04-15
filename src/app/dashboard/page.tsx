@@ -50,7 +50,7 @@ export default function MainDashboard() {
           className="bg-white border-2 sm:border-4 border-[#FF9100] p-3 sm:p-4 rounded-xl sm:rounded-2xl text-[#FF9100] hover:bg-[#FF9100] hover:text-white transition-all shadow-lg active:scale-95"
           title="Regresar"
         >
-          <ArrowLeft size={24} sm:size={28} strokeWidth={3} />
+          <ArrowLeft className="w-6 h-6 sm:w-7 sm:h-7" strokeWidth={3} />
         </Link>
       </header>
 
