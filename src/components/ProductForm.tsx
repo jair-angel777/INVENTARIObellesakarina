@@ -30,6 +30,8 @@ export function ProductForm({ initialData, isEdit = false }: ProductFormProps) {
     const [formData, setFormData] = useState({
         nombre: initialData?.nombre || "",
         categoria: initialData?.categoria || "",
+        marca: initialData?.marca || "",
+        unidades_por_caja: initialData?.unidades_por_caja?.toString() || "1",
         precio: initialData?.precio?.toString() || "",
         costo: initialData?.costo?.toString() || "",
         stock: initialData?.stock?.toString() || "0",
@@ -41,6 +43,7 @@ export function ProductForm({ initialData, isEdit = false }: ProductFormProps) {
 
     const [proveedores, setProveedores] = useState<any[]>([]);
     const [categoriasList, setCategoriasList] = useState<any[]>([]);
+    const [marcasList, setMarcasList] = useState<any[]>([]);
 
     React.useEffect(() => {
         const fetchInitialData = async () => {
@@ -52,6 +55,13 @@ export function ProductForm({ initialData, isEdit = false }: ProductFormProps) {
 
                 const resCat = await fetchWithAuth(`${apiUrl}/categories`);
                 if (resCat.ok) setCategoriasList(await resCat.json());
+
+                try {
+                    const resMarcas = await fetchWithAuth(`${apiUrl}/brands`);
+                    if (resMarcas.ok) setMarcasList(await resMarcas.json());
+                } catch (e) {
+                    console.log("Brands API not ready yet");
+                }
             } catch (error) {
                 console.error("Error fetching form data:", error);
             }
@@ -75,6 +85,8 @@ export function ProductForm({ initialData, isEdit = false }: ProductFormProps) {
                     ...formData,
                     precio: parseFloat(formData.precio),
                     costo: formData.costo ? parseFloat(formData.costo) : null,
+                    marca: formData.marca || null,
+                    unidades_por_caja: parseInt(formData.unidades_por_caja, 10) || 1,
                     stock: parseInt(formData.stock, 10),
                     stock_minimo: parseInt(formData.stock_minimo, 10),
                     proveedor_id: formData.proveedor_id || null,
@@ -129,7 +141,7 @@ export function ProductForm({ initialData, isEdit = false }: ProductFormProps) {
                          <h2 className="text-2xl font-serif font-bold italic">Atributos del Producto</h2>
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                          <div className="space-y-2">
                             <label className="text-[10px] font-black uppercase tracking-widest text-[#121212]/30 ml-1">Nombre Comercial</label>
                             <input 
@@ -141,7 +153,7 @@ export function ProductForm({ initialData, isEdit = false }: ProductFormProps) {
                             />
                          </div>
                          <div className="space-y-2">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-[#121212]/30 ml-1">Categoría Oficial</label>
+                            <label className="text-[10px] font-black uppercase tracking-widest text-[#121212]/30 ml-1">Categoría</label>
                             <select 
                                required
                                className="w-full bg-[#FDFBF7] border border-[#121212]/10 rounded-2xl p-4 text-sm font-bold focus:ring-2 focus:ring-[#D4AF37]/50 transition-all outline-none appearance-none"
@@ -150,6 +162,17 @@ export function ProductForm({ initialData, isEdit = false }: ProductFormProps) {
                             >
                                <option value="">Seleccionar clase...</option>
                                {categoriasList.map(cat => <option key={cat.id} value={cat.nombre}>{cat.nombre}</option>)}
+                            </select>
+                         </div>
+                         <div className="space-y-2">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-[#121212]/30 ml-1">Marca</label>
+                            <select 
+                               className="w-full bg-[#FDFBF7] border border-[#121212]/10 rounded-2xl p-4 text-sm font-bold focus:ring-2 focus:ring-[#D4AF37]/50 transition-all outline-none appearance-none"
+                               value={formData.marca}
+                               onChange={e => setFormData({ ...formData, marca: e.target.value })}
+                            >
+                               <option value="">Seleccionar marca...</option>
+                               {marcasList.map(m => <option key={m.id} value={m.nombre}>{m.nombre}</option>)}
                             </select>
                          </div>
                       </div>
@@ -242,7 +265,7 @@ export function ProductForm({ initialData, isEdit = false }: ProductFormProps) {
                                </div>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-6">
+                            <div className="grid grid-cols-3 gap-6">
                                <div className="space-y-2">
                                   <label className="text-[9px] font-black uppercase tracking-widest text-white/40 ml-1">Stock Inicial</label>
                                   <input 
@@ -254,12 +277,23 @@ export function ProductForm({ initialData, isEdit = false }: ProductFormProps) {
                                   />
                                </div>
                                <div className="space-y-2">
-                                  <label className="text-[9px] font-black uppercase tracking-widest text-white/40 ml-1">Mínimo Crítico</label>
+                                  <label className="text-[9px] font-black uppercase tracking-widest text-white/40 ml-1">Mínimo</label>
                                   <input 
                                     type="number" 
                                     className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm font-bold focus:ring-2 focus:ring-white/20 transition-all outline-none text-rose-400"
                                     value={formData.stock_minimo}
                                     onChange={e => setFormData({ ...formData, stock_minimo: e.target.value })}
+                                  />
+                               </div>
+                               <div className="space-y-2">
+                                  <label className="text-[9px] font-black uppercase tracking-widest text-[#D4AF37]/80 ml-1">Unid. por Caja</label>
+                                  <input 
+                                    required
+                                    type="number" 
+                                    min="1"
+                                    className="w-full bg-[#D4AF37]/10 border border-[#D4AF37]/30 rounded-2xl p-4 text-sm font-bold focus:ring-2 focus:ring-[#D4AF37]/50 transition-all outline-none text-[#D4AF37]"
+                                    value={formData.unidades_por_caja}
+                                    onChange={e => setFormData({ ...formData, unidades_por_caja: e.target.value })}
                                   />
                                </div>
                             </div>

@@ -35,6 +35,7 @@ export default function InventoryPage() {
   const [products, setProducts] = useState<any[]>([]);
   const [providers, setProviders] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
+  const [brands, setBrands] = useState<any[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   
@@ -67,12 +68,12 @@ export default function InventoryPage() {
   });
   const [movementForm, setMovementForm] = useState({
      tipo: 'TRASLADO_ALMACEN', // O PEDIDO_PROVEEDOR
-     producto_id: '', cantidad: '', origen_id: '', destino_id: '', notas: '',
+     producto_id: '', cantidad: '', medida: 'UNIDAD', origen_id: '', destino_id: '', notas: '',
      costo_unitario: '', subtotal: 0, solicitado_nombre: 'Usuario Gerente', proveedor_id: ''
   });
 
   const [saleProductForm, setSaleProductForm] = useState({
-    producto_id: '', cantidad: '', destino_id: ''
+    producto_id: '', cantidad: '', medida: 'UNIDAD', destino_id: ''
   });
 
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
@@ -143,14 +144,17 @@ export default function InventoryPage() {
   const loadAuxiliaryData = async () => {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://backen-inventario.vercel.app/api";
     try {
-      const [provRes, catRes, ordRes] = await Promise.all([
+      const [provRes, catRes, ordRes, brandRes] = await Promise.all([
         fetchWithAuth(`${apiUrl}/suppliers`),
         fetchWithAuth(`${apiUrl}/categories`),
-        fetchWithAuth(`${apiUrl}/movements`) // Historial de movimientos
+        fetchWithAuth(`${apiUrl}/movements`), // Historial de movimientos
+        fetchWithAuth(`${apiUrl}/brands`).catch(() => ({ ok: false, json: async () => [] }))
       ]);
       if (provRes.ok) setProviders(await provRes.json());
       if (catRes.ok) setCategories(await catRes.json());
       if (ordRes.ok) setOrders(await ordRes.json());
+      // @ts-ignore
+      if (brandRes && brandRes.ok) setBrands(await brandRes.json());
     } catch (e) { console.error(e); }
   };
 
@@ -266,14 +270,14 @@ export default function InventoryPage() {
       body: JSON.stringify({
         ...movementForm,
         nombre_producto,
-        cantidad: parseInt(movementForm.cantidad),
+        cantidad: movementForm.medida === 'CAJA' ? parseInt(movementForm.cantidad) * (selectedProd?.unidades_por_caja || 1) : parseInt(movementForm.cantidad),
         usuario_pedido_id: "65243168aaca5e53e77f98b1", // Placeholder temporal
         solicitado_nombre: "Usuario Gerente"
       })
     });
     if (res.ok) {
       const data = await res.json();
-      setMovementForm({ tipo: 'TRASLADO_ALMACEN', producto_id: '', cantidad: '', origen_id: '', destino_id: '', notas: '', costo_unitario: '', subtotal: 0, solicitado_nombre: 'Usuario Gerente', proveedor_id: '' });
+      setMovementForm({ tipo: 'TRASLADO_ALMACEN', producto_id: '', cantidad: '', medida: 'UNIDAD', origen_id: '', destino_id: '', notas: '', costo_unitario: '', subtotal: 0, solicitado_nombre: 'Usuario Gerente', proveedor_id: '' });
       setShowModal(null);
       loadAuxiliaryData();
       
@@ -303,7 +307,7 @@ export default function InventoryPage() {
         tipo: 'TRASLADO_ALMACEN',
         producto_id: saleProductForm.producto_id,
         nombre_producto,
-        cantidad: parseInt(saleProductForm.cantidad),
+        cantidad: saleProductForm.medida === 'CAJA' ? parseInt(saleProductForm.cantidad) * (selectedProd?.unidades_por_caja || 1) : parseInt(saleProductForm.cantidad),
         origen_id: sourceWarehouse.id,
         destino_id: saleProductForm.destino_id,
         usuario_pedido_id: "65243168aaca5e53e77f98b1",
@@ -313,7 +317,7 @@ export default function InventoryPage() {
     });
 
     if (res.ok) {
-      setSaleProductForm({ producto_id: '', cantidad: '', destino_id: '' });
+      setSaleProductForm({ producto_id: '', cantidad: '', medida: 'UNIDAD', destino_id: '' });
       setShowModal(null);
       loadAuxiliaryData();
       alert("Traslado a tienda registrado. El stock se actualizará cuando se confirme la recepción en la tabla de registros.");
@@ -351,6 +355,16 @@ export default function InventoryPage() {
   const getCategoryName = (id: string) => {
     const category = categories.find(c => c.id === id);
     return category ? category.nombre : (id || "S/C");
+  };
+
+  const formatStock = (stock: number, p: any) => {
+     const unidX = p.unidades_por_caja || 1;
+     if (unidX <= 1) return stock.toString();
+     const cajas = Math.floor(stock / unidX);
+     const unidades = stock % unidX;
+     if (cajas > 0 && unidades > 0) return `${cajas} Cj + ${unidades} Un`;
+     if (cajas > 0) return `${cajas} Cj`;
+     return `${unidades} Un`;
   };
 
   const filteredProducts = products.filter(p => {
@@ -544,12 +558,15 @@ export default function InventoryPage() {
                                                 </div>
                                                 <div className="flex flex-col min-w-0">
                                                   <span className="text-[11px] font-black uppercase truncate leading-tight">{p.nombre}</span>
-                                                  <span className="text-[8px] font-bold text-[#FF9100] uppercase">{getCategoryName(p.categoria)}</span>
+                                                  <div className="flex gap-2">
+                                                     <span className="text-[8px] font-bold text-[#FF9100] uppercase">{getCategoryName(p.categoria)}</span>
+                                                     {p.marca && <span className="text-[8px] font-bold text-stone-400 uppercase italic">/ {p.marca}</span>}
+                                                  </div>
                                                 </div>
                                               </div>
                                             </td>
                                             <td className="p-4 text-center">
-                                              <span className="text-lg font-black">{p.locStock}</span>
+                                              <span className="text-lg font-black">{formatStock(p.locStock, p)}</span>
                                             </td>
                                             <td className="p-4 text-right rounded-r-xl">
                                               <div className="flex justify-end gap-1">
@@ -600,6 +617,7 @@ export default function InventoryPage() {
                                            {isLowStock && <AlertTriangle size={14} className="text-[#FF9100] animate-bounce" fill="currentColor" />}
                                         </div>
                                         {p.proveedor_id && <span className="text-[9px] font-black uppercase text-stone-400">ID: {p.id.slice(-6)}</span>}
+                                        {p.marca && <span className="text-[9px] font-black uppercase text-[#FF9100] ml-1">/ MARCA: {p.marca}</span>}
                                       </div>
                                     </div>
                                   </td>
@@ -607,13 +625,13 @@ export default function InventoryPage() {
                                      <span className="text-[10px] font-black uppercase px-3 py-1 bg-white border border-stone-200 text-stone-500 rounded-md">{getCategoryName(p.categoria)}</span>
                                   </td>
                                   <td className="px-8 py-6 text-center border-b border-stone-100">
-                                    <span className="text-xl font-bold text-emerald-600">{p.stock_almacen || 0}</span>
+                                    <span className="text-xl font-bold text-emerald-600">{formatStock(p.stock_almacen || 0, p)}</span>
                                   </td>
                                   <td className="px-8 py-6 text-center border-b border-stone-100">
-                                    <span className="text-xl font-bold text-rose-400">{p.stock_tienda || 0}</span>
+                                    <span className="text-xl font-bold text-rose-400">{formatStock(p.stock_tienda || 0, p)}</span>
                                   </td>
                                   <td className="px-8 py-6 text-center border-b border-stone-100 bg-[#FDFBF7]">
-                                    <span className={cn("text-2xl font-black", isLowStock ? "text-[#FF9100]" : "text-stone-800")}>{p.stock}</span>
+                                    <span className={cn("text-2xl font-black", isLowStock ? "text-[#FF9100]" : "text-stone-800")}>{formatStock(p.stock, p)}</span>
                                   </td>
                                   <td className="px-10 py-6 rounded-r-2xl border-b border-stone-100 text-right">
                                      <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -662,15 +680,15 @@ export default function InventoryPage() {
                               <div className="grid grid-cols-3 gap-2">
                                 <div className="bg-emerald-50/50 p-2 rounded-xl text-center">
                                   <p className="text-[8px] font-black text-emerald-600 uppercase mb-0.5">Almacén</p>
-                                  <span className="text-lg font-black text-emerald-700">{p.stock_almacen || 0}</span>
+                                  <span className="text-lg font-black text-emerald-700">{formatStock(p.stock_almacen || 0, p)}</span>
                                 </div>
                                 <div className="bg-rose-50/50 p-2 rounded-xl text-center">
                                   <p className="text-[8px] font-black text-rose-500 uppercase mb-0.5">Tienda</p>
-                                  <span className="text-lg font-black text-rose-600">{p.stock_tienda || 0}</span>
+                                  <span className="text-lg font-black text-rose-600">{formatStock(p.stock_tienda || 0, p)}</span>
                                 </div>
                                 <div className="bg-[#FF9100]/10 p-2 rounded-xl text-center border border-[#FF9100]/20">
                                   <p className="text-[8px] font-black text-[#FF9100] uppercase mb-0.5">Total</p>
-                                  <span className="text-xl font-black text-[#FF9100]">{p.stock}</span>
+                                  <span className="text-xl font-black text-[#FF9100]">{formatStock(p.stock, p)}</span>
                                 </div>
                               </div>
 
@@ -910,7 +928,13 @@ export default function InventoryPage() {
                              <option value="">Selecciona el Producto...</option>
                              {products.map(p => <option key={p.id} value={p.id}>{p.nombre} (Stock Total: {p.stock})</option>)}
                          </select>
-                         <input required value={movementForm.cantidad} onChange={e=>setMovementForm({...movementForm, cantidad: e.target.value})} type="number" className="w-full p-4 rounded-xl bg-[#FDFBF7] border border-stone-200 font-bold" placeholder="Cantidad Necesitada" />
+                         <div className="flex gap-4">
+                            <input required value={movementForm.cantidad} onChange={e=>setMovementForm({...movementForm, cantidad: e.target.value})} type="number" className="w-2/3 p-4 rounded-xl bg-[#FDFBF7] border border-stone-200 font-bold" placeholder="Cantidad Necesitada" />
+                            <select value={movementForm.medida} onChange={e=>setMovementForm({...movementForm, medida: e.target.value})} className="w-1/3 p-4 rounded-xl bg-[#FDFBF7] border border-stone-200 font-bold text-[#FF9100] outline-none focus:border-[#FF9100]">
+                               <option value="UNIDAD">Unidades</option>
+                               <option value="CAJA">Cajas</option>
+                            </select>
+                         </div>
                          <select required value={movementForm.origen_id} onChange={e=>setMovementForm({...movementForm, origen_id: e.target.value})} className="w-full p-4 rounded-xl bg-[#FDFBF7] border border-stone-200 font-bold text-stone-600 outline-none focus:border-[#FF9100]">
                               <option value="">Selecciona Almacén de ORIGEN...</option>
                               {locations.filter(l => l.tipo === 'ALMACEN').map(l => <option key={l.id} value={l.id}>{l.nombre}</option>)}
@@ -949,7 +973,13 @@ export default function InventoryPage() {
                          <div className="flex gap-4">
                             <div className="w-1/2 space-y-1">
                                <label className="text-[9px] font-black uppercase text-stone-400 ml-2">Cantidad</label>
-                               <input required value={movementForm.cantidad} onChange={e=>setMovementForm({...movementForm, cantidad: e.target.value})} type="number" className="w-full p-4 rounded-xl bg-[#FDFBF7] border border-stone-200 font-bold outline-none focus:border-[#FF9100]" placeholder="0" />
+                               <div className="flex">
+                                  <input required value={movementForm.cantidad} onChange={e=>setMovementForm({...movementForm, cantidad: e.target.value})} type="number" className="w-2/3 p-4 rounded-l-xl bg-[#FDFBF7] border border-stone-200 font-bold outline-none focus:border-[#FF9100]" placeholder="0" />
+                                  <select value={movementForm.medida} onChange={e=>setMovementForm({...movementForm, medida: e.target.value})} className="w-1/3 p-4 rounded-r-xl bg-[#FDFBF7] border-y border-r border-stone-200 font-bold text-[#FF9100] outline-none">
+                                     <option value="UNIDAD">Unid.</option>
+                                     <option value="CAJA">Cajas</option>
+                                  </select>
+                               </div>
                             </div>
                             <div className="w-1/2 space-y-1">
                                <label className="text-[9px] font-black uppercase text-stone-400 ml-2">Costo Unitario S/</label>
@@ -1004,7 +1034,13 @@ export default function InventoryPage() {
                           <div className="flex gap-4">
                              <div className="flex-1 space-y-1">
                                 <label className="text-[9px] font-black uppercase text-stone-400 ml-2">Cantidad a Venta</label>
-                                <input required value={saleProductForm.cantidad} onChange={e=>setSaleProductForm({...saleProductForm, cantidad: e.target.value})} type="number" className="w-full p-4 rounded-xl bg-[#FDFBF7] border border-stone-200 font-bold outline-none focus:border-[#FF9100]" placeholder="0" />
+                                <div className="flex">
+                                   <input required value={saleProductForm.cantidad} onChange={e=>setSaleProductForm({...saleProductForm, cantidad: e.target.value})} type="number" className="w-2/3 p-4 rounded-l-xl bg-[#FDFBF7] border border-stone-200 font-bold outline-none focus:border-[#FF9100]" placeholder="0" />
+                                   <select value={saleProductForm.medida} onChange={e=>setSaleProductForm({...saleProductForm, medida: e.target.value})} className="w-1/3 p-4 rounded-r-xl bg-[#FDFBF7] border-y border-r border-stone-200 font-bold text-[#FF9100] outline-none">
+                                      <option value="UNIDAD">Unid.</option>
+                                      <option value="CAJA">Cajas</option>
+                                   </select>
+                                </div>
                              </div>
                              <div className="flex-1 space-y-1">
                                 <label className="text-[9px] font-black uppercase text-stone-400 ml-2">Tienda de Destino</label>
